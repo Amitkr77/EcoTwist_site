@@ -2,9 +2,10 @@ import { NextResponse } from "next/server";
 import User from "@/models/User.js";
 import mongoose from "mongoose";
 import jwt from "jsonwebtoken";
+import dbConnect from "@/lib/mongodb";
 
 export async function POST(req) {
-  await mongoose.connect(process.env.MONGODB_URI);
+  await dbConnect();
   const { refreshToken } = await req.json();
 
   try {

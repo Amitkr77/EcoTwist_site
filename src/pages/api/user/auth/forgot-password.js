@@ -1,6 +1,6 @@
-import mongoose from "mongoose";
 import jwt from "jsonwebtoken";
 import User from "@/models/User.js";
+import dbConnect from "@/lib/mongodb";
 
 // Rate Limiting function
 const rateLimitMap = new Map();
@@ -25,14 +25,6 @@ function isRateLimited(ip) {
   return false;
 }
 
-async function connectToDatabase() {
-  if (mongoose.connection.readyState === 0) {
-    await mongoose.connect(process.env.MONGODB_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-  }
-}
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -46,9 +38,9 @@ export default async function handler(req, res) {
   }
 
   try {
-    await connectToDatabase();
+    await dbConnect();
 
-    const { email } = req.body; // Use req.body instead of req.json()
+    const { email } = req.body; 
 
     if (!email || typeof email !== "string" || !email.includes("@")) {
       return res.status(400).json({ error: "Valid email is required" });

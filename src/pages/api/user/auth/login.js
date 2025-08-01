@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import jwt from "jsonwebtoken";
 import User from "@/models/User.js";
+import dbConnect from "@/lib/mongodb";
 
 // Simple in-memory rate limiter (not suitable for production)
 const rateLimitMap = new Map();
@@ -35,7 +36,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    await mongoose.connect(process.env.MONGODB_URI);
+    await dbConnect();
 
     const { email, password } = req.body;
 

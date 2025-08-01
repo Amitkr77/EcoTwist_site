@@ -1,20 +1,15 @@
-import mongoose from "mongoose";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import User from "@/models/User.js";
+import dbConnect from "@/lib/mongodb";
 
-const connectDB = async () => {
-  if (mongoose.connection.readyState === 0) {
-    await mongoose.connect(process.env.MONGODB_URI);
-  }
-};
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
   try {
-    await mongoose.connect(process.env.MONGODB_URI);
+    await dbConnect();
     const { token, newPassword } = req.body;
 
     if (!token || !newPassword) {
@@ -44,10 +39,6 @@ export default async function handler(req, res) {
     return res.status(200).json({ message: "Password reset successfully" });
   } catch (err) {
     return res.status(500).json({ error: "Internal server error" });
-  } finally {
-    if (mongoose.connection.readyState !== 0) {
-      await mongoose.disconnect();
-    }
   }
 }
 
