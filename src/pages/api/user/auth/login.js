@@ -1,7 +1,7 @@
-import mongoose from "mongoose";
 import jwt from "jsonwebtoken";
 import User from "@/models/User.js";
 import dbConnect from "@/lib/mongodb";
+import cookie from 'cookie'
 
 // Simple in-memory rate limiter (not suitable for production)
 const rateLimitMap = new Map();
@@ -37,7 +37,6 @@ export default async function handler(req, res) {
 
   try {
     await dbConnect();
-
     const { email, password } = req.body;
 
     if (!email || !password) {
@@ -73,7 +72,19 @@ export default async function handler(req, res) {
     user.refreshToken = refreshToken;
     await user.save();
 
+    res.setHeader(
+      "Set-Cookie",
+      cookie.serialize("token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 60 * 60, // 1 hour
+        path: "/",
+        sameSite: "lax",
+      })
+    );
+
     return res.status(200).json({
+      success: true,
       token,
       refreshToken,
       user: {
@@ -81,11 +92,10 @@ export default async function handler(req, res) {
         email: user.email,
         role: user.role,
       },
+
     });
   } catch (error) {
     console.error("Login error:", error);
     return res.status(500).json({ error: "Internal server error" });
-  } finally {
-    await mongoose.connection.close();
-  }
+  } 
 }

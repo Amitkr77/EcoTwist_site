@@ -66,7 +66,7 @@ export default async function handler(req, res) {
     // For now, log instead of sending email (replace with Nodemailer)
     console.log(`Reset URL for ${email} at ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}: ${resetUrl}`);
     // Log the token instead of sending an email
-    console.log(`Reset token for ${email} at ${new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}: ${resetToken}`);
+    // console.log(`Reset token for ${email} at ${new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}: ${resetToken}`);
 
     return res.status(200).json({ message: "Password reset link sent to your email", resetUrl });
   } catch (error) {

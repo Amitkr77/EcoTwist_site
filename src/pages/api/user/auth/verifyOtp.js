@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import dbConnect from "@/lib/mongodb";
 import User from "@/models/User.js";
 
 export default async function handler(req, res) {
@@ -7,7 +7,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    await mongoose.connect(process.env.MONGODB_URI);
+    await dbConnect();
 
     const { email, otp } = req.body;
 
@@ -29,10 +29,5 @@ export default async function handler(req, res) {
   } catch (error) {
     console.error("OTP verification error:", error);
     return res.status(500).json({ error: "Internal server error." });
-  } finally {
-    // Prevent multiple connection closures in dev mode
-    if (mongoose.connection.readyState === 1) {
-      await mongoose.connection.close();
-    }
   }
 }

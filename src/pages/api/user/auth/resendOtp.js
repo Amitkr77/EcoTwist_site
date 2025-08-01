@@ -1,9 +1,9 @@
-import mongoose from "mongoose";
 import User from "@/models/User.js";
 import rateLimit from "express-rate-limit";
+import dbConnect from "@/lib/mongodb";
 
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, 
+  windowMs: 15 * 60 * 1000,
   max: 3,
 });
 
@@ -12,7 +12,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method Not Allowed" });
   }
 
-  await mongoose.connect(process.env.MONGODB_URI);
+  await dbConnect();
   const { email } = req.body;
 
   try {
@@ -41,7 +41,5 @@ export default async function handler(req, res) {
     return res.status(200).json({ message: "New OTP sent to your email" });
   } catch (error) {
     return res.status(500).json({ error: error.message });
-  } finally {
-    await mongoose.connection.close();
-  }
+  } 
 }

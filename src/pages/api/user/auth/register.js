@@ -1,5 +1,5 @@
-import mongoose from "mongoose";
 import User from "@/models/User.js";
+import dbConnect from "@/lib/mongodb";
 
 const rateLimitMap = new Map();
 
@@ -32,7 +32,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    await mongoose.connect(process.env.MONGODB_URI);
+    await dbConnect();
 
     const { firstName, lastName, email, password, phone } = req.body;
 
@@ -68,7 +68,5 @@ export default async function handler(req, res) {
   } catch (error) {
     console.error("Registration error:", error);
     return res.status(500).json({ error: "Internal server error" });
-  } finally {
-    await mongoose.connection.close();
   }
 }
