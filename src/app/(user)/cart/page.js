@@ -13,6 +13,7 @@ import { Minus, Plus, Trash2, ShoppingBag, ArrowLeft } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import RazorpayPayment from "@/components/RazorpayPayment";
 import { useToast } from "@/hooks/use-toast";
+import Image from "next/image";
 
 
 const CartPage = React.memo(() => {
@@ -151,7 +152,7 @@ const CartPage = React.memo(() => {
   }
 
   return (
-    <div  className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-10 mt-20">
         <div className="flex items-center gap-4">
           <Link href="/products">
@@ -179,11 +180,12 @@ const CartPage = React.memo(() => {
                 {cartItems.map((item, index) => (
                   <div key={item.product.id} className="p-4">
                     <div className="flex items-center gap-4 py-2">
-                      <img
+                      {/* <img
                         src={item.product.image || "/placeholder.svg"}
                         alt={item.product.name}
                         className="w-16 h-16 object-cover rounded-lg"
-                      />
+                      /> */}
+                      <Image src={item.product.image} alt={item.product.name} className=" object-cover rounded-lg" height={16} width={16} />
                       <div className="flex-1">
                         <h3 className="font-medium text-gray-900">{item.product.name}</h3>
                         <p className="text-sm text-gray-600">${item.product.price}</p>
@@ -225,7 +227,6 @@ const CartPage = React.memo(() => {
                 ))}
               </CardContent>
             </Card>
-
             <Card className="overflow-hidden">
               <CardHeader>
                 <CardTitle className="text-lg font-bold">Delivery Address</CardTitle>
@@ -310,7 +311,7 @@ const CartPage = React.memo(() => {
           </div>
 
           {/* Order Summary */}
-          <div  className="space-y-6">
+          <div className="space-y-6">
             <Card className="overflow-hidden">
               <CardHeader>
                 <CardTitle className="text-lg font-bold">Order Summary</CardTitle>

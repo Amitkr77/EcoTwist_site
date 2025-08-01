@@ -100,11 +100,12 @@ export default function Home({ addToCart }) {
         {/* Image with Vignette */}
         <div className="absolute top-0 left-0 w-1/2 h-full z-0 lg:flex hidden ">
           <div className="relative w-full h-full overflow-auto">
-            <img
+            {/* <img
               src="/eco-hero-image.png"
               alt="Eco-Friendly Gifts"
               className="w-full h-full object-contain object-center transition-opacity duration-300 hover:opacity-95"
-            />
+            /> */}
+            <Image src='/eco-hero-image.png' alt="Eco-Friendly Gifts" className="w-full h-full object-contain object-center transition-opacity duration-300 hover:opacity-95" />
             <div className="absolute inset-0 bg-gradient-to-br from-white/60 via-transparent to-white/60" />
           </div>
         </div>
@@ -225,7 +226,7 @@ export default function Home({ addToCart }) {
                 Environmental</span> Impact
             </h2>
             <p className="text-xl text-forest-100 max-w-2xl mx-auto">
-              Together, we're making a real difference for our planet's future.
+              Together, we&apos;re making a real difference for our planet&apos;s future.
             </p>
           </div>
 
@@ -316,14 +317,17 @@ export default function Home({ addToCart }) {
                     ))}
                   </div>
                   <p className="text-slate-600 mb-4 italic">
-                    "{testimonial.comment}"
+                    &quot;{testimonial.comment}&quot;
                   </p>
                   <div className="flex items-center">
-                    <img
+                    <Image
                       src={testimonial.image}
                       alt={testimonial.name}
+                      width={48}
+                      height={48}
                       className="w-12 h-12 rounded-full mr-3 object-cover"
                     />
+
                     <div>
                       <p className="font-semibold text-slate-800">
                         {testimonial.name}
@@ -380,8 +384,9 @@ export default function Home({ addToCart }) {
                 </h2>
 
                 <p className="text-lg text-slate-600 leading-relaxed mb-10">
-                  At <strong>EcoTwist</strong>, sustainability isn't a trend — it’s a mindset. We craft beautiful, intentional gifts from discarded and biodegradable materials, telling stories of care, creativity, and impact.
+                  At <strong>EcoTwist</strong>, sustainability isn&apos;t a trend — it’s a mindset. We craft beautiful, intentional gifts from discarded and biodegradable materials, telling stories of care, creativity, and impact.
                 </p>
+
                 <p className="text-lg text-slate-600 leading-relaxed mb-16">
                   Each product is a collaboration between our in-house designers and skilled artisans, creating livelihoods while helping brands gift meaningfully and consciously.
                 </p>

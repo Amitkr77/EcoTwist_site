@@ -1,6 +1,5 @@
 "use client"
 import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Users, ShoppingCart, DollarSign, TrendingUp, Package, FileText, Megaphone, Settings, Shield, Activity, Bell, AlertTriangle, Server, Database } from 'lucide-react';
@@ -27,7 +26,7 @@ const mockUser = {
   permissions: ['all']
 };
 
-const page = () => {
+const Page = () => {
   const [currentUser] = useState(mockUser);
   const [activeTab, setActiveTab] = useState('overview');
 
@@ -180,4 +179,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;
