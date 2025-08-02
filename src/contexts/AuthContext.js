@@ -1,3 +1,5 @@
+"use client"
+
 // contexts/AuthContext.js
 import { createContext, useContext, useState, useEffect } from 'react';
 
@@ -7,9 +9,16 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    // Load from localStorage or session API
-    const storedUser = localStorage.getItem('user'); // replace with actual logic
-    if (storedUser) setUser(JSON.parse(storedUser));
+    const storedUser = localStorage.getItem('user');
+
+    try {
+      if (storedUser && storedUser !== 'undefined') {
+        setUser(JSON.parse(storedUser));
+      }
+    } catch (error) {
+      console.error('Error parsing stored user:', error);
+      localStorage.removeItem('user'); 
+    }
   }, []);
 
   const isLoggedIn = !!user;
