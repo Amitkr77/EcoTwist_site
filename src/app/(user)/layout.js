@@ -6,7 +6,6 @@ import Footer from "@/components/Footer";
 export default function RootLayout({ children }) {
   return (
     <div>
-
       <Header />
       <main>{children}</main>
       <Footer />

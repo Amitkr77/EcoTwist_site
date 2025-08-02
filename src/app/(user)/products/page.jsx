@@ -185,7 +185,7 @@ const page = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 ">
-      <div className="text-center">
+      <div className="text-center pt-10">
         <h1 className="font-heading text-4xl md:text-5xl font-bold text-[#1B4332] mb-4 tracking-tight">
           Discover Sustainable Gifts
         </h1>

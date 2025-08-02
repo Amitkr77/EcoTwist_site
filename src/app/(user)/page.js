@@ -105,7 +105,7 @@ export default function Home({ addToCart }) {
               alt="Eco-Friendly Gifts"
               className="w-full h-full object-contain object-center transition-opacity duration-300 hover:opacity-95"
             /> */}
-            <Image src='/eco-hero-image.png' alt="Eco-Friendly Gifts" className="w-full h-full object-contain object-center transition-opacity duration-300 hover:opacity-95" />
+            <Image src='/eco-hero-image.png' alt="Eco-Friendly Gifts" className=" object-contain object-center transition-opacity duration-300 hover:opacity-95" fill />
             <div className="absolute inset-0 bg-gradient-to-br from-white/60 via-transparent to-white/60" />
           </div>
         </div>
