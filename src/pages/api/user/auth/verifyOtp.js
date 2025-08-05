@@ -22,7 +22,7 @@ export default async function handler(req, res) {
     }
 
     user.isVerified = true;
-    user.otp = null; // Clear OTP
+    user.otp = null; 
     await user.save();
 
     return res.status(200).json({ message: "Email verified successfully." });
