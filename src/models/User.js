@@ -19,6 +19,12 @@ const cartItemSchema = new Schema({
 }, { _id: false });
 
 const userSchema = new Schema({
+  profilePicture: {
+    type: String,
+    trim: true,
+    default: 'https://picsum.photos/200',
+  },
+  cloudinaryId: { type: String, select: false },
   firstName: {
     type: String,
     required: [true, 'First name is required'],
@@ -74,9 +80,13 @@ const userSchema = new Schema({
   otp: {
     type: String,
     trim: true,
-    expires: '5m',
     default: null,
   },
+  otpExpiresAt: {
+    type: Date,
+    default: null
+  }
+  ,
   isVerified: {
     type: Boolean,
     default: false,
@@ -110,6 +120,25 @@ userSchema.pre('save', async function (next) {
 // Instance Methods
 userSchema.methods.comparePassword = async function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
+};
+
+// Static Method to Update Profile Picture
+userSchema.statics.updateProfilePicture = async function (userId, file) {
+  const user = await this.findById(userId);
+  if (!user) throw new Error("User not found");
+
+  if (user.cloudinaryId) {
+    await cloudinary.uploader.destroy(user.cloudinaryId); // Remove old image
+  }
+
+  const b64 = Buffer.from(await file.arrayBuffer()).toString("base64");
+  const dataUri = `data:${file.type};base64,${b64}`;
+  const result = await cloudinary.uploader.upload(dataUri, { folder: "users" });
+
+  user.profilePicture = result.secure_url;
+  user.cloudinaryId = result.public_id;
+  await user.save();
+  return user;
 };
 
 // Avoid model overwrite during hot reloads in dev
