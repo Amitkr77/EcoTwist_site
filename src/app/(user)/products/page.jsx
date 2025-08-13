@@ -34,58 +34,6 @@ const mockProducts = [
     eco_score: 10,
   },
   {
-    id: "2",
-    name: "Organic Cotton Tote Bag",
-    price: 18.99,
-    originalPrice: 21.99,
-    image: "/placeholder.svg",
-    description: "Reusable shopping bag made from 100% organic cotton",
-    category: "Bags",
-    stock: 8,
-    material: "Organic Cotton",
-    rating: 4.3,
-    eco_score: 10,
-  },
-  {
-    id: "2",
-    name: "Organic Cotton Tote Bag",
-    price: 18.99,
-    originalPrice: 21.99,
-    image: "/placeholder.svg",
-    description: "Reusable shopping bag made from 100% organic cotton",
-    category: "Bags",
-    stock: 8,
-    material: "Organic Cotton",
-    rating: 4.3,
-    eco_score: 10,
-  },
-  {
-    id: "2",
-    name: "Organic Cotton Tote Bag",
-    price: 18.99,
-    originalPrice: 21.99,
-    image: "/placeholder.svg",
-    description: "Reusable shopping bag made from 100% organic cotton",
-    category: "Bags",
-    stock: 8,
-    material: "Organic Cotton",
-    rating: 4.3,
-    eco_score: 10,
-  },
-  {
-    id: "2",
-    name: "Organic Cotton Tote Bag",
-    price: 18.99,
-    originalPrice: 21.99,
-    image: "/placeholder.svg",
-    description: "Reusable shopping bag made from 100% organic cotton",
-    category: "Bags",
-    stock: 8,
-    material: "Organic Cotton",
-    rating: 4.3,
-    eco_score: 10,
-  },
-  {
     id: "3",
     name: "Bamboo Phone Case",
     price: 29.99,
@@ -108,7 +56,7 @@ const mockProducts = [
     description: "Portable solar-powered charger for eco-conscious users",
     category: "Electronics",
     stock: 5,
-    material: "Jute",
+    material: "Plastic & Solar Cells",
     rating: 4.9,
     eco_score: 10,
   },
@@ -138,6 +86,85 @@ const mockProducts = [
     rating: 4.0,
     eco_score: 9,
   },
+  {
+    id: "7",
+    name: "Cork Yoga Mat",
+    price: 39.99,
+    originalPrice: 49.99,
+    image: "/placeholder.svg",
+    description: "Non-slip yoga mat made from natural cork and rubber",
+    category: "Fitness",
+    stock: 10,
+    material: "Cork & Natural Rubber",
+    rating: 4.6,
+    eco_score: 9,
+  },
+  {
+    id: "8",
+    name: "Beeswax Food Wraps",
+    price: 14.99,
+    originalPrice: 17.99,
+    image: "/placeholder.svg",
+    description:
+      "Reusable alternative to plastic wrap, made with beeswax and cotton",
+    category: "Kitchen",
+    stock: 25,
+    material: "Beeswax & Cotton",
+    rating: 4.2,
+    eco_score: 10,
+  },
+  {
+    id: "9",
+    name: "Compostable Phone Charger",
+    price: 27.99,
+    originalPrice: 32.99,
+    image: "/placeholder.svg",
+    description: "Phone charger made from biodegradable materials",
+    category: "Electronics",
+    stock: 7,
+    material: "Bioplastic",
+    rating: 4.4,
+    eco_score: 9,
+  },
+  {
+    id: "10",
+    name: "Hemp Baseball Cap",
+    price: 22.99,
+    originalPrice: 26.99,
+    image: "/placeholder.svg",
+    description: "Adjustable baseball cap made from sustainable hemp fabric",
+    category: "Apparel",
+    stock: 14,
+    material: "Hemp",
+    rating: 4.3,
+    eco_score: 8,
+  },
+  {
+    id: "11",
+    name: "Reusable Bamboo Cutlery Set",
+    price: 12.99,
+    originalPrice: 15.99,
+    image: "/placeholder.svg",
+    description: "Travel cutlery set with pouch, made from bamboo",
+    category: "Travel",
+    stock: 30,
+    material: "Bamboo",
+    rating: 4.5,
+    eco_score: 10,
+  },
+  {
+    id: "12",
+    name: "Eco-Friendly Laundry Detergent Sheets",
+    price: 19.99,
+    originalPrice: 24.99,
+    image: "/placeholder.svg",
+    description: "Plastic-free detergent sheets for eco-conscious laundry",
+    category: "Household",
+    stock: 18,
+    material: "Plant-Based",
+    rating: 4.6,
+    eco_score: 9,
+  },
 ];
 
 const page = () => {
@@ -160,10 +187,10 @@ const page = () => {
   });
 
   const [priceRange, setPriceRange] = useState({ min: "", max: "" });
-  const [availability, setAvailability] = useState({
-    inStock: false,
-    outOfStock: false,
-  });
+  // const [availability, setAvailability] = useState({
+  //   inStock: false,
+  //   outOfStock: false,
+  // });
   const [minRating, setMinRating] = useState(0);
   const [sortBy, setSortBy] = useState("default");
 
@@ -176,12 +203,12 @@ const page = () => {
     setSortBy("default");
   };
 
-  const handleAvailabilityChange = (type) => {
-    setAvailability((prev) => ({
-      ...prev,
-      [type]: !prev[type],
-    }));
-  };
+  // const handleAvailabilityChange = (type) => {
+  //   setAvailability((prev) => ({
+  //     ...prev,
+  //     [type]: !prev[type],
+  //   }));
+  // };
 
   return (
     <div className="min-h-screen bg-gray-50 ">
@@ -278,7 +305,7 @@ const page = () => {
           {/* Price Range */}
           <div>
             <h3 className="text-sm font-semibold text-gray-800 mb-3">
-              Price Range ($)
+              Price Range (₹)
             </h3>
             <div className="grid grid-cols-2 gap-3">
               <input
@@ -307,7 +334,7 @@ const page = () => {
           </div>
 
           {/* Availability */}
-          <div>
+          {/* <div>
             <h3 className="text-sm font-semibold text-gray-800 mb-3">
               Availability
             </h3>
@@ -331,7 +358,7 @@ const page = () => {
                 <span>Out of Stock</span>
               </label>
             </div>
-          </div>
+          </div> */}
 
           {/* Ratings */}
           <div>

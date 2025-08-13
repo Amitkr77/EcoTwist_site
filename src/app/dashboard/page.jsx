@@ -176,7 +176,7 @@ const page = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950 font-sans">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950 font-sans ">
       <div className="flex">
         {/* Sidebar */}
         <aside
@@ -997,3 +997,837 @@ const page = () => {
 };
 
 export default page;
+
+// "use client";
+
+// import React, { useState, useEffect, useMemo } from "react";
+// import { Button } from "@/components/ui/button";
+// import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+// import { Separator } from "@/components/ui/separator";
+// import {
+//   Select,
+//   SelectTrigger,
+//   SelectValue,
+//   SelectContent,
+//   SelectItem,
+// } from "@/components/ui/select";
+// import {
+//   Menu as MenuIcon,
+//   Sun,
+//   Moon,
+//   ShoppingCart,
+//   Package,
+//   Leaf,
+//   Heart,
+//   Bell,
+//   MapPin,
+//   Truck,
+//   Eye,
+//   Settings,
+//   User,
+//   LogOut
+// } from "lucide-react";
+// import Image from "next/image";
+// import Link from "next/link";
+// import { toast } from "react-hot-toast";
+
+// // Placeholder data (to be replaced with API calls)
+// const userProfile = { name: "John Doe", wishlist: [], addresses: [] };
+// const orders = [
+//   {
+//     id: "001",
+//     orderDate: new Date(),
+//     totalAmount: 49.99,
+//     status: "delivered",
+//     items: [],
+//   },
+// ];
+// const totalSpent = 150.75;
+// const getTotalItems = () => 2;
+
+// const Sidebar = ({
+//   isOpen,
+//   onClose,
+//   activeTab,
+//   setActiveTab,
+//   sidebarItems,
+// }) => (
+//   <aside
+//     className={`fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 transform ${
+//       isOpen ? "translate-x-0" : "-translate-x-full"
+//     } lg:translate-x-0 transition-transform duration-300 ease-in-out shadow-lg`}
+//     aria-label="Sidebar"
+//   >
+//     <div className="h-56 bg-black/40 m-4 rounded-md overflow-hidden">
+//       <Image
+//         src="/Avatar.png"
+//         alt="User Avatar"
+//         width={200}
+//         height={200}
+//         className="object-contain p-4"
+//       />
+//     </div>
+//     <div className="px-6 font-semibold text-lg text-gray-900 dark:text-gray-100">
+//       <h1>{userProfile.name}</h1>
+//     </div>
+//     <nav className="p-4 space-y-2">
+//       {sidebarItems.map((item) => (
+//         <button
+//           key={item.value}
+//           className={`w-full flex items-center p-3 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
+//             activeTab === item.value
+//               ? "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 font-semibold"
+//               : ""
+//           }`}
+//           onClick={() => {
+//             setActiveTab(item.value);
+//             if (item.value === "logout")
+//               toast.success("Logged out successfully!");
+//             if (window.innerWidth < 1024) onClose();
+//           }}
+//           aria-label={item.label}
+//         >
+//           <item.icon className="w-5 h-5 mr-3" />
+//           {item.label}
+//         </button>
+//       ))}
+//     </nav>
+//   </aside>
+// );
+
+// const Header = ({
+//   isSidebarOpen,
+//   setIsSidebarOpen,
+//   isDarkMode,
+//   setIsDarkMode,
+// }) => (
+//   <header className="bg-white dark:bg-gray-900 p-4 sticky top-0 z-40 shadow-md">
+//     <div className="container mx-auto flex items-center justify-between">
+//       <div className="flex items-center gap-4">
+//         <button
+//           className="lg:hidden text-gray-600 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
+//           onClick={() => setIsSidebarOpen(true)}
+//           aria-label="Toggle sidebar"
+//         >
+//           <MenuIcon className="w-6 h-6" />
+//         </button>
+//         <div className="hidden md:block">
+//           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+//             Welcome, {userProfile.name}
+//           </h1>
+//           <p className="text-sm text-gray-600 dark:text-gray-400">
+//             Your nature-inspired shopping hub
+//           </p>
+//         </div>
+//       </div>
+//       <div className="flex items-center gap-3">
+//         <Button
+//           variant="outline"
+//           size="icon"
+//           onClick={() => setIsDarkMode(!isDarkMode)}
+//           className="border-gray-300 text-gray-600 dark:text-gray-300 hidden md:flex"
+//           aria-label="Toggle dark mode"
+//         >
+//           {isDarkMode ? (
+//             <Sun className="w-5 h-5" />
+//           ) : (
+//             <Moon className="w-5 h-5" />
+//           )}
+//         </Button>
+//         <Link href="/products">
+//           <Button
+//             variant="outline"
+//             className="border-gray-300 text-gray-600 dark:text-gray-300 hidden md:flex"
+//             aria-label="Shop now"
+//           >
+//             <ShoppingCart className="w-4 h-4 mr-2" />
+//             Shop Now
+//           </Button>
+//         </Link>
+//         <Link href="/cart">
+//           <Button
+//             className="bg-gray-600 text-white hover:bg-gray-700"
+//             aria-label="View cart"
+//           >
+//             <ShoppingCart className="w-4 h-4 mr-2" />
+//             Cart ({getTotalItems()})
+//           </Button>
+//         </Link>
+//       </div>
+//     </div>
+//   </header>
+// );
+
+// const StatsCard = ({ icon: Icon, title, value, subtext }) => (
+//   <Card className="bg-white dark:bg-gray-800 border-gray-200 hover:shadow-lg transition-shadow">
+//     <CardHeader className="pb-2">
+//       <CardTitle className="flex items-center text-sm font-semibold text-gray-900 dark:text-gray-100">
+//         <Icon className="w-4 h-4 mr-2 text-gray-600 dark:text-gray-400" />
+//         {title}
+//       </CardTitle>
+//     </CardHeader>
+//     <CardContent>
+//       <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+//         {value}
+//       </div>
+//       <p className="text-xs text-gray-600 dark:text-gray-400">{subtext}</p>
+//     </CardContent>
+//   </Card>
+// );
+
+// const OrderItem = ({ order }) => (
+//   <div className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+//     <div className="flex items-center gap-4">
+//       <Package className="w-6 h-6 text-gray-600 dark:text-gray-400" />
+//       <div>
+//         <p className="font-medium text-gray-900 dark:text-gray-100">
+//           Order #{order.id}
+//         </p>
+//         <p className="text-sm text-gray-600 dark:text-gray-400">
+//           {formatDate(order.orderDate)}
+//         </p>
+//       </div>
+//     </div>
+//     <div className="flex items-center gap-4">
+//       <span className="font-medium text-gray-900 dark:text-gray-100">
+//         ${order.totalAmount.toFixed(2)}
+//       </span>
+//     </div>
+//   </div>
+// );
+
+// const formatDate = (date) => date.toLocaleDateString();
+
+// const sidebarItems = [
+//   { value: "overview", label: "Overview", icon: Package },
+//   { value: "orders", label: "Orders", icon: ShoppingCart },
+//   { value: "wishlist", label: "Wishlist", icon: Heart },
+//   { value: "addresses", label: "Addresses", icon: MapPin },
+//   { value: "settings", label: "Settings", icon: Settings },
+//   { value: "logout", label: "Logout", icon: LogOut },
+// ];
+
+// export default function Dashboard() {
+//   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+//   const [activeTab, setActiveTab] = useState("overview");
+//   const [isDarkMode, setIsDarkMode] = useState(false);
+//   const [newAddress, setNewAddress] = useState({
+//     type: "",
+//     street: "",
+//     city: "",
+//     state: "",
+//     zipCode: "",
+//   });
+
+//   const filteredOrders = useMemo(() => orders, [orders]); // Placeholder; add filtering logic
+
+//   const handleAddAddress = () => {
+//     // Implement address addition logic
+//     console.log("Address added:", newAddress);
+//     setNewAddress({ type: "", street: "", city: "", state: "", zipCode: "" });
+//   };
+
+//   useEffect(() => {
+//     if (isDarkMode) document.documentElement.classList.add("dark");
+//     else document.documentElement.classList.remove("dark");
+//   }, [isDarkMode]);
+
+//   return (
+//     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950 font-sans text-gray-900 dark:text-gray-100  ">
+//       <div className="flex">
+//         <Sidebar
+//           isOpen={isSidebarOpen}
+//           onClose={() => setIsSidebarOpen(false)}
+//           activeTab={activeTab}
+//           setActiveTab={setActiveTab}
+//           sidebarItems={sidebarItems}
+//         />
+//         <div className="flex-1 lg:ml-64">
+//           <Header
+//             isSidebarOpen={isSidebarOpen}
+//             setIsSidebarOpen={setIsSidebarOpen}
+//             isDarkMode={isDarkMode}
+//             setIsDarkMode={setIsDarkMode}
+//           />
+//           <main className="container mx-auto p-6 space-y-6">
+//             {activeTab === "overview" && (
+//               <div className="space-y-6">
+//                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+//                   {[
+//                     {
+//                       icon: Package,
+//                       title: "Total Orders",
+//                       value: orders.length,
+//                       subtext: "All time",
+//                     },
+//                     {
+//                       icon: Leaf,
+//                       title: "Total Spent",
+//                       value: `$${totalSpent.toFixed(2)}`,
+//                       subtext: "All time",
+//                     },
+//                     {
+//                       icon: ShoppingCart,
+//                       title: "Cart Items",
+//                       value: getTotalItems(),
+//                       subtext: "Ready to checkout",
+//                     },
+//                     {
+//                       icon: Heart,
+//                       title: "Wishlist",
+//                       value: userProfile.wishlist.length,
+//                       subtext: "Saved items",
+//                     },
+//                   ].map((stat, idx) => (
+//                     <StatsCard key={idx} {...stat} />
+//                   ))}
+//                 </div>
+//                 <Card className="bg-white dark:bg-gray-800 border-gray-200">
+//                   <CardHeader className="flex items-center justify-between">
+//                     <CardTitle className="text-gray-900 dark:text-gray-100">
+//                       Recent Orders
+//                     </CardTitle>
+//                     <Link href="/orders">
+//                       <Button
+//                         variant="outline"
+//                         size="sm"
+//                         className="border-gray-300 text-gray-600 dark:text-gray-400"
+//                       >
+//                         View All
+//                       </Button>
+//                     </Link>
+//                   </CardHeader>
+//                   <CardContent>
+//                     {orders.length > 0 ? (
+//                       <div className="space-y-4">
+//                         {orders.slice(0, 3).map((order) => (
+//                           <OrderItem key={order.id} order={order} />
+//                         ))}
+//                       </div>
+//                     ) : (
+//                       <div className="text-center py-8">
+//                         <Package className="w-12 h-12 mx-auto text-gray-600 dark:text-gray-400 mb-4" />
+//                         <p className="text-gray-600 dark:text-gray-400">
+//                           No orders yet
+//                         </p>
+//                         <Link href="/products">
+//                           <Button className="mt-4 bg-gray-600 text-white hover:bg-gray-700">
+//                             Start Shopping
+//                           </Button>
+//                         </Link>
+//                       </div>
+//                     )}
+//                   </CardContent>
+//                 </Card>
+//               </div>
+//             )}
+
+//             {activeTab === "orders" && (
+//               <Card className="bg-white dark:bg-gray-800 border-gray-200">
+//                 <CardHeader className="flex items-center justify-between flex-wrap gap-4">
+//                   <CardTitle className="text-gray-900 dark:text-gray-100">
+//                     Order History
+//                   </CardTitle>
+//                   <div className="flex gap-4">
+//                     <Select value="all" onValueChange={() => {}}>
+//                       <SelectTrigger className="w-[140px] border-gray-300">
+//                         <SelectValue placeholder="All Status" />
+//                       </SelectTrigger>
+//                       <SelectContent>
+//                         <SelectItem value="all">All Status</SelectItem>
+//                         <SelectItem value="pending">Pending</SelectItem>
+//                         <SelectItem value="confirmed">Confirmed</SelectItem>
+//                         <SelectItem value="shipped">Shipped</SelectItem>
+//                         <SelectItem value="delivered">Delivered</SelectItem>
+//                         <SelectItem value="cancelled">Cancelled</SelectItem>
+//                       </SelectContent>
+//                     </Select>
+//                     <Select value="date-desc" onValueChange={() => {}}>
+//                       <SelectTrigger className="w-[140px] border-gray-300">
+//                         <SelectValue placeholder="Newest First" />
+//                       </SelectTrigger>
+//                       <SelectContent>
+//                         <SelectItem value="date-desc">Newest First</SelectItem>
+//                         <SelectItem value="date-asc">Oldest First</SelectItem>
+//                         <SelectItem value="amount-desc">
+//                           Highest Amount
+//                         </SelectItem>
+//                         <SelectItem value="amount-asc">
+//                           Lowest Amount
+//                         </SelectItem>
+//                       </SelectContent>
+//                     </Select>
+//                   </div>
+//                 </CardHeader>
+//                 <CardContent>
+//                   {filteredOrders.length > 0 ? (
+//                     <div className="space-y-4">
+//                       {filteredOrders.map((order) => (
+//                         <div
+//                           key={order.id}
+//                           className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+//                         >
+//                           <div className="flex justify-between items-start mb-4">
+//                             <div>
+//                               <h3 className="font-medium text-gray-900 dark:text-gray-100">
+//                                 Order #{order.id}
+//                               </h3>
+//                               <p className="text-sm text-gray-600 dark:text-gray-400">
+//                                 {formatDate(order.orderDate)}
+//                               </p>
+//                             </div>
+//                             <span className="font-medium text-gray-900 dark:text-gray-100">
+//                               ${order.totalAmount.toFixed(2)}
+//                             </span>
+//                           </div>
+//                         </div>
+//                       ))}
+//                     </div>
+//                   ) : (
+//                     <div className="text-center py-8">
+//                       <Package className="w-12 h-12 mx-auto text-gray-600 dark:text-gray-400 mb-4" />
+//                       <p className="text-gray-600 dark:text-gray-400">
+//                         No orders match your criteria
+//                       </p>
+//                       <Link href="/products">
+//                         <Button className="mt-4 bg-gray-600 text-white hover:bg-gray-700">
+//                           Start Shopping
+//                         </Button>
+//                       </Link>
+//                     </div>
+//                   )}
+//                 </CardContent>
+//               </Card>
+//             )}
+
+//             {activeTab === "wishlist" && (
+//               <Card className="bg-white dark:bg-gray-800 border-gray-200">
+//                 <CardHeader>
+//                   <CardTitle className="text-gray-900 dark:text-gray-100">
+//                     My Wishlist
+//                   </CardTitle>
+//                 </CardHeader>
+//                 <CardContent>
+//                   {userProfile.wishlist.length > 0 ? (
+//                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+//                       {userProfile.wishlist.map((item) => (
+//                         <div
+//                           key={item.id}
+//                           className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-lg transition-shadow"
+//                         >
+//                           <img
+//                             src={item.image || "/placeholder.svg"}
+//                             alt={item.name}
+//                             className="w-full h-40 object-cover rounded-lg mb-4"
+//                             loading="lazy"
+//                           />
+//                           <h3 className="font-medium text-gray-900 dark:text-gray-100">
+//                             {item.name}
+//                           </h3>
+//                           <p className="text-sm text-gray-600 dark:text-gray-400">
+//                             ${item.price}
+//                           </p>
+//                           <div className="flex items-center gap-2 mt-2">
+//                             <input
+//                               type="checkbox"
+//                               checked={item.priceAlert}
+//                               className="w-4 h-4 text-gray-600 rounded"
+//                             />
+//                             <span className="text-xs text-gray-600 dark:text-gray-400">
+//                               Notify on price drop
+//                             </span>
+//                           </div>
+//                           <div className="flex gap-2 mt-4">
+//                             <Button
+//                               size="sm"
+//                               className="bg-gray-600 text-white hover:bg-gray-700"
+//                             >
+//                               Add to Cart
+//                             </Button>
+//                             <Button
+//                               variant="outline"
+//                               size="sm"
+//                               className="border-gray-300 text-gray-600 dark:text-gray-400"
+//                             >
+//                               <Heart className="w-4 h-4 mr-2 fill-red-500" />
+//                               Remove
+//                             </Button>
+//                           </div>
+//                         </div>
+//                       ))}
+//                     </div>
+//                   ) : (
+//                     <div className="text-center py-8">
+//                       <Heart className="w-12 h-12 mx-auto text-gray-600 dark:text-gray-400 mb-4" />
+//                       <p className="text-gray-600 dark:text-gray-400">
+//                         Your wishlist is empty
+//                       </p>
+//                       <Link href="/products">
+//                         <Button className="mt-4 bg-gray-600 text-white hover:bg-gray-700">
+//                           Browse Products
+//                         </Button>
+//                       </Link>
+//                     </div>
+//                   )}
+//                 </CardContent>
+//               </Card>
+//             )}
+
+//             {activeTab === "addresses" && (
+//               <div className="space-y-6">
+//                 <Card className="bg-white dark:bg-gray-800 border-gray-200">
+//                   <CardHeader>
+//                     <CardTitle className="text-gray-900 dark:text-gray-100">
+//                       Add New Address
+//                     </CardTitle>
+//                   </CardHeader>
+//                   <CardContent className="space-y-6">
+//                     <div className="space-y-2">
+//                       <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+//                         Address Information
+//                       </h3>
+//                       <p className="text-sm text-gray-500 dark:text-gray-400">
+//                         Fill out the form below to add a new address.
+//                       </p>
+//                     </div>
+//                     <div className="grid gap-6 sm:grid-cols-2">
+//                       <div className="space-y-2">
+//                         <label
+//                           htmlFor="address-type"
+//                           className="text-sm font-medium text-gray-700 dark:text-gray-300"
+//                         >
+//                           Address Type
+//                         </label>
+//                         <Select
+//                           value={newAddress.type}
+//                           onValueChange={(value) =>
+//                             setNewAddress((prev) => ({ ...prev, type: value }))
+//                           }
+//                         >
+//                           <SelectTrigger className="w-full border-gray-300 focus:ring-2 focus:ring-gray-400 rounded-md">
+//                             <SelectValue placeholder="Select type" />
+//                           </SelectTrigger>
+//                           <SelectContent>
+//                             <SelectItem value="Home">Home</SelectItem>
+//                             <SelectItem value="Work">Work</SelectItem>
+//                             <SelectItem value="Other">Other</SelectItem>
+//                           </SelectContent>
+//                         </Select>
+//                       </div>
+//                       <div className="space-y-2">
+//                         <label
+//                           htmlFor="street"
+//                           className="text-sm font-medium text-gray-700 dark:text-gray-300"
+//                         >
+//                           Street Address
+//                         </label>
+//                         <input
+//                           id="street"
+//                           value={newAddress.street}
+//                           onChange={(e) =>
+//                             setNewAddress((prev) => ({
+//                               ...prev,
+//                               street: e.target.value,
+//                             }))
+//                           }
+//                           className="w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-100"
+//                           placeholder="123 Main St"
+//                         />
+//                       </div>
+//                     </div>
+//                     <div className="grid gap-6 sm:grid-cols-3">
+//                       <div className="space-y-2">
+//                         <label
+//                           htmlFor="city"
+//                           className="text-sm font-medium text-gray-700 dark:text-gray-300"
+//                         >
+//                           City
+//                         </label>
+//                         <input
+//                           id="city"
+//                           value={newAddress.city}
+//                           onChange={(e) =>
+//                             setNewAddress((prev) => ({
+//                               ...prev,
+//                               city: e.target.value,
+//                             }))
+//                           }
+//                           className="w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-100"
+//                           placeholder="City name"
+//                         />
+//                       </div>
+//                       <div className="space-y-2">
+//                         <label
+//                           htmlFor="state"
+//                           className="text-sm font-medium text-gray-700 dark:text-gray-300"
+//                         >
+//                           State
+//                         </label>
+//                         <input
+//                           id="state"
+//                           value={newAddress.state}
+//                           onChange={(e) =>
+//                             setNewAddress((prev) => ({
+//                               ...prev,
+//                               state: e.target.value,
+//                             }))
+//                           }
+//                           className="w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-100"
+//                           placeholder="State"
+//                         />
+//                       </div>
+//                       <div className="space-y-2">
+//                         <label
+//                           htmlFor="zipCode"
+//                           className="text-sm font-medium text-gray-700 dark:text-gray-300"
+//                         >
+//                           Zip Code
+//                         </label>
+//                         <input
+//                           id="zipCode"
+//                           value={newAddress.zipCode}
+//                           onChange={(e) =>
+//                             setNewAddress((prev) => ({
+//                               ...prev,
+//                               zipCode: e.target.value,
+//                             }))
+//                           }
+//                           className="w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-100"
+//                           placeholder="12345"
+//                         />
+//                       </div>
+//                     </div>
+//                     <div className="flex justify-end pt-4">
+//                       <Button
+//                         onClick={handleAddAddress}
+//                         className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-md shadow-md"
+//                       >
+//                         Add Address
+//                       </Button>
+//                     </div>
+//                   </CardContent>
+//                 </Card>
+//                 <Card className="bg-white dark:bg-gray-800 border-gray-200">
+//                   <CardHeader>
+//                     <CardTitle className="text-gray-900 dark:text-gray-100">
+//                       Saved Addresses
+//                     </CardTitle>
+//                   </CardHeader>
+//                   <CardContent className="space-y-4">
+//                     {userProfile.addresses.map((address) => (
+//                       <div
+//                         key={address.id}
+//                         className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 flex items-start justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+//                       >
+//                         <div className="flex items-start gap-4">
+//                           <MapPin className="w-5 h-5 text-gray-600 dark:text-gray-400 mt-1" />
+//                           <div>
+//                             <p className="font-medium text-gray-900 dark:text-gray-100">
+//                               {address.type}
+//                             </p>
+//                             <p className="text-sm text-gray-600 dark:text-gray-400">
+//                               {address.street}
+//                               <br />
+//                               {address.city}, {address.state} {address.zipCode}
+//                             </p>
+//                           </div>
+//                         </div>
+//                         <div className="flex gap-2">
+//                           <Button
+//                             variant="outline"
+//                             size="sm"
+//                             className="border-gray-300 text-gray-600 dark:text-gray-400"
+//                           >
+//                             Edit
+//                           </Button>
+//                           <Button
+//                             variant="outline"
+//                             size="sm"
+//                             className="border-gray-300 text-gray-600 dark:text-gray-400"
+//                           >
+//                             Delete
+//                           </Button>
+//                         </div>
+//                       </div>
+//                     ))}
+//                   </CardContent>
+//                 </Card>
+//               </div>
+//             )}
+
+//             {activeTab === "settings" && (
+//               <div className="space-y-6">
+//                 <div className="flex flex-col lg:flex-row lg:space-x-6 space-y-6 lg:space-y-0">
+//                   <Card className="flex-1">
+//                     <CardHeader>
+//                       <CardTitle className="text-gray-900 dark:text-gray-100 text-xl font-semibold">
+//                         Account Info
+//                       </CardTitle>
+//                     </CardHeader>
+//                     <CardContent className="space-y-6">
+//                       <form className="space-y-4">
+//                         <div className="flex space-x-4">
+//                           <div className="flex-1">
+//                             <label
+//                               htmlFor="firstName"
+//                               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+//                             >
+//                               First Name
+//                             </label>
+//                             <input
+//                               type="text"
+//                               id="firstName"
+//                               placeholder="First name"
+//                               className="w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-100"
+//                             />
+//                           </div>
+//                           <div className="flex-1">
+//                             <label
+//                               htmlFor="lastName"
+//                               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+//                             >
+//                               Last Name
+//                             </label>
+//                             <input
+//                               type="text"
+//                               id="lastName"
+//                               placeholder="Last name"
+//                               className="w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-100"
+//                             />
+//                           </div>
+//                         </div>
+//                         <div>
+//                           <label
+//                             htmlFor="email"
+//                             className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+//                           >
+//                             Email
+//                           </label>
+//                           <input
+//                             type="email"
+//                             id="email"
+//                             placeholder="Enter your email"
+//                             className="w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-100"
+//                           />
+//                         </div>
+//                         <div>
+//                           <label
+//                             htmlFor="phone"
+//                             className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+//                           >
+//                             Phone Number
+//                           </label>
+//                           <input
+//                             type="tel"
+//                             id="phone"
+//                             placeholder="Enter your phone number"
+//                             className="w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-100"
+//                           />
+//                         </div>
+//                         <Button
+//                           variant="outline"
+//                           size="sm"
+//                           className="border-gray-300 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+//                         >
+//                           Save
+//                         </Button>
+//                       </form>
+//                     </CardContent>
+//                   </Card>
+//                   <Card className="flex-1">
+//                     <CardHeader>
+//                       <CardTitle className="text-gray-900 dark:text-gray-100">
+//                         Notifications
+//                       </CardTitle>
+//                     </CardHeader>
+//                     <CardContent className="space-y-4">
+//                       <div className="flex items-center justify-between">
+//                         <div className="flex items-center gap-4">
+//                           <Bell className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+//                           <div>
+//                             <p className="font-medium text-gray-900 dark:text-gray-100">
+//                               Order Updates
+//                             </p>
+//                             <p className="text-sm text-gray-600 dark:text-gray-400">
+//                               Get notified about order status changes
+//                             </p>
+//                           </div>
+//                         </div>
+//                         <Button
+//                           variant="outline"
+//                           size="sm"
+//                           className="border-gray-300 text-gray-600 dark:text-gray-400"
+//                         >
+//                           Configure
+//                         </Button>
+//                       </div>
+//                       <Separator className="bg-gray-200 dark:bg-gray-700" />
+//                       <div className="flex items-center justify-between">
+//                         <div className="flex items-center gap-4">
+//                           <Leaf className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+//                           <div>
+//                             <p className="font-medium text-gray-900 dark:text-gray-100">
+//                               Eco Preferences
+//                             </p>
+//                             <p className="text-sm text-gray-600 dark:text-gray-400">
+//                               Manage your sustainability settings
+//                             </p>
+//                           </div>
+//                         </div>
+//                         <Button
+//                           variant="outline"
+//                           size="sm"
+//                           className="border-gray-300 text-gray-600 dark:text-gray-400"
+//                         >
+//                           Manage
+//                         </Button>
+//                       </div>
+//                     </CardContent>
+//                   </Card>
+//                 </div>
+//                 <Card className="flex-1">
+//                   <CardHeader className="flex justify-between items-center">
+//                     <CardTitle className="text-gray-900 dark:text-gray-100">
+//                       Account Settings
+//                     </CardTitle>
+//                     <Button
+//                       variant="outline"
+//                       className="border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200"
+//                       onClick={() => setIsDarkMode(!isDarkMode)}
+//                       aria-label="Toggle dark mode"
+//                     >
+//                       Toggle Dark Mode
+//                     </Button>
+//                   </CardHeader>
+//                   <CardContent className="space-y-4">
+//                     <Button
+//                       variant="outline"
+//                       className="w-full flex items-center gap-2 border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200"
+//                     >
+//                       <Settings className="w-4 h-4" />
+//                       Privacy Settings
+//                     </Button>
+//                     <Button
+//                       variant="outline"
+//                       className="w-full flex items-center gap-2 border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200"
+//                     >
+//                       <User className="w-4 h-4" />
+//                       Change Password
+//                     </Button>
+//                     <Button
+//                       variant="destructive"
+//                       className="w-full flex items-center gap-2 bg-rose-600 hover:bg-rose-700"
+//                     >
+//                       Delete Account
+//                     </Button>
+//                   </CardContent>
+//                 </Card>
+//               </div>
+//             )}
+//           </main>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }

@@ -53,7 +53,7 @@ export default function page() {
       const data = await res.json();
 
       if (res.ok) {
-        localStorage.setItem("token", data.token);
+        localStorage.setItem("user-token", data.token);
         window.location.href = "/dashboard";
       } else {
         setError(data.error || "Login failed.");

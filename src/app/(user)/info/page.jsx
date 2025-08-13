@@ -190,21 +190,3 @@ export default function Page() {
   );
 }
 
-// CSS for carousel animation
-// const style = document.createElement("style");
-// style.textContent = `
-//   .animate-scroll {
-//     display: flex;
-//     animation: scroll 15s linear infinite;
-//   }
-//   @keyframes scroll {
-//     0% { transform: translateX(0); }
-//     100% { transform: translateX(-100%); }
-//   }
-//   @media (min-width: 768px) {
-//     .animate-scroll:hover {
-//       animation-play-state: paused;
-//     }
-//   }
-// `;
-// document.head.appendChild(style);
