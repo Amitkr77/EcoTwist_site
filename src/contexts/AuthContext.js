@@ -9,7 +9,7 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
+    const storedUser = localStorage.getItem('user-token');
 
     try {
       if (storedUser && storedUser !== 'undefined') {
@@ -17,7 +17,7 @@ export function AuthProvider({ children }) {
       }
     } catch (error) {
       console.error('Error parsing stored user:', error);
-      localStorage.removeItem('user'); 
+      localStorage.removeItem('user-token'); 
     }
   }, []);
 
