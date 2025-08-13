@@ -14,6 +14,7 @@ import { ShoppingCart } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext.js";
+import { Star } from "lucide-react";
 
 const ProductCard = ({ product }) => {
   const router = useRouter();
@@ -61,9 +62,20 @@ const ProductCard = ({ product }) => {
 
         <div className="flex justify-between items-center">
           <span className="text-2xl font-bold text-green-600">
-            ${product.price}
+            ₹{product.price}
           </span>
-          <span className="text-sm text-gray-500">Stock: {product.stock}</span>
+          <div className="flex items-center space-x-2">
+            {Array.from({ length: 5 }, (_, i) => (
+              <Star
+                key={i}
+                className={`w-4 h-4 ${
+                  i < Math.floor(product.rating)
+                    ? "text-yellow-400 fill-yellow-400"
+                    : "text-gray-300 dark:text-gray-600"
+                }`}
+              />
+            ))}
+          </div>{" "}
         </div>
       </CardContent>
 
