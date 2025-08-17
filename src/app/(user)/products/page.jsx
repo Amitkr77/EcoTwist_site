@@ -1,196 +1,50 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Search } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
-import { useCart } from "@/contexts/CartContext";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 
-// Mock products data
-const mockProducts = [
-  {
-    id: "1",
-    name: "Eco-Friendly Water Bottle",
-    price: 24.99,
-    originalPrice: 29.99,
-    image: "/placeholder.svg",
-    description: "Sustainable stainless steel water bottle with bamboo cap",
-    category: "Drinkware",
-    stock: 15,
-    material: "Stainless Steel",
-    rating: 4.5,
-    eco_score: 9,
-  },
-  {
-    id: "2",
-    name: "Organic Cotton Tote Bag",
-    price: 18.99,
-    originalPrice: 21.99,
-    image: "/placeholder.svg",
-    description: "Reusable shopping bag made from 100% organic cotton",
-    category: "Bags",
-    stock: 8,
-    material: "Organic Cotton",
-    rating: 4.3,
-    eco_score: 10,
-  },
-  {
-    id: "3",
-    name: "Bamboo Phone Case",
-    price: 29.99,
-    originalPrice: 34.99,
-    image: "/placeholder.svg",
-    description: "Biodegradable phone case made from sustainable bamboo",
-    category: "Accessories",
-    stock: 12,
-    material: "Bamboo",
-    rating: 4.7,
-    eco_score: 9,
-  },
-  {
-    id: "4",
-    name: "Solar Power Bank",
-    price: 45.99,
-    originalPrice: 59.99,
-    image:
-      "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=400&q=80",
-    description: "Portable solar-powered charger for eco-conscious users",
-    category: "Electronics",
-    stock: 5,
-    material: "Plastic & Solar Cells",
-    rating: 4.9,
-    eco_score: 10,
-  },
-  {
-    id: "5",
-    name: "Recycled Notebook Set",
-    price: 16.99,
-    originalPrice: 19.99,
-    image: "/placeholder.svg",
-    description: "Set of 3 notebooks made from recycled paper",
-    category: "Stationery",
-    stock: 20,
-    material: "Recycled Paper",
-    rating: 4.1,
-    eco_score: 8,
-  },
-  {
-    id: "6",
-    name: "Plant-Based Soap Bar",
-    price: 8.99,
-    originalPrice: 12.99,
-    image: "/placeholder.svg",
-    description: "Natural soap bar with essential oils and herbs",
-    category: "Personal Care",
-    stock: 0,
-    material: "Plant-Based Oils",
-    rating: 4.0,
-    eco_score: 9,
-  },
-  {
-    id: "7",
-    name: "Cork Yoga Mat",
-    price: 39.99,
-    originalPrice: 49.99,
-    image: "/placeholder.svg",
-    description: "Non-slip yoga mat made from natural cork and rubber",
-    category: "Fitness",
-    stock: 10,
-    material: "Cork & Natural Rubber",
-    rating: 4.6,
-    eco_score: 9,
-  },
-  {
-    id: "8",
-    name: "Beeswax Food Wraps",
-    price: 14.99,
-    originalPrice: 17.99,
-    image: "/placeholder.svg",
-    description:
-      "Reusable alternative to plastic wrap, made with beeswax and cotton",
-    category: "Kitchen",
-    stock: 25,
-    material: "Beeswax & Cotton",
-    rating: 4.2,
-    eco_score: 10,
-  },
-  {
-    id: "9",
-    name: "Compostable Phone Charger",
-    price: 27.99,
-    originalPrice: 32.99,
-    image: "/placeholder.svg",
-    description: "Phone charger made from biodegradable materials",
-    category: "Electronics",
-    stock: 7,
-    material: "Bioplastic",
-    rating: 4.4,
-    eco_score: 9,
-  },
-  {
-    id: "10",
-    name: "Hemp Baseball Cap",
-    price: 22.99,
-    originalPrice: 26.99,
-    image: "/placeholder.svg",
-    description: "Adjustable baseball cap made from sustainable hemp fabric",
-    category: "Apparel",
-    stock: 14,
-    material: "Hemp",
-    rating: 4.3,
-    eco_score: 8,
-  },
-  {
-    id: "11",
-    name: "Reusable Bamboo Cutlery Set",
-    price: 12.99,
-    originalPrice: 15.99,
-    image: "/placeholder.svg",
-    description: "Travel cutlery set with pouch, made from bamboo",
-    category: "Travel",
-    stock: 30,
-    material: "Bamboo",
-    rating: 4.5,
-    eco_score: 10,
-  },
-  {
-    id: "12",
-    name: "Eco-Friendly Laundry Detergent Sheets",
-    price: 19.99,
-    originalPrice: 24.99,
-    image: "/placeholder.svg",
-    description: "Plastic-free detergent sheets for eco-conscious laundry",
-    category: "Household",
-    stock: 18,
-    material: "Plant-Based",
-    rating: 4.6,
-    eco_score: 9,
-  },
-];
-
 const page = () => {
+  const [products, setProducts] = useState([]); 
+  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
-  const { getTotalItems } = useCart();
   const [isLoading, setIsLoading] = useState(null);
 
+  // Fetch product data from API
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const res = await fetch("/api/products");
+        if (!res.ok) throw new Error("Failed to fetch products");
+        const data = await res.json();
+        setProducts(data.data);
+       
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
+
   const categories = Array.from(
-    new Set(mockProducts.map((product) => product.category))
+    new Set(products.map((product) => product.categories[0]))
   );
 
-  const filteredProducts = mockProducts.filter((product) => {
+  const filteredProducts = products.filter((product) => {
     const matchesSearch =
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       product.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory =
-      selectedCategory === "" || product.category === selectedCategory;
+      selectedCategory === "" || product.categories[0] === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
   const [priceRange, setPriceRange] = useState({ min: "", max: "" });
-  // const [availability, setAvailability] = useState({
-  //   inStock: false,
-  //   outOfStock: false,
-  // });
   const [minRating, setMinRating] = useState(0);
   const [sortBy, setSortBy] = useState("default");
 
@@ -202,13 +56,6 @@ const page = () => {
     setMinRating(0);
     setSortBy("default");
   };
-
-  // const handleAvailabilityChange = (type) => {
-  //   setAvailability((prev) => ({
-  //     ...prev,
-  //     [type]: !prev[type],
-  //   }));
-  // };
 
   return (
     <div className="min-h-screen bg-gray-50 ">

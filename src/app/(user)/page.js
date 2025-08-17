@@ -1,121 +1,35 @@
+
+"use client"
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import ProductCard from "@/components/ProductCard";
 import { Star, Truck, Shield, Recycle, Award, MoveRight, ArrowRight } from "lucide-react";
+import { useEffect, useState } from "react";
 
-export default function Home({ addToCart }) {
+export default function Home() {
+  const [products, setProducts] = useState([])
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(null);
 
-
-  const sampleProducts = [
-    {
-      id: "1",
-      name: "Eco-Friendly Water Bottle",
-      price: 24.99,
-      originalPrice: 29.99,
-      image: "/placeholder.svg",
-      description: "Sustainable stainless steel water bottle with bamboo cap",
-      category: "Drinkware",
-      stock: 15,
-      material: "Stainless Steel",
-      rating: 4.5,
-      eco_score: 9,
-    },
-    {
-      id: "2",
-      name: "Organic Cotton Tote Bag",
-      price: 18.99,
-      originalPrice: 21.99,
-      image: "/placeholder.svg",
-      description: "Reusable shopping bag made from 100% organic cotton",
-      category: "Bags",
-      stock: 8,
-      material: "Organic Cotton",
-      rating: 4.3,
-      eco_score: 10,
-    },
-    {
-      id: "3",
-      name: "Bamboo Phone Case",
-      price: 29.99,
-      originalPrice: 34.99,
-      image: "/placeholder.svg",
-      description: "Biodegradable phone case made from sustainable bamboo",
-      category: "Accessories",
-      stock: 12,
-      material: "Bamboo",
-      rating: 4.7,
-      eco_score: 9,
-    },
-    {
-      id: "4",
-      name: "Solar Power Bank",
-      price: 45.99,
-      originalPrice: 59.99,
-      image:
-        "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=400&q=80",
-      description: "Portable solar-powered charger for eco-conscious users",
-      category: "Electronics",
-      stock: 5,
-      material: "Plastic & Solar Cells",
-      rating: 4.9,
-      eco_score: 10,
-    },
-    {
-      id: "5",
-      name: "Recycled Notebook Set",
-      price: 16.99,
-      originalPrice: 19.99,
-      image: "/placeholder.svg",
-      description: "Set of 3 notebooks made from recycled paper",
-      category: "Stationery",
-      stock: 20,
-      material: "Recycled Paper",
-      rating: 4.1,
-      eco_score: 8,
-    },
-    {
-      id: "6",
-      name: "Plant-Based Soap Bar",
-      price: 8.99,
-      originalPrice: 12.99,
-      image: "/placeholder.svg",
-      description: "Natural soap bar with essential oils and herbs",
-      category: "Personal Care",
-      stock: 0,
-      material: "Plant-Based Oils",
-      rating: 4.0,
-      eco_score: 9,
-    },
-    {
-      id: "7",
-      name: "Cork Yoga Mat",
-      price: 39.99,
-      originalPrice: 49.99,
-      image: "/placeholder.svg",
-      description: "Non-slip yoga mat made from natural cork and rubber",
-      category: "Fitness",
-      stock: 10,
-      material: "Cork & Natural Rubber",
-      rating: 4.6,
-      eco_score: 9,
-    },
-    {
-      id: "8",
-      name: "Beeswax Food Wraps",
-      price: 14.99,
-      originalPrice: 17.99,
-      image: "/placeholder.svg",
-      description:
-        "Reusable alternative to plastic wrap, made with beeswax and cotton",
-      category: "Kitchen",
-      stock: 25,
-      material: "Beeswax & Cotton",
-      rating: 4.2,
-      eco_score: 10,
-    },
-  ]
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setIsLoading(true);
+      setError(null)
+      try {
+        const res = await fetch("/api/products");
+        if (!res.ok) throw new Error("Failed to fetch products");
+        const data = await res.json();
+        setProducts(data.data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchProducts();
+  }, [])
 
 
   const testimonials = [
@@ -337,12 +251,8 @@ export default function Home({ addToCart }) {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12 px-10">
-            {sampleProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                addToCart={addToCart}
-              />
+            {products.map((product, index) => (
+              <ProductCard key={index} product={product} />
             ))}
           </div>
 
