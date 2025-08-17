@@ -222,7 +222,7 @@ const page = () => {
   };
 
   return (
-    <div className="min-h-screen p-6 bg-white lg:p-12 mt-20">
+    <div className="min-h-screen p-6 bg-white lg:p-12 ">
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="text-center">
           <h1 className="text-4xl font-bold">Blog Manager</h1>
