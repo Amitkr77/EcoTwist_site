@@ -62,8 +62,8 @@ src/
 
 ### 1. Clone the repo
 ```bash
-git clone https://github.com/yourusername/ecotwist.git
-cd ecotwist
+git clone https://github.com/Amitkr77/EcoTwist_site.git
+cd EcoTwist_site
 ```
 
 ### 2. Install dependencies
