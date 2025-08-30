@@ -15,7 +15,7 @@ export default async function handler(req, res) {
 
     await dbConnect();
 
-    const { name, phone } = req.body;
+    const { name, phone, avatar } = req.body;
 
     // Validation
     if (phone && !/^\+?[1-9]\d{9,14}$/.test(phone)) {
@@ -29,6 +29,7 @@ export default async function handler(req, res) {
 
     if (name) admin.name = name;
     if (phone) admin.phone = phone;
+    if (avatar) admin.avatar = avatar;
 
     await admin.save();
 
@@ -40,7 +41,7 @@ export default async function handler(req, res) {
         name: admin.name,
         email: admin.email,
         phone: admin.phone,
-        avatar: admin.avatar || null,
+        avatar: admin.avatar,
       },
     });
   } catch (err) {

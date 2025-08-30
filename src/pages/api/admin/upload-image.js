@@ -23,15 +23,15 @@ export default async function handler(req, res) {
 
     await dbConnect();
 
-    const form = new formidable.IncomingForm();
+    const form = formidable({multiples : false})
 
     form.parse(req, async (err, fields, files) => {
         if (err) {
-            console.error(err);
+            console.error("Formidable error:",err);
             return res.status(500).json({ message: "File upload error" });
         }
 
-        const file = files.file;
+        const file = files.file[0];
         if (!file) {
             return res.status(400).json({ message: "No file uploaded" });
         }
