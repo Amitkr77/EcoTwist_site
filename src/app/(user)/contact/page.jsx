@@ -44,7 +44,7 @@ export default function page() {
     });
   };
   return (
-    <div className="min-h-screen bg-ivory py-8 ">
+    <div className="min-h-screen pt-20  ">
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-12">
@@ -223,7 +223,7 @@ export default function page() {
         </div>
 
         {/* FAQ Section */}
-        <div className="mt-20 bg-white rounded-2xl p-10 shadow-lg border border-slate-200">
+        <div className="mt-20 bg-white rounded-2xl p-10  border border-slate-200">
           <h2 className="font-heading text-3xl md:text-4xl font-extrabold text-slate-900 mb-10 text-center">
             Frequently Asked Questions
           </h2>

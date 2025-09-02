@@ -163,16 +163,7 @@ export default function ProductPage() {
   );
 
   return (
-    <div className="container mx-auto px-4 py-16 bg-gradient-to-b from-gray-100 to-gray-50 min-h-screen">
-      {/* Nature-themed background */}
-      <div className="absolute inset-0 opacity-5 pointer-events-none">
-        <Image
-          src="/leaf-green.png"
-          alt="Leaf pattern"
-          layout="fill"
-          objectFit="cover"
-        />
-      </div>
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-28    min-h-screen">
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -181,22 +172,22 @@ export default function ProductPage() {
         className="relative z-10"
       >
         {/* Hero Section */}
-        <div className="bg-white/80 rounded-xl p-8 mb-8 border-2 border-gray-300 shadow-lg flex justify-between items-baseline">
-          <div>
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-2">
+        <div className=" rounded-xl p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8 border border-gray-200 shadow-md flex flex-col sm:flex-row justify-between items-start sm:items-baseline gap-4 sm:gap-0">
+          <div >
+            <h1 className="text-2xl sm:text-3xl md:text-7xl lg:text-5xl font-bold text-gray-900 mb-1 sm:mb-2">
               {product.name}
             </h1>
-            <p className="text-lg text-gray-600">
+            <p className="text-base md:text-lg text-gray-600">
               {product.brand} - {product.bestUse}
             </p>
           </div>
           {/* Tags */}
-          <div className="mt-8 flex gap-2 flex-wrap">
+          <div className="flex gap-2 flex-wrap">
             {product.tags.map((tag, index) => (
               <Badge
                 key={index}
                 variant="secondary"
-                className="bg-gray-200 text-gray-900"
+                className="bg-gray-200 text-gray-900 text-xs sm:text-sm"
               >
                 {tag}
               </Badge>
@@ -204,39 +195,31 @@ export default function ProductPage() {
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           {/* Image Section */}
-          <div className="lg:col-span-2 ">
+          <div className="lg:col-span-2">
             <motion.div
               key={selectedImage}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.3 }}
-              className="relative w-full h-[500px] md:h-[600px] rounded-xl overflow-hidden shadow-xl border-2 border-gray-300 "
-              // onMouseEnter={() => setIsZoomed(true)}
-              // onMouseLeave={() => setIsZoomed(false)}
+              className="relative w-full h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px] rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white"
             >
               <Image
                 src={selectedImage}
                 alt={product.name}
-                layout="fill"
-                objectFit="contain"
-                className={`rounded-xl transition-transform duration-300 bg-white ${
-                  isZoomed ? "scale-150" : "scale-100"
-                }`}
+                fill
+                className="object-contain transition-transform duration-300"
                 style={{ transformOrigin: "center" }}
               />
-              {/* <div className="absolute top-4 right-4 bg-gray-500 text-white rounded-full p-2">
-                <ZoomIn className="h-5 w-5" />
-              </div> */}
             </motion.div>
-            <div className="flex gap-2 justify-start mt-4">
+            <div className="flex gap-2 sm:gap-3 justify-start mt-3 sm:mt-4 overflow-x-auto">
               {product.images.map((img) => (
                 <motion.button
                   key={img.position}
-                  whileHover={{ scale: 1.1 }}
+                  whileHover={{ scale: 1.05 }}
                   onClick={() => setSelectedImage(img.url)}
-                  className={`relative w-20 h-20 md:w-24 md:h-24 rounded-md overflow-hidden border-2 ${
+                  className={`relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-md overflow-hidden border-2 flex-shrink-0 ${
                     selectedImage === img.url
                       ? "border-gray-500"
                       : "border-gray-200"
@@ -245,8 +228,8 @@ export default function ProductPage() {
                   <Image
                     src={img.url}
                     alt={img.alt}
-                    layout="fill"
-                    objectFit="cover"
+                    fill
+                    className="object-cover"
                   />
                 </motion.button>
               ))}
@@ -254,38 +237,31 @@ export default function ProductPage() {
           </div>
 
           {/* Sidebar: Product Actions */}
-          <div className="space-y-6">
-            <Card className="border-gray-300 bg-white/90">
-              <CardContent className="pt-6 space-y-6">
-                <div className="flex justify-between items-center ">
-                  <p className="text-2xl font-semibold text-gray-700">
+          <div className="space-y-4 sm:space-y-6">
+            <Card className="border-gray-200 bg-white/90 shadow-sm">
+              <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+                <div className="flex justify-between items-center gap-2 sm:gap-4">
+                  <p className="text-xl sm:text-2xl font-semibold text-gray-700">
                     ₹{selectedVariant.price} {selectedVariant.currency}
                   </p>
-                  {/* <p className="text-sm text-gray-600">
-                    {isAvailable ? (
-                      <span className="text-gray-600">In Stock ({selectedVariant.inventory.quantity} available)</span>
-                    ) : (
-                      <span className="text-red-600">Out of Stock</span>
-                    )}
-                  </p> */}
                   <Button
                     variant="outline"
-                    className=" border-gray-300 text-gray-600 cursor-pointer"
+                    className="border-gray-300 text-gray-600 cursor-pointer flex-shrink-0"
                     onClick={handleShare}
                   >
-                    <Share2 className="h-5 w-5 " />
+                    <Share2 className="h-4 w-4 sm:h-5 sm:w-5" />
                   </Button>
                 </div>
 
                 {/* Variant Selection */}
                 <div>
-                  <Label className="text-lg font-semibold text-gray-900">
+                  <Label className="text-base sm:text-lg font-semibold text-gray-900">
                     Color
                   </Label>
                   <RadioGroup
                     value={selectedColor}
                     onValueChange={setSelectedColor}
-                    className="flex gap-4 mt-2 flex-wrap"
+                    className="flex gap-3 sm:gap-4 mt-2 flex-wrap"
                   >
                     {product.options
                       .find((opt) => opt.name === "Color")
@@ -300,7 +276,10 @@ export default function ProductPage() {
                             id={color}
                             className="text-gray-600"
                           />
-                          <Label htmlFor={color} className="text-gray-700">
+                          <Label
+                            htmlFor={color}
+                            className="text-gray-700 text-sm sm:text-base"
+                          >
                             {color}
                           </Label>
                         </motion.div>
@@ -310,21 +289,24 @@ export default function ProductPage() {
 
                 <div>
                   <div className="flex items-center justify-between">
-                    <Label className="text-lg font-semibold text-gray-900">
+                    <Label className="text-base sm:text-lg font-semibold text-gray-900">
                       {sizeOrCapacityOption.name}
                     </Label>
                     {sizeOrCapacityOption.name === "Capacity" && (
                       <Dialog>
                         <DialogTrigger asChild>
-                          <Button variant="link" className="text-gray-600">
+                          <Button
+                            variant="link"
+                            className="text-gray-600 text-sm sm:text-base"
+                          >
                             View Size Guide
                           </Button>
                         </DialogTrigger>
-                        <DialogContent className="border-gray-300">
+                        <DialogContent className="border-gray-200 sm:max-w-md">
                           <DialogHeader>
                             <DialogTitle>Size Guide</DialogTitle>
                           </DialogHeader>
-                          <div className="space-y-4">
+                          <div className="space-y-3 sm:space-y-4 text-sm sm:text-base">
                             <p>
                               <strong>500ml:</strong> Ideal for short trips or
                               daily commutes.
@@ -348,7 +330,7 @@ export default function ProductPage() {
                   <RadioGroup
                     value={selectedCapacity}
                     onValueChange={setSelectedCapacity}
-                    className="flex gap-4 mt-2 flex-wrap"
+                    className="flex gap-3 sm:gap-4 mt-2 flex-wrap"
                   >
                     {sizeOrCapacityOption?.values.map((value) => (
                       <motion.div
@@ -361,7 +343,10 @@ export default function ProductPage() {
                           id={value}
                           className="text-gray-600"
                         />
-                        <Label htmlFor={value} className="text-gray-700">
+                        <Label
+                          htmlFor={value}
+                          className="text-gray-700 text-sm sm:text-base"
+                        >
                           {value}
                         </Label>
                       </motion.div>
@@ -370,7 +355,7 @@ export default function ProductPage() {
                 </div>
 
                 <div>
-                  <Label className="text-lg font-semibold text-gray-900">
+                  <Label className="text-base sm:text-lg font-semibold text-gray-900">
                     Quantity
                   </Label>
                   <div className="flex items-center gap-2 mt-2">
@@ -379,7 +364,7 @@ export default function ProductPage() {
                       size="icon"
                       onClick={() => handleQuantityChange(quantity - 1)}
                       disabled={quantity <= 1}
-                      className="border-gray-300"
+                      className="border-gray-300 flex-shrink-0"
                     >
                       -
                     </Button>
@@ -389,7 +374,7 @@ export default function ProductPage() {
                       onChange={(e) =>
                         handleQuantityChange(parseInt(e.target.value))
                       }
-                      className="w-16 text-center border-gray-300"
+                      className="w-16 sm:w-20 text-center border-gray-300"
                       min="1"
                       max={selectedVariant.inventory.quantity}
                     />
@@ -398,21 +383,21 @@ export default function ProductPage() {
                       size="icon"
                       onClick={() => handleQuantityChange(quantity + 1)}
                       disabled={quantity >= selectedVariant.inventory.quantity}
-                      className="border-gray-300"
+                      className="border-gray-300 flex-shrink-0"
                     >
                       +
                     </Button>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3  p-2 rounded-md ">
+                <div className="flex items-center gap-3 rounded-md">
                   <motion.div
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     className="flex-1"
                   >
                     <Button
-                      className="w-full bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 cursor-pointer"
+                      className="w-full bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 cursor-pointer text-white"
                       disabled={!isAvailable}
                       size="lg"
                     >
@@ -436,46 +421,37 @@ export default function ProductPage() {
                       aria-label="Toggle wishlist"
                     >
                       <Heart
-                        className={`h-5 w-5 transition-all duration-200 ${
+                        className={`h-4 w-4 sm:h-5 sm:w-5 transition-all duration-200 ${
                           isWishlisted ? "fill-red-500" : ""
                         }`}
                       />
                     </Button>
                   </motion.div>
                 </div>
-
-                {/* <Button
-                  variant="outline"
-                  className="w-full border-gray-300 text-gray-600"
-                  onClick={handleShare}
-                >
-                  <Share2 className="h-5 w-5 mr-2" />
-                  Share Product
-                </Button> */}
               </CardContent>
             </Card>
 
             {product.subscriptionOffer.enabled && (
-              <Card className="border-gray-300 bg-gray-50">
-                <CardHeader>
-                  <CardTitle className="text-gray-900">
+              <Card className="border-gray-200 bg-gray-50 shadow-sm">
+                <CardHeader className="pb-2 sm:pb-4">
+                  <CardTitle className="text-base sm:text-lg text-gray-900">
                     Subscription Offer
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-gray-700">
+                <CardContent className="space-y-2 sm:space-y-3">
+                  <p className="text-gray-700 text-sm sm:text-base">
                     Save {product.subscriptionOffer.firstOrderDiscountPct}% on
                     your first order and{" "}
                     {product.subscriptionOffer.recurringDiscountPct}% on
                     recurring orders.
                   </p>
-                  <p className="text-gray-700 mt-1">
+                  <p className="text-gray-700 text-sm sm:text-base">
                     Delivered every {product.subscriptionOffer.interval.count}{" "}
                     {product.subscriptionOffer.interval.unit}s. Cancel anytime.
                   </p>
                   <Button
                     variant="outline"
-                    className="mt-4 border-gray-500 text-gray-600"
+                    className="mt-2 sm:mt-4 border-gray-500 text-gray-600 w-full sm:w-auto"
                   >
                     Subscribe Now
                   </Button>
@@ -486,45 +462,45 @@ export default function ProductPage() {
         </div>
 
         {/* Description and Tabs */}
-        <div className="mt-12">
-          <Card className="border-gray-300 bg-white/90">
-            <CardContent className="pt-6">
-              <p className="text-gray-700 leading-relaxed">
+        <div className="mt-8 sm:mt-10 lg:mt-12">
+          <Card className="border-gray-200 bg-white/90 shadow-sm">
+            <CardContent className="p-4 sm:p-6">
+              <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
                 {product.description}
               </p>
             </CardContent>
           </Card>
-          <Tabs defaultValue="benefits" className="mt-8">
-            <TabsList className="bg-gray-100 rounded-lg">
+          <Tabs defaultValue="benefits" className="mt-6 sm:mt-8">
+            <TabsList className="bg-gray-100 rounded-lg flex flex-wrap justify-start sm:justify-center overflow-x-auto p-1">
               <TabsTrigger
                 value="benefits"
-                className="data-[state=active]:bg-gray-200"
+                className="data-[state=active]:bg-gray-200 text-sm sm:text-base "
               >
                 Benefits
               </TabsTrigger>
               <TabsTrigger
                 value="usage"
-                className="data-[state=active]:bg-gray-200"
+                className="data-[state=active]:bg-gray-200 text-sm sm:text-base"
               >
                 Usage
               </TabsTrigger>
               <TabsTrigger
                 value="faqs"
-                className="data-[state=active]:bg-gray-200"
+                className="data-[state=active]:bg-gray-200 text-sm sm:text-base"
               >
                 FAQs
               </TabsTrigger>
               <TabsTrigger
                 value="reviews"
-                className="data-[state=active]:bg-gray-200"
+                className="data-[state=active]:bg-gray-200 text-sm sm:text-base"
               >
                 Reviews
               </TabsTrigger>
             </TabsList>
             <TabsContent value="benefits">
-              <Card className="border-gray-300">
-                <CardContent className="pt-6">
-                  <ul className="list-disc pl-5 space-y-2 text-gray-700">
+              <Card className="border-gray-200 mt-4 shadow-sm">
+                <CardContent className="p-4 sm:p-6">
+                  <ul className="list-disc pl-5 space-y-2 text-gray-700 text-sm sm:text-base">
                     {product.benefits.map((benefit, index) => (
                       <motion.li
                         key={index}
@@ -540,23 +516,27 @@ export default function ProductPage() {
               </Card>
             </TabsContent>
             <TabsContent value="usage">
-              <Card className="border-gray-300">
-                <CardContent className="pt-6">
-                  <p className="text-gray-700">{product.usage}</p>
-                  <p className="text-gray-700 mt-2">{product.bestUse}</p>
+              <Card className="border-gray-200 mt-4 shadow-sm">
+                <CardContent className="p-4 sm:p-6">
+                  <p className="text-gray-700 text-sm sm:text-base">
+                    {product.usage}
+                  </p>
+                  <p className="text-gray-700 mt-2 text-sm sm:text-base">
+                    {product.bestUse}
+                  </p>
                 </CardContent>
               </Card>
             </TabsContent>
             <TabsContent value="faqs">
-              <Card className="border-gray-300">
-                <CardContent className="pt-6">
+              <Card className="border-gray-200 mt-4 shadow-sm">
+                <CardContent className="p-4 sm:p-6">
                   <Accordion type="single" collapsible>
                     {product.faqs.map((faq, index) => (
                       <AccordionItem key={index} value={`faq-${index}`}>
-                        <AccordionTrigger className="text-gray-900">
+                        <AccordionTrigger className="text-gray-900 text-sm sm:text-base">
                           {faq.question}
                         </AccordionTrigger>
-                        <AccordionContent className="text-gray-700">
+                        <AccordionContent className="text-gray-700 text-sm sm:text-base">
                           {faq.answer}
                         </AccordionContent>
                       </AccordionItem>
@@ -566,9 +546,9 @@ export default function ProductPage() {
               </Card>
             </TabsContent>
             <TabsContent value="reviews">
-              <Card className="border-gray-300">
-                <CardContent className="pt-6">
-                  <p className="text-gray-700">
+              <Card className="border-gray-200 mt-4 shadow-sm">
+                <CardContent className="p-4 sm:p-6">
+                  <p className="text-gray-700 text-sm sm:text-base">
                     No reviews yet. Be the first to share your experience with
                     the {product.name}!
                   </p>
@@ -580,34 +560,36 @@ export default function ProductPage() {
         </div>
 
         {/* Related Products */}
-        <div className="mt-12">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+        <div className="mt-8 sm:mt-10 lg:mt-12">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">
             You May Also Like
           </h2>
           <Carousel className="w-full">
-            <CarouselContent>
+            <CarouselContent className="-ml-2 sm:-ml-4">
               {relatedProducts.map((related) => (
                 <CarouselItem
                   key={related.id}
-                  className="md:basis-1/2 lg:basis-1/3"
+                  className="pl-2 sm:pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4"
                 >
-                  <Card className="border-gray-300">
-                    <CardContent className="p-4">
-                      <div className="relative w-full h-48 rounded-md overflow-hidden">
+                  <Card className="border-gray-200 shadow-sm">
+                    <CardContent className="p-3 sm:p-4">
+                      <div className="relative w-full h-40 sm:h-48 rounded-md overflow-hidden">
                         <Image
                           src={related.image}
                           alt={related.name}
-                          layout="fill"
-                          objectFit="cover"
+                          fill
+                          className="object-cover"
                         />
                       </div>
-                      <h3 className="mt-2 text-lg font-semibold text-gray-900">
+                      <h3 className="mt-2 text-base sm:text-lg font-semibold text-gray-900">
                         {related.name}
                       </h3>
-                      <p className="text-gray-600">₹{related.price}</p>
+                      <p className="text-gray-600 text-sm sm:text-base">
+                        ₹{related.price}
+                      </p>
                       <Button
                         variant="outline"
-                        className="mt-2 w-full border-gray-500 text-gray-600"
+                        className="mt-2 w-full border-gray-500 text-gray-600 text-sm sm:text-base"
                       >
                         View Product
                       </Button>
@@ -616,8 +598,6 @@ export default function ProductPage() {
                 </CarouselItem>
               ))}
             </CarouselContent>
-            {/* <CarouselPrevious className="bg-gray-500 text-white" />
-            <CarouselNext className="bg-gray-500 text-white" /> */}
           </Carousel>
         </div>
       </motion.div>
