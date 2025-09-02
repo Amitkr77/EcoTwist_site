@@ -82,180 +82,169 @@ export default function Header({ cartItemsCount = 0, onCartClick }) {
 
   return (
     <header
-      className={` bg-white backdrop-blur-md border-b transition-all duration-300 ${
-        hidden ? "-translate-y-full" : "translate-y-0"
-      } ${scrolled ? "shadow-lg" : "shadow-sm"}`}
-    >
-      <div className="container mx-auto px-6 md:px-8">
-        <div className="flex justify-between items-center">
-          {/* Logo */}
-          <Link href="/" aria-label="Homepage" className="flex items-center">
-            <img
-              src="/logo.png"
-              alt="Logo"
-              className="h-16 w-auto hover:scale-105 transition-transform"
-              loading="lazy"
-              decoding="async"
+  className={`bg-white backdrop-blur-md border-b transition-all duration-300 ${
+    hidden ? "-translate-y-full" : "translate-y-0"
+  } ${scrolled ? "shadow-lg" : "shadow-sm"} fixed top-0 left-0 right-0 z-50`}
+>
+  <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="flex justify-between items-center py-4">
+      {/* Logo */}
+      <Link href="/" aria-label="Homepage" className="flex items-center">
+        <img
+          src="/logo.png"
+          alt="Logo"
+          className="h-12 sm:h-14 lg:h-16 w-auto hover:scale-105 transition-transform"
+          loading="lazy"
+          decoding="async"
+        />
+      </Link>
+
+      {/* Desktop Nav */}
+      <nav className="hidden md:flex items-center space-x-6 lg:space-x-8 uppercase tracking-wide text-sm font-semibold text-gray-700">
+        {navItems.map((item) => (
+          <Link
+            key={item.path}
+            href={item.path}
+            className={`relative hover:text-forest transition-colors ${
+              isActive(item.path) ? "text-forest" : ""
+            }`}
+          >
+            {item.name}
+            <span
+              className={`absolute left-0 bottom-[-6px] h-[2px] bg-gradient-to-r from-forest to-forest-600 transition-all duration-300 ${
+                isActive(item.path) ? "w-full" : "w-0 group-hover:w-full"
+              }`}
             />
           </Link>
+        ))}
+      </nav>
 
-          {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center space-x-10 uppercase tracking-wide text-sm font-semibold text-gray-700">
-            {navItems.map((item) => (
-              <Link
-                key={item.path}
-                href={item.path}
-                className={`relative hover:text-forest transition-colors ${
-                  isActive(item.path) ? "text-forest" : ""
-                }`}
-              >
-                {item.name}
-                <span
-                  className={`absolute left-0 bottom-[-6px] h-[2px] bg-gradient-to-r from-forest to-forest-600 transition-all duration-300 ${
-                    isActive(item.path) ? "w-full" : "w-0 group-hover:w-full"
-                  }`}
-                />
-              </Link>
-            ))}
-          </nav>
+      {/* Actions */}
+      <div className="flex items-center gap-2 sm:gap-3 lg:gap-4">
+        <Sidebar />
 
-          {/* Actions */}
-          <div className="flex items-center gap-4">
-            <Sidebar />
-
-            {isAuthenticated ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="p-2 rounded-md hover:bg-gray-100"
-                  >
-                    <User className="h-5 w-5 text-gray-600" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-44">
-                  <DropdownMenuItem asChild>
-                    <Link href="/dashboard" className="w-full">
-                      Dashboard
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/wishlist" className="w-full">
-                      Wishlist
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={handleLogout}
-                    className="text-red-600"
-                  >
-                    Logout
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <Link href="/login">
-                <Button
-                  variant="ghost"
-                  className="p-2 rounded-md hover:bg-gray-100"
-                >
-                  <User className="h-5 w-5 text-gray-600" />
-                </Button>
-              </Link>
-            )}
-
-            <div className="border bg-gray-300 h-10"></div>
-
-            {/* Wishlist */}
-            {/* <Link href="/wishlist">
+        {isAuthenticated ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
-                size="sm"
-                className="p-2 hover:bg-gray-100"
+                className="p-2 rounded-md hover:bg-gray-100"
               >
-                <span className="text-red-500 text-lg">❤</span>
+                <User className="h-4 sm:h-5 w-4 sm:w-5 text-gray-600" />
               </Button>
-            </Link> */}
-
-            {/* Cart */}
-            <Link href="/cart">
-              <Button variant="outline" className="relative">
-                <ShoppingCart className="w-4 h-4 mr-2" />
-                Cart
-                {getTotalItems() > 0 && (
-                  <Badge className="absolute -top-2 -right-2 w-5 h-5 p-0 text-xs bg-green-500">
-                    {getTotalItems()}
-                  </Badge>
-                )}
-              </Button>
-            </Link>
-
-            {/* Mobile Menu Toggle */}
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-44">
+              <DropdownMenuItem asChild>
+                <Link href="/dashboard" className="w-full">
+                  Dashboard
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/wishlist" className="w-full">
+                  Wishlist
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={handleLogout}
+                className="text-red-600"
+              >
+                Logout
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : (
+          <Link href="/login">
             <Button
               variant="ghost"
-              size="sm"
-              className="md:hidden p-2"
-              onClick={() => setIsMenuOpen((prev) => !prev)}
-              aria-label={isMenuOpen ? "Close menu" : "Open menu"}
-              aria-expanded={isMenuOpen}
-              aria-controls="mobile-menu"
+              className="p-2 rounded-md hover:bg-gray-100 hidden lg-block"
             >
-              {isMenuOpen ? (
-                <X className="h-6 w-6 text-gray-600" />
-              ) : (
-                <Menu className="h-6 w-6 text-gray-600" />
-              )}
+              <User className="h-4 sm:h-5 w-4 sm:w-5 text-gray-600" />
             </Button>
-          </div>
-        </div>
+          </Link>
+        )}
 
-        {/* Mobile Nav */}
-        <nav
-          id="mobile-menu"
-          className={`md:hidden bg-white transition-max-height duration-300 overflow-hidden ${
-            isMenuOpen ? "max-h-[400px] py-6" : "max-h-0 py-0"
-          }`}
+        <div className="border bg-gray-300 h-8 sm:h-10 "></div>
+
+        {/* Cart */}
+        <Link href="/cart">
+          <Button variant="outline" className="relative text-xs sm:text-sm">
+            <ShoppingCart className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+            Cart
+            {getTotalItems() > 0 && (
+              <Badge className="absolute -top-2 -right-2 w-4 h-4 sm:w-5 sm:h-5 p-0 text-xs bg-green-500">
+                {getTotalItems()}
+              </Badge>
+            )}
+          </Button>
+        </Link>
+
+        {/* Mobile Menu Toggle */}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="md:hidden p-2"
+          onClick={() => setIsMenuOpen((prev) => !prev)}
+          aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+          aria-expanded={isMenuOpen}
+          aria-controls="mobile-menu"
         >
-          <div className="flex flex-col gap-4 px-6">
-            {navItems.map((item) => (
-              <Link
-                key={item.path}
-                href={item.path}
-                className={`text-lg font-medium py-2 rounded-md transition-colors ${
-                  isActive(item.path)
-                    ? "bg-forest/10 text-forest"
-                    : "text-gray-700 hover:text-forest hover:bg-gray-100"
-                }`}
-                onClick={() => setIsMenuOpen(false)}
-              >
-                {item.name}
-              </Link>
-            ))}
+          {isMenuOpen ? (
+            <X className="h-5 sm:h-6 w-5 sm:w-6 text-gray-600" />
+          ) : (
+            <Menu className="h-5 sm:h-6 w-5 sm:w-6 text-gray-600" />
+          )}
+        </Button>
+      </div>
+    </div>
+
+    {/* Mobile Nav */}
+    <nav
+      id="mobile-menu"
+      className={`md:hidden bg-blue-400/20 transition-all duration-300 overflow-hidden ${
+        isMenuOpen ? "h-full py-6" : "max-h-0 py-0"
+      }`}
+    >
+      <div className="flex flex-col gap-4 px-4 sm:px-6">
+        {navItems.map((item) => (
+          <Link
+            key={item.path}
+            href={item.path}
+            className={`text-base sm:text-lg font-medium py-2 rounded-md transition-colors ${
+              isActive(item.path)
+                ? "bg-forest/10 text-forest"
+                : "text-gray-700 hover:text-forest hover:bg-gray-100"
+            }`}
+            onClick={() => setIsMenuOpen(false)}
+          >
+            {item.name}
+          </Link>
+        ))}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="justify-start py-2 px-3 hover:bg-gray-100"
+          onClick={() => alert("Open search modal")}
+        >
+          <Search className="h-4 sm:h-5 w-4 sm:w-5 text-gray-600 mr-2" />
+          Search Products
+        </Button>
+        {!isAuthenticated && (
+          <Link href="/login">
             <Button
               variant="ghost"
               size="sm"
               className="justify-start py-2 px-3 hover:bg-gray-100"
-              onClick={() => alert("Open search modal")}
+              onClick={() => setIsMenuOpen(false)}
             >
-              <Search className="h-5 w-5 text-gray-600 mr-2" />
-              Search Products
+              <LogIn className="h-4 sm:h-5 w-4 sm:w-5 text-gray-600 mr-2" />
+              Sign In
             </Button>
-            {!isAuthenticated && (
-              <Link href="/login">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="justify-start py-2 px-3 hover:bg-gray-100"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  <LogIn className="h-5 w-5 text-gray-600 mr-2" />
-                  Sign In
-                </Button>
-              </Link>
-            )}
-          </div>
-        </nav>
+          </Link>
+        )}
       </div>
-    </header>
+    </nav>
+  </div>
+</header>
   );
 }
