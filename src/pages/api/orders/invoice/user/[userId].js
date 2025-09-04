@@ -1,6 +1,6 @@
 // pages/api/order/invoice/user/[userId].js
 
-import dbConnect from '@/lib/m';
+import dbConnect from '@/lib/mongodb';
 import Invoice from '@/models/Invoice';
 
 export default async function handler(req, res) {

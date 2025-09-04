@@ -1,6 +1,5 @@
 // pages/api/orders/[orderId]/status.js
 
-import adminMiddleware from '@/lib/adminMiddleware';
 import { verifyToken } from '@/lib/adminToken';
 import dbConnect from '@/lib/mongodb';
 import Order from '@/models/Order'; // Make sure your Order model is set up
@@ -16,10 +15,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    // ✅ Check if user is admin
-    const admin = await adminMiddleware(req, res);
-    if (!admin) return;
-
+   
     const decoded = verifyToken(req);
     if (!decoded) return res.status(401).json({ message: "Unauthorized" });
 
