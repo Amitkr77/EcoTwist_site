@@ -17,8 +17,8 @@ export default async function handler(req, res) {
 
   try {
     // ✅ Check if user is admin
-    // const admin = await adminMiddleware(req, res);
-    // if (!admin) return;
+    const admin = await adminMiddleware(req, res);
+    if (!admin) return;
 
     const decoded = verifyToken(req);
     if (!decoded) return res.status(401).json({ message: "Unauthorized" });
