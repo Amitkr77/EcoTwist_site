@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
+import axios from "axios";
 
 const CartContext = createContext(undefined);
 
@@ -17,87 +18,143 @@ export const CartProvider = ({ children }) => {
   const [orders, setOrders] = useState([]);
   const [isHydrated, setIsHydrated] = useState(false);
 
-  // Load persisted orders once
+  // Fetch cart items on initial load
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('orders');
-      if (stored) setOrders(JSON.parse(stored));
-      setIsHydrated(true);
-    }
+    const fetchCart = async () => {
+      try {
+        const response = await axios.get("/api/cart", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("user-token")}`,
+          },
+        });
+        setCartItems(response.data.cart.items);
+        setIsHydrated(true);
+      } catch (error) {
+        console.error("Error fetching cart:", error);
+        setIsHydrated(true);
+      }
+    };
+
+    fetchCart();
   }, []);
 
-  // Persist orders on change
+  // Fetch orders on initial load
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('orders', JSON.stringify(orders));
-    }
-  }, [orders]);
-
-  const addToCart = (product, quantity = 1) => {
-    setCartItems((prev) => {
-      const existingItem = prev.find((item) => item.product.id === product.id);
-      if (existingItem) {
-        return prev.map((item) =>
-          item.product.id === product.id
-            ? { ...item, quantity: item.quantity + quantity }
-            : item
-        );
+    const fetchOrders = async () => {
+      try {
+        const response = await axios.get("/api/orders", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("user-token")}`,
+          },
+        });
+        setOrders(response.data);
+      } catch (error) {
+        console.error("Error fetching orders:", error);
       }
-      return [...prev, { product, quantity }];
-    });
-  };
+    };
 
-  const removeFromCart = (productId) => {
-    setCartItems((prev) =>
-      prev.filter((item) => item.product.id !== productId)
-    );
-  };
+    fetchOrders();
+  }, []);
 
-  const updateQuantity = (productId, quantity) => {
-    if (quantity <= 0) {
-      removeFromCart(productId);
-      return;
+  // Add item to cart
+  const addToCart = async (productId, variantSku, quantity = 1) => {
+    try {
+      const response = await axios.post(
+        "/api/cart",
+        { productId, variantSku, quantity },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("user-token")}`,
+          },
+        }
+      );
+      setCartItems(response.data.cart.items);
+    } catch (error) {
+      console.error("Error adding item to cart:", error);
     }
-    setCartItems((prev) =>
-      prev.map((item) =>
-        item.product.id === productId ? { ...item, quantity } : item
-      )
-    );
   };
 
-  const clearCart = () => {
-    setCartItems([]);
+  // Remove item from cart
+  const removeFromCart = async (productId, variantSku) => {
+    try {
+      const response = await axios.delete(`/api/cart/${productId}/${variantSku}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("user-token")}`,
+        },
+      });
+      setCartItems(response.data.cart.items);
+    } catch (error) {
+      console.error("Error removing item from cart:", error);
+    }
   };
 
+  // Update item quantity in cart
+  const updateQuantity = async (productId, variantSku, quantity) => {
+    try {
+      const response = await axios.put(
+        "/api/cart",
+        { productId, variantSku, quantity },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("user-token")}`,
+          },
+        }
+      );
+      setCartItems(response.data.cart.items);
+    } catch (error) {
+      console.error("Error updating item quantity:", error);
+    }
+  };
+
+  // Clear cart
+  const clearCart = async () => {
+    try {
+      await axios.delete("/api/cart", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("user-token")}`,
+        },
+      });
+      setCartItems([]);
+    } catch (error) {
+      console.error("Error clearing cart:", error);
+    }
+  };
+
+  // Get total price
   const getTotalPrice = () => {
     return cartItems.reduce(
-      (total, item) => total + item.product.price * item.quantity,
+      (total, item) => total + item.price * item.quantity,
       0
     );
   };
 
+  // Get total items in cart
   const getTotalItems = () => {
     return cartItems.reduce((total, item) => total + item.quantity, 0);
   };
 
-  const placeOrder = (deliveryAddress, paymentMethod) => {
-    const orderId = `ORD-${Date.now()}`;
-    const newOrder = {
-      id: orderId,
-      items: [...cartItems],
-      totalAmount: getTotalPrice(),
-      deliveryAddress,
-      paymentMethod,
-      status: "pending",
-      orderDate: new Date().toISOString(),
-      estimatedDelivery: new Date(
-        Date.now() + 7 * 24 * 60 * 60 * 1000
-      ).toISOString(),
-    };
-
-    setOrders((prev) => [...prev, newOrder]);
-    clearCart();
-    return orderId;
+  // Place order
+  const placeOrder = async (deliveryAddress, paymentMethod) => {
+    try {
+      const response = await axios.post(
+        "/api/orders",
+        {
+          products: cartItems,
+          deliveryAddress,
+          paymentMethod,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("user-token")}`,
+          },
+        }
+      );
+      setOrders((prevOrders) => [...prevOrders, response.data.orderId]);
+      clearCart();
+      return response.data.orderId;
+    } catch (error) {
+      console.error("Error placing order:", error);
+    }
   };
 
   return (
