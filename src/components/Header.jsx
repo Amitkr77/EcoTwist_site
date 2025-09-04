@@ -157,7 +157,7 @@ export default function Header({ cartItemsCount = 0, onCartClick }) {
           <Link href="/login">
             <Button
               variant="ghost"
-              className="p-2 rounded-md hover:bg-gray-100 hidden lg-block"
+              className="p-2 rounded-md hover:bg-gray-100 hidden lg:block"
             >
               <User className="h-4 sm:h-5 w-4 sm:w-5 text-gray-600" />
             </Button>
