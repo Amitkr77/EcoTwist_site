@@ -3,20 +3,14 @@ import bcrypt from 'bcryptjs';
 
 const { Schema } = mongoose;
 
-const addressSchema = new Schema({
-  street: { type: String, trim: true, maxlength: [100, 'Street cannot exceed 100 characters'] },
-  city: { type: String, trim: true, maxlength: [50, 'City cannot exceed 50 characters'] },
-  state: { type: String, trim: true, maxlength: [50, 'State cannot exceed 50 characters'] },
-  country: { type: String, trim: true, maxlength: [50, 'Country cannot exceed 50 characters'] },
-  postalCode: { type: String, trim: true, match: [/^\d{5,6}$/, 'Invalid postal code format'] },
-  isDefault: { type: Boolean, default: false },
-}, { _id: false });
-
-const cartItemSchema = new Schema({
-  product: { type: Schema.Types.ObjectId, ref: 'Product', required: true },
-  variant: { type: Schema.Types.ObjectId, ref: 'Variant' },
-  quantity: { type: Number, min: 1, max: 100, default: 1 },
-}, { _id: false });
+// const addressSchema = new Schema({
+//   street: { type: String, trim: true, maxlength: [100, 'Street cannot exceed 100 characters'] },
+//   city: { type: String, trim: true, maxlength: [50, 'City cannot exceed 50 characters'] },
+//   state: { type: String, trim: true, maxlength: [50, 'State cannot exceed 50 characters'] },
+//   country: { type: String, trim: true, maxlength: [50, 'Country cannot exceed 50 characters'] },
+//   postalCode: { type: String, trim: true, match: [/^\d{5,6}$/, 'Invalid postal code format'] },
+//   isDefault: { type: Boolean, default: false },
+// }, { _id: false });
 
 const userSchema = new Schema({
   profilePicture: {
@@ -59,19 +53,23 @@ const userSchema = new Schema({
     index: true,
     required: true,
   },
-  address: [addressSchema],
+  // address: [addressSchema],
   phone: {
     type: String,
     trim: true,
     match: [/^\+?[\d\s-]{10,15}$/, 'Please enter a valid phone number'],
     sparse: true,
   },
-  wishlist: [{
-    type: Schema.Types.ObjectId,
-    ref: 'Product',
-    index: true,
-  }],
-  cart: [cartItemSchema],
+  // wishlist: [{
+  //   type: Schema.Types.ObjectId,
+  //   ref: 'Product',
+  //   index: true,
+  // }],
+  // cart: [{
+  //   type: Schema.Types.ObjectId,
+  //   ref: 'Product'
+
+  // }],
   createdAt: {
     type: Date,
     default: Date.now,
@@ -110,6 +108,27 @@ userSchema.virtual('fullName').get(function () {
   return `${this.firstName} ${this.lastName || ''}`.trim();
 });
 
+userSchema.virtual('wishlist', {
+  ref: 'Wishlist',
+  localField: '_id',
+  foreignField: 'userId',
+  justOne: true,
+});
+
+userSchema.virtual('cart', {
+  ref: 'Cart',
+  localField: '_id',
+  foreignField: 'userId',
+  justOne: true, // assuming 1 cart per user
+});
+
+userSchema.virtual('address', {
+  ref: 'Address',
+  localField: '_id',
+  foreignField: 'userId',
+});
+
+
 // // Middleware
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
@@ -145,3 +164,4 @@ userSchema.statics.updateProfilePicture = async function (userId, file) {
 const User = mongoose.models.User || mongoose.model('User', userSchema);
 
 export default User;
+

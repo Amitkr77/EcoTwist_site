@@ -22,8 +22,8 @@ const CartItemSchema = new Schema({
     ref: 'Product',
     required: true,
   },
-  name: String, // optional, useful for snapshotting at order time
-  price: Number,
+  name: { type: String, required: true }, // snapshot name
+  price: { type: Number, required: true, min: 0 }, // snapshot price
   quantity: {
     type: Number,
     required: true,
@@ -44,13 +44,20 @@ const OrderSchema = new Schema({
     ref: 'User',
     required: true,
   },
-  items: [CartItemSchema],
+  items: {
+    type: [CartItemSchema],
+    required: true,
+    validate: [arr => arr.length > 0, 'Order must have at least one item'],
+  },
   totalAmount: {
     type: Number,
     required: true,
     min: 0,
   },
-  deliveryAddress: AddressSchema,
+  deliveryAddress: {
+    type: AddressSchema,
+    required: true
+  },
   paymentMethod: {
     type: String,
     enum: ['cod', 'online'],
@@ -69,6 +76,6 @@ const OrderSchema = new Schema({
     type: Date,
     default: () => new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
   },
-});
+}, { timestamps: true });
 
 export default mongoose.models.Order || mongoose.model('Order', OrderSchema);

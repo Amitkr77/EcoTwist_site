@@ -1,5 +1,5 @@
 "use client";
-import React,{useState} from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Card,
@@ -14,7 +14,7 @@ import { ShoppingCart } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext.js";
-import { Star ,ChevronLeft,ChevronRight  } from "lucide-react";
+import { Star, ChevronLeft, ChevronRight } from "lucide-react";
 
 const ProductCard = ({ product }) => {
   const router = useRouter();
@@ -22,7 +22,7 @@ const ProductCard = ({ product }) => {
   const { toast } = useToast();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  // const { isLoggedIn } = useAuth();
+  const { isLoggedIn } = useAuth();
 
   const images =
     Array.isArray(product.images) && product.images.length > 0
@@ -41,21 +41,21 @@ const ProductCard = ({ product }) => {
 
   const handleAddToCart = (e) => {
     e.stopPropagation();
-    // if (!isLoggedIn) {
-    //   const shouldLogin = window.confirm(
-    //     "You need to be logged in to add items to the cart. Do you want to login now?"
-    //   );
-    //   if (shouldLogin) {
-    //     router.push("/login");
-    //   }
-    //   return;
-    // }
+    if (!isLoggedIn) {
+      const shouldLogin = window.confirm(
+        "You need to be logged in to add items to the cart. Do you want to login now?"
+      );
+      if (shouldLogin) {
+        router.push("/login");
+      }
+      return;
+    }
 
     addToCart(product);
-    toast({
-      title: "Added to Cart",
-      description: `${product.name} has been added to your cart.`,
-    });
+    // toast({
+    //   title: "Added to Cart",
+    //   description: `${product.name} has been added to your cart.`,
+    // });
   };
 
   const isOutOfStock = product.stock === 0;
@@ -63,7 +63,6 @@ const ProductCard = ({ product }) => {
   const handleCardClick = () => {
     router.push(`/product-info/${product._id}/`);
   };
-
   return (
     <div onClick={handleCardClick}>
       <Card className="h-full flex flex-col">
