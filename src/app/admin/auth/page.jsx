@@ -49,7 +49,7 @@ export default function page() {
     setErrorMessage('');
 
     try {
-      const response = await fetch('admin/auth/login', {
+      const response = await fetch('/api/admin/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -64,7 +64,7 @@ export default function page() {
       }
 
       // Login successful, cookie is set — just redirect
-      router.push('/admin/dashboard');
+      router.push('/admin');
     } catch (error) {
       console.error('Login error:', error);
       setErrorMessage('Something went wrong. Please try again later.');
