@@ -10,13 +10,11 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user-token');
-    console.log(storedUser);
 
     try {
       if (storedUser && storedUser !== 'undefined') {
         // Decode the JWT to extract the payload
         const decodedUser = jwtDecode(storedUser);
-        console.log(decodedUser);
 
         setUser(decodedUser);  // Set user state with decoded information
       }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -36,6 +36,8 @@ import {
 } from "@/components/ui/carousel";
 import { Skeleton } from "@/components/ui/skeleton";
 import WriteReviewDialog from "@/components/WriteReviewDialog";
+import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Mock related products data
 const relatedProducts = [
@@ -70,8 +72,10 @@ export default function ProductPage() {
   const [selectedImage, setSelectedImage] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
-  const [isZoomed, setIsZoomed] = useState(false);
+  // const [isZoomed, setIsZoomed] = useState(false);
   const { toast } = useToast();
+  const { addToCart } = useCart();
+  const { isLoggedIn } = useAuth();
 
   useEffect(() => {
     if (product) {
@@ -112,6 +116,30 @@ export default function ProductPage() {
       </div>
     );
   }
+
+  const handleAddToCart = (e) => {
+    e.stopPropagation();
+    if (!isLoggedIn) {
+      const shouldLogin = window.confirm(
+        "You need to be logged in to add items to the cart. Do you want to login now?"
+      );
+      if (shouldLogin) {
+        router.push("/login");
+      }
+      return;
+    }
+
+    const productId = product._id;
+    const variantSku = selectedVariant.sku;
+    const quantity = 1; // Default quantity to 1, can be customized
+
+    // Pass the required data to addToCart
+    addToCart(productId, variantSku, quantity);
+    // toast({
+    //   title: "Added to Cart",
+    //   description: `${product.name} has been added to your cart.`,
+    // });
+  };
 
   const getSelectedVariant = () => {
     const isCapacityProduct = product.options.some(
@@ -164,7 +192,6 @@ export default function ProductPage() {
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-28    min-h-screen">
-
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -173,7 +200,7 @@ export default function ProductPage() {
       >
         {/* Hero Section */}
         <div className=" rounded-xl p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8 border border-gray-200 shadow-md flex flex-col sm:flex-row justify-between items-start sm:items-baseline gap-4 sm:gap-0">
-          <div >
+          <div>
             <h1 className="text-2xl sm:text-3xl md:text-7xl lg:text-5xl font-bold text-gray-900 mb-1 sm:mb-2">
               {product.name}
             </h1>
@@ -206,7 +233,7 @@ export default function ProductPage() {
               className="relative w-full h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px] rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white"
             >
               <Image
-                src={selectedImage}
+                src={selectedImage }
                 alt={product.name}
                 fill
                 className="object-contain transition-transform duration-300"
@@ -397,6 +424,7 @@ export default function ProductPage() {
                     className="flex-1"
                   >
                     <Button
+                    onClick={handleAddToCart}
                       className="w-full bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 cursor-pointer text-white"
                       disabled={!isAvailable}
                       size="lg"

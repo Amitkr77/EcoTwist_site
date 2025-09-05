@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,40 +7,72 @@ import { Separator } from "@/components/ui/separator";
 import { CheckCircle, Package, CreditCard, MapPin } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { useToast } from "@/hooks/use-toast";
+import axios from "axios";
 
-const page = () => {
+// Main Component
+const CheckoutPage = () => {
   const router = useRouter();
   const { placeOrder } = useCart();
   const { toast } = useToast();
 
-  // In Next.js, you cannot pass location.state directly.
-  // You need to pass data via query params, context, or global state.
-  // Here, for demo, I assume you stored order data in localStorage or context.
-  // If you want to pass via query string, parse router.query accordingly.
+  const [checkoutData, setCheckoutData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [productDetailsMap, setProductDetailsMap] = useState({});
 
-  // For demo, let's assume order details are saved in sessionStorage under 'checkoutData':
-  const [checkoutData, setCheckoutData] = React.useState(null);
-
+  // Step 1: Load checkout data from sessionStorage
   useEffect(() => {
     const dataStr = sessionStorage.getItem("checkoutData");
-    if (dataStr) {
-      setCheckoutData(JSON.parse(dataStr));
-    } else {
-      // No data found, redirect to cart page
+    if (!dataStr) {
       router.replace("/cart");
+      return;
+    }
+
+    try {
+      const parsedData = JSON.parse(dataStr);
+      setCheckoutData(parsedData);
+    } catch (error) {
+      console.error("Invalid checkoutData in sessionStorage.");
+      router.replace("/cart");
+    } finally {
+      setLoading(false);
     }
   }, [router]);
 
-  if (!checkoutData) {
-    // Or show a loading spinner here if you want
-    return null;
-  }
+  // Step 2: Fetch up-to-date product info for each item
+  useEffect(() => {
+    const fetchProducts = async () => {
+      if (!checkoutData || !checkoutData.cartItems?.length) return;
 
-  const { deliveryAddress, paymentMethod, cartItems, totalAmount } =
-    checkoutData;
+      const token = localStorage.getItem("user-token");
+      if (!token) return;
+
+      const fetchedProducts = {};
+
+      await Promise.all(
+        checkoutData.cartItems.map(async (item) => {
+          try {
+            const res = await axios.get(`/api/products/${item.productId}`, {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+
+            fetchedProducts[item.productId] = res.data.data;
+          } catch (error) {
+            console.error(`Failed to fetch product ${item.productId}`, error);
+          }
+        })
+      );
+
+      setProductDetailsMap(fetchedProducts);
+    };
+
+    fetchProducts();
+  }, [checkoutData]);
 
   const handlePlaceOrder = () => {
-    const orderId = placeOrder(deliveryAddress, paymentMethod);
+    const orderId = placeOrder(
+      checkoutData.deliveryAddress,
+      checkoutData.paymentMethod
+    );
 
     toast({
       title: "Order Placed Successfully!",
@@ -51,10 +83,14 @@ const page = () => {
     router.push("/orders");
   };
 
+  if (loading || !checkoutData) return null;
+
+  const { deliveryAddress, paymentMethod, cartItems, totalAmount } =
+    checkoutData;
+
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-6 py-4 ">
+      <header className="bg-white border-b border-gray-200 px-6 py-4">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900">Checkout</h1>
           <p className="text-sm text-gray-500">Review your order details</p>
@@ -63,7 +99,7 @@ const page = () => {
 
       <div className="p-6">
         <div className="max-w-4xl mx-auto grid gap-6 lg:grid-cols-3">
-          {/* Order Details */}
+          {/* Left: Details */}
           <div className="lg:col-span-2 space-y-6">
             {/* Delivery Address */}
             <Card>
@@ -122,35 +158,42 @@ const page = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {cartItems.map((item, index) => (
-                    <div key={item.product.id}>
-                      <div className="flex items-center gap-4">
-                        <img
-                          src={item.product.image || "/placeholder.svg"}
-                          alt={item.product.name}
-                          className="w-12 h-12 object-cover rounded"
-                        />
-                        <div className="flex-1">
-                          <h3 className="font-medium">{item.product.name}</h3>
-                          <p className="text-sm text-gray-500">
-                            ${item.product.price} × {item.quantity}
+                  {cartItems.map((item, index) => {
+                    const product = productDetailsMap[item.productId];
+
+                    if (!product) return null;
+
+                    return (
+                      <div key={product.id}>
+                        <div className="flex items-center gap-4">
+                          <img
+                            src={product.images[0].url || "/placeholder.svg"}
+                            alt={product.name}
+                            className="w-12 h-12 object-cover rounded"
+                          />
+                          <div className="flex-1">
+                            <h3 className="font-medium">{product.name}</h3>
+                            <p className="text-sm text-gray-500">
+                              ${product.price} × {item.quantity}
+                            </p>
+                          </div>
+                          <p className="font-medium">
+                            ₹{(product.variants[0].price * item.quantity).toFixed(2)}
                           </p>
                         </div>
-                        <p className="font-medium">
-                          ${(item.product.price * item.quantity).toFixed(2)}
-                        </p>
+                        {index < cartItems.length - 1 && (
+                          <Separator className="mt-4" />
+                        )}
                       </div>
-                      {index < cartItems.length - 1 && (
-                        <Separator className="mt-4" />
-                      )}
-                    </div>
-                  ))}
+                      
+                    );
+                  })}
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Order Summary */}
+          {/* Right: Summary */}
           <div>
             <Card>
               <CardHeader>
@@ -202,4 +245,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default CheckoutPage;

@@ -27,7 +27,7 @@ export default function Header({ cartItemsCount = 0, onCartClick }) {
   // Check token on mount
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("user-token");
       setIsAuthenticated(!!token);
     }
   }, []);
@@ -87,13 +87,13 @@ export default function Header({ cartItemsCount = 0, onCartClick }) {
   } ${scrolled ? "shadow-lg" : "shadow-sm"} fixed top-0 left-0 right-0 z-50`}
 >
   <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-    <div className="flex justify-between items-center py-4">
+    <div className="flex justify-between items-center ">
       {/* Logo */}
       <Link href="/" aria-label="Homepage" className="flex items-center">
         <img
           src="/logo.png"
           alt="Logo"
-          className="h-12 sm:h-14 lg:h-16 w-auto hover:scale-105 transition-transform"
+          className="h-12 sm:h-14 lg:h-18 w-auto "
           loading="lazy"
           decoding="async"
         />

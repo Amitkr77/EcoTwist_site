@@ -17,6 +17,7 @@ export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
   const [orders, setOrders] = useState([]);
   const [isHydrated, setIsHydrated] = useState(false);
+  const [user, setUser] = useState()
 
   // Fetch cart items on initial load
   useEffect(() => {
@@ -37,6 +38,24 @@ export const CartProvider = ({ children }) => {
 
     fetchCart();
   }, []);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await axios.get('/api/cart', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("user-token")}`
+          }
+        })
+        setUser(response.data.cart.userId)
+        setIsHydrated(true)
+      } catch (error) {
+        console.error("Error fetching user:", error);
+        setIsHydrated(true);
+      }
+    }
+    fetchUser();
+  }, [])
 
   // Fetch orders on initial load
   useEffect(() => {
@@ -160,6 +179,7 @@ export const CartProvider = ({ children }) => {
   return (
     <CartContext.Provider
       value={{
+        user,
         cartItems,
         orders,
         isHydrated,
