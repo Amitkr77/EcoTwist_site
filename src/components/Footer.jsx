@@ -96,7 +96,7 @@ export default function Footer() {
             </h3>
             <ul className="space-y-3">
               {[
-                { name: "Shop", path: "/shop" },
+                
                 { name: "About Us", path: "/about" },
                 { name: "Blog", path: "/blog" },
                 { name: "Contact", path: "/contact" },
@@ -147,9 +147,9 @@ export default function Footer() {
             <ul className="space-y-3">
               {[
                 { name: "Return Policy", path: "/return-policy" },
-                { name: "Shipping Info", path: "/shipping" },
+                { name: "Terms of Service", path: "/termsOfService" },
                 { name: "FAQ", path: "/faq" },
-                { name: "Privacy Policy", path: "/privacy" },
+                { name: "Privacy Policy", path: "/privacy-policy" },
               ].map((item) => (
                 <li key={item.name}>
                   <Link
