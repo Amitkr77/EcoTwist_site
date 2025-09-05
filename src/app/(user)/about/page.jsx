@@ -185,19 +185,19 @@ export default function page() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12">
             {[
               {
-                name: "Aanya Verma",
-                role: "Founder & Creative Head",
-                initials: "AV",
-              },
-              {
-                name: "Rahul Singh",
-                role: "Sustainability Lead",
+                name: "Richa Sinha",
+                role: "Founder & CEO",
                 initials: "RS",
               },
               {
-                name: "Meera Joshi",
-                role: "Community Partnerships",
-                initials: "MJ",
+                name: "Amit Kumar",
+                role: "CTO",
+                initials: "AK",
+              },
+              {
+                name: "Aditya Kumar",
+                role: "Social Media Manager",
+                initials: "AK",
               },
             ].map((member, idx) => (
               <div key={idx} className="text-center space-y-2">

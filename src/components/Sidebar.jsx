@@ -52,7 +52,7 @@ export default function Sidebar() {
     <Sheet>
       <SheetTrigger
         aria-label="Open search panel"
-        className="p-2 rounded-md sm:flex items-center justify-center hover:bg-gray-100 transition-colors"
+        className="p-2 rounded-md sm:flex items-center justify-center hover:bg-gray-100 transition-colors "
       >
         <Search className="h-5 w-5 text-gray-600 " />
       </SheetTrigger>
