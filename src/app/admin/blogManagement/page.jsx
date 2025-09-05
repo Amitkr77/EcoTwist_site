@@ -8,119 +8,48 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
+  AlertDialog, AlertDialogAction, AlertDialogCancel,
+  AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger, AlertDialogDescription
 } from "@/components/ui/alert-dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
-import {
-  Edit,
-  Trash2,
-  Eye,
-  Search,
-  Plus,
-  Upload,
-  Save,
-  FileText,
-  ImageOff,
-  Image as ImageIcon,
-} from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Edit, Trash2, Eye, Search, Save, FileText, ImageOff, Image as ImageIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const page = () => {
   const [posts, setPosts] = useState([]);
   const [currentPost, setCurrentPost] = useState({
-    title: "",
-    slug: "",
-    content: "",
-    headerImage: "",
-    tags: [],
-    status: "draft",
+    title: "", slug: "", excerpt: "", content: "", headerImage: "", tags: [], status: "draft", author: "", readTime: ""
   });
   const [isEditing, setIsEditing] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [tagInput, setTagInput] = useState("");
   const [previewPost, setPreviewPost] = useState(null);
-  const [showHeaderPreview, setShowHeaderPreview] = useState(true);
+  const [showHeaderPreview, setShowHeaderPreview] = useState(false);
   const { toast } = useToast();
 
-  const [prefersDark, setPrefersDark] = useState(false);
   useEffect(() => {
-    setPrefersDark(window.matchMedia("(prefers-color-scheme: dark)").matches);
+    loadPosts();
   }, []);
 
-  useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem("posts") || "[]");
-    setPosts(stored.length ? stored : mockData());
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem("posts", JSON.stringify(posts));
-  }, [posts]);
-
-  const mockData = () => [
-    {
-      id: "1",
-      title: "Sustainable Gifting: A Complete Guide",
-      slug: "sustainable-gifting-guide",
-      content: "Discover eco-friendly choices for corporate gifts...",
-      headerImage:
-        "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=800",
-      tags: ["sustainability", "corporate", "eco-friendly"],
-      status: "published",
-      createdAt: "2024-01-15",
-      updatedAt: "2024-01-15",
-    },
-    {
-      id: "2",
-      title: "The Impact of Bamboo Products",
-      slug: "bamboo-products-impact",
-      content: "Explore the benefits of bamboo products...",
-      headerImage:
-        "https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?w=800",
-      tags: ["bamboo", "environment", "materials"],
-      status: "draft",
-      createdAt: "2024-01-10",
-      updatedAt: "2024-01-12",
-    },
-  ];
+  const loadPosts = async () => {
+    try {
+      const res = await fetch("/api/blogs");
+      const data = await res.json();
+      setPosts(data);
+    } catch (err) {
+      console.error("Failed to fetch posts", err);
+    }
+  };
 
   const generateSlug = (title) =>
-    title
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)/g, "");
+    title.toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/(^-|-$)/g, "");
 
   const handleTitleChange = (title) => {
     setCurrentPost((prev) => ({
@@ -132,104 +61,132 @@ const page = () => {
 
   const handleTagsChange = (tagsString) => {
     setTagInput(tagsString);
-    const tags = tagsString
-      .split(",")
-      .map((tag) => tag.trim())
-      .filter(Boolean);
+    const tags = tagsString.split(",").map((t) => t.trim()).filter(Boolean);
     setCurrentPost((prev) => ({ ...prev, tags }));
   };
 
-  const handleSave = (status) => {
-    if (!currentPost.title || !currentPost.content) {
-      toast({
-        title: "Error",
-        description: "Title and content are required",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const newPost = {
-      ...currentPost,
-      id: isEditing ? currentPost.id : Date.now().toString(),
-      slug: currentPost.slug || generateSlug(currentPost.title),
-      status,
-      createdAt: isEditing
-        ? currentPost.createdAt
-        : new Date().toISOString().split("T")[0],
-      updatedAt: new Date().toISOString().split("T")[0],
-    };
-
-    setPosts((prev) =>
-      isEditing
-        ? prev.map((p) => (p.id === newPost.id ? newPost : p))
-        : [newPost, ...prev]
-    );
-
-    toast({
-      title: "Success",
-      description: `Post ${
-        status === "published" ? "published" : "saved as draft"
-      } successfully.`,
+ const handleSave = async (status) => {
+  if (!currentPost.title || !currentPost.content)
+    return toast({
+      title: "Error",
+      description: "Title and content are required",
+      variant: "destructive",
     });
 
+  const newPost = {
+    ...currentPost,
+    status,
+    slug: currentPost.slug || generateSlug(currentPost.title),
+  };
+
+
+  try {
+    const res = await fetch("/api/blogs", {
+      method: isEditing ? "PUT" : "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newPost),
+    });
+
+    const result = await res.json();  // log result
+
+    console.log("Save response:", res.status, result);
+
+    if (!res.ok) throw new Error(result.message || "Failed to save post");
+
+    await loadPosts();
+    toast({
+      title: "Success",
+      description: `Post ${status === "published" ? "published" : "saved as draft"} successfully`,
+    });
     resetForm();
-  };
+  } catch (err) {
+    console.error("Save error:", err);
+    toast({ title: "Error", description: err.message, variant: "destructive" });
+  }
+};
 
-  const handleEdit = (post) => {
-    setCurrentPost(post);
-    setTagInput(post.tags.join(", "));
-    setIsEditing(true);
-  };
 
-  const handleDelete = (id) => {
-    setPosts((prev) => prev.filter((p) => p.id !== id));
-    toast({ title: "Deleted", description: "Post removed successfully." });
+const handleEdit = (post) => {
+  setCurrentPost(post);
+  setTagInput(Array.isArray(post.tags) ? post.tags.join(", ") : "");
+  setIsEditing(true);
+};
+
+
+  const handleDelete = async (id) => {
+    try {
+      console.log("ID is", id);
+      await fetch(`/api/blogs/${id}`, { method: "DELETE" });
+      toast({ title: "Deleted", description: "Post removed successfully." });
+      loadPosts();
+    } catch {
+      toast({ title: "Error", description: "Failed to delete post", variant: "destructive" });
+    }
   };
 
   const resetForm = () => {
-    setCurrentPost({
-      title: "",
-      slug: "",
-      content: "",
-      headerImage: "",
-      tags: [],
-      status: "draft",
-    });
+    setCurrentPost({ title: "", slug: "", excerpt: "", content: "", headerImage: "", tags: [], status: "draft", author: "", readtime: "" });
     setTagInput("");
     setIsEditing(false);
   };
 
+  const handleImageUpload = async (e) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  const formData = new FormData();
+  formData.append("file", file);
+  const token = localStorage.getItem("adminToken");
+  try {
+    const res = await fetch("/api/blogs/uploadImage", {
+      method: "POST",
+      body: formData,
+      credentials: "include",
+      headers: {
+      Authorization: `Bearer ${token}`,
+      },
+    });
+
+    
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || "Upload failed");
+    
+    setCurrentPost((prev) => ({
+      ...prev,
+      headerImage: data.url,
+    }));
+    toast({ title: "Uploaded", description: "Image uploaded successfully." });
+  } catch (err) {
+    console.error("Image upload error:", err);
+    toast({
+      title: "Upload Error",
+      description: err.message || "Image upload failed",
+      variant: "destructive",
+    });
+  }
+};
+
+
+
   const filteredPosts = posts.filter((post) => {
     const term = searchTerm.toLowerCase();
-    return (
-      (statusFilter === "all" || post.status === statusFilter) &&
-      (post.title.toLowerCase().includes(term) ||
-        post.slug.toLowerCase().includes(term))
-    );
+    return (statusFilter === "all" || post.status === statusFilter) && (post.title.toLowerCase().includes(term) || post.slug.toLowerCase().includes(term));
   });
 
   const highlight = (text) => {
     if (!searchTerm) return text;
     const regex = new RegExp(`(${searchTerm})`, "gi");
-    return (
-      <span
-        dangerouslySetInnerHTML={{
-          __html: text.replace(regex, "<mark>$1</mark>"),
-        }}
-      />
-    );
+    return <span dangerouslySetInnerHTML={{ __html: text.replace(regex, "<mark>$1</mark>") }} />;
   };
 
   return (
-    <div className="min-h-screen p-6 bg-white lg:p-12 ">
+    <div className="min-h-screen p-6 bg-white lg:p-12">
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="text-center">
           <h1 className="text-4xl font-bold">Blog Manager</h1>
           <p className="text-gray-500">Manage your blog posts with ease</p>
         </div>
 
-        {/* Form & List */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Form */}
           <Card>
@@ -256,36 +213,42 @@ const page = () => {
                 placeholder="Enter slug"
               />
 
-              <Label>Header Image URL</Label>
-              <div className="flex gap-2">
-                <Input
-                  value={currentPost.headerImage}
-                  onChange={(e) =>
-                    setCurrentPost((p) => ({
-                      ...p,
-                      headerImage: e.target.value,
-                    }))
-                  }
-                />
-                <Button
-                  onClick={() => setShowHeaderPreview((p) => !p)}
-                  variant="outline"
-                  size="icon"
-                >
-                  {showHeaderPreview ? (
-                    <ImageOff className="w-4 h-4" />
-                  ) : (
-                    <ImageIcon className="w-4 h-4" />
-                  )}
-                </Button>
-              </div>
+              <Label>Excerpt</Label>
+              <Input
+                value={currentPost.excerpt}
+                onChange={(e) =>
+                  setCurrentPost((p) => ({ ...p, excerpt: e.target.value }))
+                }
+                placeholder="Enter excerpt"
+              />
+
+              
+              <Label>Header Image</Label>
+              <Input type="file" accept="image/*" onChange={handleImageUpload} />
+              <Button
+                onClick={() => setShowHeaderPreview((p) => !p)}
+                variant="outline"
+                size="icon"
+              >
+                {showHeaderPreview ? <ImageOff className="w-4 h-4" /> : <ImageIcon className="w-4 h-4" />}
+              </Button>
               {showHeaderPreview && currentPost.headerImage && (
-                <img
-                  src={currentPost.headerImage}
-                  className="w-full h-32 object-cover rounded border"
-                  alt="Header preview"
-                />
-              )}
+              <img
+               src={currentPost.headerImage}
+               alt="Header Preview"
+               className="w-full h-32 object-cover mt-2 rounded border"
+              />
+            )}
+
+
+            {showHeaderPreview && currentPost.headerImage && (
+              <img
+               src={currentPost.headerImage}
+               alt="Header preview"
+               className="w-full h-32 object-cover rounded border mt-2"
+              />
+            )}
+
 
               <Label>Content *</Label>
               <Textarea
@@ -305,12 +268,31 @@ const page = () => {
                 onChange={(e) => handleTagsChange(e.target.value)}
               />
               <div className="flex flex-wrap gap-1 mt-1">
-                {currentPost.tags.map((tag, i) => (
+                {Array.isArray(currentPost.tags) && currentPost.tags.map((tag, i) => (
                   <Badge key={i} variant="secondary">
                     {tag}
                   </Badge>
-                ))}
+                   ))}
+
               </div>
+
+               <Label>Author</Label>
+              <Input
+                value={currentPost.author}
+                onChange={(e) =>
+                  setCurrentPost((p) => ({ ...p, author: e.target.value }))
+                }
+                placeholder="Author name"
+              />
+
+              <Label>Read time</Label>
+              <Input
+                value={currentPost.readTime}
+                onChange={(e) =>
+                  setCurrentPost((p) => ({ ...p, readTime: e.target.value }))
+                }
+                placeholder="(e.g. 5 min read)"
+              />
 
               <div className="flex gap-2 pt-4">
                 <Button
@@ -389,12 +371,12 @@ const page = () => {
                 </TableHeader>
                 <TableBody>
                   {filteredPosts.map((post) => (
-                    <TableRow key={post.id}>
+                    <TableRow key={post.slug}>
                       <TableCell>
                         <div className="font-medium">
                           {highlight(post.title)}
                         </div>
-                        <div className="text-sm text-gray-500">{post.slug}</div>
+                        <div className="text-sm text-gray-500">{post.id}</div>
                       </TableCell>
                       <TableCell>
                         <Badge>{post.status}</Badge>
@@ -436,7 +418,7 @@ const page = () => {
                             <AlertDialogFooter>
                               <AlertDialogCancel>Cancel</AlertDialogCancel>
                               <AlertDialogAction
-                                onClick={() => handleDelete(post.id)}
+                                onClick={() => handleDelete(post._id)}
                               >
                                 Delete
                               </AlertDialogAction>
@@ -457,33 +439,19 @@ const page = () => {
           </Card>
         </div>
 
-        {/* Preview Dialog */}
         <Dialog open={!!previewPost} onOpenChange={() => setPreviewPost(null)}>
           <DialogContent className="max-w-4xl max-h-[80vh] overflow-auto">
             {previewPost && (
               <>
                 <DialogHeader>
                   <DialogTitle>{previewPost.title}</DialogTitle>
-                  <DialogDescription className="flex items-center gap-3 text-sm text-gray-600">
-                    <Badge>{previewPost.status}</Badge>
-                    Created: {previewPost.createdAt}
-                  </DialogDescription>
                 </DialogHeader>
-                {previewPost.headerImage && (
-                  <img
-                    src={previewPost.headerImage}
-                    className="rounded w-full h-64 object-cover"
-                  />
-                )}
-                <div className="prose prose-sm max-w-none whitespace-pre-wrap mt-4">
-                  {previewPost.content}
-                </div>
+                {previewPost.headerImage && <img src={previewPost.headerImage} className="rounded w-full h-64 object-cover" />}
+                <div className="prose prose-sm max-w-none whitespace-pre-wrap mt-4">{previewPost.content}</div>
                 <div className="flex flex-wrap gap-1 mt-4">
-                  {previewPost.tags.map((tag, i) => (
-                    <Badge key={i} variant="outline">
-                      {tag}
-                    </Badge>
-                  ))}
+                    {previewPost?.tags?.map((tag, i) => (
+                      <Badge key={i} variant="outline">{tag}</Badge>
+                    ))}
                 </div>
               </>
             )}
