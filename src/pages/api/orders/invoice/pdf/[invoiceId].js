@@ -41,139 +41,180 @@ export default async function handler(req, res) {
 }
 
 function generateInvoiceHtml(invoice) {
-  const itemsHtml = invoice.items.map(item => `
-    <tr>
-      <td style="padding: 12px;">${item.name}</td>
-      <td style="padding: 12px; text-align: center;">${item.quantity}</td>
-      <td style="padding: 12px; text-align: right;">${formatCurrency(item.price)}</td>
-      <td style="padding: 12px; text-align: right;">${formatCurrency(item.price * item.quantity)}</td>
-    </tr>
-  `).join('');
+  const itemsHtml = invoice.items.map((item, index) => {
+    const total = item.quantity * item.price;
 
-  const issueDate = format(new Date(invoice.createdAt), 'MMM dd, yyyy');
-  const dueDate = format(new Date(invoice.dueDate || invoice.createdAt), 'MMM dd, yyyy');
+    return `
+      <tr>
+        <td>INV-${invoice.invoiceId}</td>
+        <td>${item.name}</td>
+        <td>${formatCurrency(item.price * item.quantity)}</td>
+        <td>${formatCurrency(item.igst || 0)}</td>
+        <td>${formatCurrency(item.sgst || 0)}</td>
+        <td>${formatCurrency(item.cgst || 0)}</td>
+        <td style="text-align: center;">${item.quantity}</td>
+        <td style="text-align: right;">${formatCurrency(item.price)}</td>
+        <td style="text-align: right;">${formatCurrency(total)}</td>
+      </tr>
+    `;
+  }).join('');
+
+  const issueDate = format(new Date(invoice.createdAt), 'dd MMM yyyy');
+  const dueDate = format(new Date(invoice.dueDate || invoice.createdAt), 'dd MMM yyyy');
 
   return `
     <!DOCTYPE html>
     <html>
     <head>
-      <meta charset="UTF-8">
+      <meta charset="UTF-8" />
       <title>Invoice ${invoice.invoiceId}</title>
       <style>
-        @page { size: A4; margin: 20mm; }
+        @page {
+          size: A4;
+          margin: 20mm;
+        }
+
         body {
-          font-family: 'Helvetica', 'Arial', sans-serif;
-          color: #333;
-          line-height: 1.6;
+          font-family: 'Segoe UI', 'Helvetica Neue', sans-serif;
           margin: 0;
-          padding: 20px;
+          padding: 0;
+          color: #333;
+          background-color: #fff;
         }
+
         .container {
-          max-width: 800px;
-          margin: 0 auto;
-          background: white;
+          width: 90%;
+          max-width: 900px;
+          margin: auto;
+          padding: 30px;
         }
+
         .header {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          border-bottom: 2px solid #f0f0f0;
+          border-bottom: 2px solid #e0e0e0;
           padding-bottom: 20px;
-          margin-bottom: 20px;
         }
-        .logo {
-          width: 150px;
-          height: 50px;
-          background: #f0f0f0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: #666;
+
+        .logo img {
+          width: 160px;
+          height: auto;
         }
+
         .company-details {
           text-align: right;
           font-size: 14px;
+          line-height: 1.6;
         }
-        .invoice-details {
-          margin: 20px 0;
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 20px;
+
+        .invoice-metadata {
+          display: flex;
+          justify-content: space-between;
+          margin: 30px 0;
+          font-size: 14px;
         }
+
+        .invoice-metadata h2 {
+          margin-bottom: 10px;
+        }
+
         table {
           width: 100%;
           border-collapse: collapse;
-          margin: 20px 0;
-        }
-        th, td {
-          border: 1px solid #e0e0e0;
-          padding: 12px;
+          margin: 30px 0;
           font-size: 14px;
         }
-        th {
-          background: #f8f8f8;
-          font-weight: bold;
+
+        table thead {
+          background-color: #f9f9f9;
         }
+
+        table th, table td {
+          border: 1px solid #e0e0e0;
+          padding: 10px;
+          text-align: left;
+        }
+
+        table th {
+          font-weight: 600;
+        }
+
         .totals {
-          margin-top: 20px;
-          text-align: right;
           width: 50%;
           margin-left: auto;
-        }
-        .totals div {
-          padding: 8px 0;
           font-size: 14px;
         }
-        .total {
+
+        .totals div {
+          display: flex;
+          justify-content: space-between;
+          padding: 6px 0;
+        }
+
+        .total-line {
           font-weight: bold;
           font-size: 16px;
-          border-top: 2px solid #333;
-          padding-top: 8px;
+          border-top: 2px solid #444;
+          padding-top: 10px;
+          margin-top: 10px;
         }
+
+        .status {
+          margin-top: 20px;
+          font-size: 14px;
+        }
+
         .footer {
           text-align: center;
-          margin-top: 40px;
-          color: #666;
           font-size: 12px;
+          color: #777;
+          margin-top: 40px;
         }
       </style>
     </head>
     <body>
       <div class="container">
+        <!-- Header -->
         <div class="header">
-          <div class="logo">Company Logo</div>
+          <div class="logo">
+            <img src="https://ecotwist.in/logo.png" alt="EcoTwist Logo" />
+          </div>
           <div class="company-details">
-            <strong>Your Company Name</strong><br>
-            123 Business Street<br>
-            City, State 12345<br>
-            contact@company.com<br>
+            <strong>EcoTwist Innovations Pvt. Ltd.</strong><br />
+            Mauryalok Complex, Patna, Bihar 800001<br />
+            info@ecotwist.in<br />
             +1 (123) 456-7890
           </div>
         </div>
 
-        <div class="invoice-details">
+        <!-- Invoice Info -->
+        <div class="invoice-metadata">
           <div>
             <h2>Invoice #${invoice.invoiceId}</h2>
-            <p>
-              Issue Date: ${issueDate}<br>
-              Due Date: ${dueDate}
-            </p>
+            <p>Issue Date: ${issueDate}<br />Due Date: ${dueDate}</p>
           </div>
           <div>
-            <strong>Bill To:</strong><br>
-            ${invoice.billingAddress.fullName}<br>
-            ${invoice.billingAddress.street}<br>
-            ${invoice.billingAddress.city}, ${invoice.billingAddress.state} ${invoice.billingAddress.postalCode}<br>
-            ${invoice.billingAddress.country}<br>
+            <strong>Bill To:</strong><br />
+            ${invoice.billingAddress.fullName}<br />
+            ${invoice.billingAddress.street}<br />
+            ${invoice.billingAddress.city}, ${invoice.billingAddress.state} ${invoice.billingAddress.postalCode}<br />
+            ${invoice.billingAddress.country}<br />
             ${invoice.billingAddress.phone}
           </div>
         </div>
 
+        <!-- Item Table -->
         <table>
           <thead>
             <tr>
+              <th>HSN</th>
               <th>Product</th>
-              <th>Quantity</th>
+              <th>Taxable</th>
+              <th>IGST</th>
+              <th>SGST</th>
+              <th>CGST</th>
+              <th>Qty</th>
               <th>Unit Price</th>
               <th>Total</th>
             </tr>
@@ -183,21 +224,24 @@ function generateInvoiceHtml(invoice) {
           </tbody>
         </table>
 
+        <!-- Totals -->
         <div class="totals">
-          <div>Subtotal: ${formatCurrency(invoice.subtotal)}</div>
-          <div>Tax: ${formatCurrency(invoice.tax)}</div>
-          <div>Shipping: ${formatCurrency(invoice.shippingFee)}</div>
-          <div class="total">Total: ${formatCurrency(invoice.totalAmount)}</div>
+          <div><span>Subtotal:</span> <span>${formatCurrency(invoice.subtotal)}</span></div>
+          <div><span>Tax:</span> <span>${formatCurrency(invoice.tax)}</span></div>
+          <div><span>Shipping:</span> <span>${formatCurrency(invoice.shippingFee)}</span></div>
+          <div class="total-line"><span>Total:</span> <span>${formatCurrency(invoice.totalAmount)}</span></div>
         </div>
 
-        <div>
+        <!-- Payment Info -->
+        <div class="status">
           <p><strong>Payment Method:</strong> ${invoice.paymentMethod.toUpperCase()}</p>
           <p><strong>Status:</strong> ${invoice.paymentStatus.toUpperCase()}</p>
         </div>
 
+        <!-- Footer -->
         <div class="footer">
-          <p>Thank you for your business!</p>
-          <p>Terms & Conditions: Payment due within 30 days of invoice date.</p>
+          <p>Thank you for shopping with EcoTwist!</p>
+          <p><strong>Terms:</strong> Payment due within 30 days of invoice date.</p>
         </div>
       </div>
     </body>
