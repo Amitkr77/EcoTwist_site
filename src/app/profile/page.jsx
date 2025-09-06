@@ -40,7 +40,7 @@ import Navbar from "@/components/profile/Navbar";
 
 const page = () => {
   const { orders, getTotalItems } = useCart();
-  // const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState("overview");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [userProfile, setUserProfile] = useState({
