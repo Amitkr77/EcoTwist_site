@@ -144,7 +144,7 @@ const OrderManagement = () => {
                     </div>
                   </TableCell>
                   <TableCell>{order.items}</TableCell>
-                  <TableCell>${order.amount}</TableCell>
+                  <TableCell>₹{order.amount}</TableCell>
                   <TableCell>{order.date}</TableCell>
                   <TableCell>{getOrderBadge(order.status)}</TableCell>
                   <TableCell>

@@ -9,7 +9,7 @@ const GlobalOverview = () => {
   const metrics = [
     {
       title: 'Total Revenue',
-      value: '$124,592.40',
+      value: '₹124,592.40',
       change: '+12.5%',
       changeType: 'positive',
       icon: DollarSign,

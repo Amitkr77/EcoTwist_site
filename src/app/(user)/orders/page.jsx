@@ -199,7 +199,7 @@ const OrdersPage = React.memo(() => {
                             {item.name}
                           </p>
                           <p className="text-xs text-gray-600">
-                            ${item.price} × {item.quantity}
+                            ₹{item.price} × {item.quantity}
                           </p>
                           <Link href={`/products/${item.productId}`}>
                             <Button
@@ -212,7 +212,7 @@ const OrdersPage = React.memo(() => {
                           </Link>
                         </div>
                         <p className="font-medium text-sm text-gray-900">
-                          ${(item.price * item.quantity).toFixed(2)}
+                          ₹{(item.price * item.quantity).toFixed(2)}
                         </p>
                       </div>
                     ))}
@@ -286,7 +286,7 @@ const OrdersPage = React.memo(() => {
               </CardContent>
               <CardFooter className="p-4 bg-gray-50 flex justify-between items-center">
                 <p className="text-lg font-semibold text-gray-900">
-                  Total: ${order.totalAmount.toFixed(2)}
+                  Total: ₹{order.totalAmount.toFixed(2)}
                 </p>
                 <div className="flex gap-2">
                   <Link href={`/orders/${order._id}`}>
@@ -342,7 +342,7 @@ const OrdersPage = React.memo(() => {
           <CardContent className="p-4">
             <p className="text-gray-600">
               Total Amount Spent:{" "}
-              <span className="font-semibold text-gray-900">${totalSpent}</span>
+              <span className="font-semibold text-gray-900">₹{totalSpent}</span>
             </p>
             <Link href="/products">
               <Button className="mt-4">Shop More</Button>

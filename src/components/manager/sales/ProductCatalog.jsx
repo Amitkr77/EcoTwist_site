@@ -114,7 +114,7 @@ const ProductCatalog = () => {
                   <TableCell className="font-medium">{product.name}</TableCell>
                   <TableCell className="text-muted-foreground">{product.sku}</TableCell>
                   <TableCell>{product.category}</TableCell>
-                  <TableCell>${product.price}</TableCell>
+                  <TableCell>₹{product.price}</TableCell>
                   <TableCell>{product.stock}</TableCell>
                   <TableCell>⭐ {product.rating}</TableCell>
                   <TableCell>{getStatusBadge(product.status, product.stock)}</TableCell>

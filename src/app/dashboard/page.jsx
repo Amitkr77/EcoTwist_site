@@ -299,7 +299,7 @@ const page = () => {
                     {
                       icon: Leaf,
                       title: "Total Spent",
-                      value: `$${totalSpent.toFixed(2)}`,
+                      value: `₹${totalSpent.toFixed(2)}`,
                       subtext: "All time",
                     },
                     {
@@ -380,7 +380,7 @@ const page = () => {
                                   order.status.slice(1)}
                               </Badge>
                               <p className="font-medium text-gray-900 dark:text-gray-100">
-                                ${order.totalAmount.toFixed(2)}
+                                ₹{order.totalAmount.toFixed(2)}
                               </p>
                             </div>
                           </div>
@@ -505,7 +505,7 @@ const page = () => {
                           </div>
                           <div className="flex justify-between items-center">
                             <span className="font-medium text-gray-900 dark:text-gray-100">
-                              Total: ${order.totalAmount.toFixed(2)}
+                              Total: ₹{order.totalAmount.toFixed(2)}
                             </span>
                             <div className="flex gap-2">
                               <Button
@@ -570,7 +570,7 @@ const page = () => {
                             {item.name}
                           </h3>
                           <p className="text-sm text-gray-600 dark:text-gray-300">
-                            ${item.price}
+                            ₹{item.price}
                           </p>
                           <div className="flex items-center gap-2 mt-2">
                             <input

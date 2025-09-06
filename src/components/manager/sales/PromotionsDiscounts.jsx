@@ -224,7 +224,7 @@ const PromotionsDiscounts = () => {
                   <div className="text-sm text-muted-foreground">20% off • 156 uses</div>
                 </div>
                 <div className="text-right">
-                  <div className="font-bold">$3,420</div>
+                  <div className="font-bold">₹3,420</div>
                   <div className="text-sm text-green-600">Revenue impact</div>
                 </div>
               </div>

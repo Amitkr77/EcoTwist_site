@@ -226,7 +226,7 @@ const SalesManagerDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">23</div>
-            <p className="text-xs text-muted-foreground">$2,847.50 value</p>
+            <p className="text-xs text-muted-foreground">₹2,847.50 value</p>
           </CardContent>
         </Card>
 

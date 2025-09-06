@@ -306,7 +306,7 @@ const page = () => {
                     {
                       icon: Leaf,
                       title: "Total Spent",
-                      value: `$${totalSpent.toFixed(2)}`,
+                      value: `₹${totalSpent.toFixed(2)}`,
                       subtext: "All time",
                     },
                     {
@@ -391,7 +391,7 @@ const page = () => {
                                   order.status.slice(1)}
                               </Badge>
                               <p className="font-semibold text-gray-900 dark:text-gray-100">
-                                ${order.totalAmount.toFixed(2)}
+                                ₹{order.totalAmount.toFixed(2)}
                               </p>
                             </div>
                           </div>

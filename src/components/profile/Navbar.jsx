@@ -82,7 +82,7 @@ const Navbar = React.memo(({ activeTab, setActiveTab, sidebarItems }) => {
               </div>
               <div className="bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm rounded-xl p-4 text-center shadow-sm hover:shadow-md transition-shadow duration-300">
                 <p className="text-green-600 dark:text-green-400 font-semibold text-lg">
-                  ${userProfile.totalSpent.toLocaleString()}
+                  ₹{userProfile.totalSpent.toLocaleString()}
                 </p>
                 <p className="text-gray-500 dark:text-gray-400 text-sm">
                   Total Spent
