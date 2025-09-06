@@ -21,41 +21,35 @@ export const CartProvider = ({ children }) => {
 
   // Fetch cart items on initial load
   useEffect(() => {
-    const fetchCart = async () => {
+    const fetchCartAndUser = async () => {
       try {
+        const token = localStorage.getItem("user-token");
+        if (!token) {
+          console.warn("No token found.");
+          setIsHydrated(true);
+          return;
+        }
+
         const response = await axios.get("/api/cart", {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("user-token")}`,
+            Authorization: `Bearer ${token}`,
           },
         });
-        setCartItems(response.data.cart.items);
-        setIsHydrated(true);
+
+        const { items, userId } = response.data.cart;
+
+        setCartItems(items || []);
+        setUser(userId);
       } catch (error) {
-        console.error("Error fetching cart:", error);
+        console.error("Error fetching cart and user:", error);
+      } finally {
         setIsHydrated(true);
       }
     };
 
-    fetchCart();
+    fetchCartAndUser();
   }, []);
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const response = await axios.get('/api/cart', {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("user-token")}`
-          }
-        })
-        setUser(response.data.cart.userId)
-        setIsHydrated(true)
-      } catch (error) {
-        console.error("Error fetching user:", error);
-        setIsHydrated(true);
-      }
-    }
-    fetchUser();
-  }, [])
 
   // Fetch orders on initial load
   useEffect(() => {
@@ -109,19 +103,39 @@ export const CartProvider = ({ children }) => {
 
   // Update item quantity in cart
   const updateQuantity = async (productId, variantSku, quantity) => {
+    // Optional: validate quantity
+    if (quantity <= 0) {
+      console.warn("Quantity must be greater than zero.");
+      return;
+    }
+
     try {
+      const token = localStorage.getItem("user-token");
+      if (!token) {
+        console.error("User token not found. Please log in.");
+        return;
+      }
+
       const response = await axios.put(
         "/api/cart",
         { productId, variantSku, quantity },
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("user-token")}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
-      setCartItems(response.data.cart.items);
+
+      if (response.status === 200 && response.data?.cart?.items) {
+        setCartItems(response.data.cart.items);
+        console.log("Cart updated successfully.");
+      } else {
+        console.warn("Unexpected response structure:", response);
+      }
     } catch (error) {
-      console.error("Error updating item quantity:", error);
+      console.error("Error updating item quantity:", error?.response?.data || error.message);
+      // Optionally use toast or alert here
+      // toast({ title: "Failed to update quantity", description: error?.response?.data?.message || "An error occurred", variant: "destructive" });
     }
   };
 
