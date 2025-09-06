@@ -4,7 +4,7 @@ const { Schema } = mongoose;
 
 const AddressSchema = new Schema({
   userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-  label: { type: String, trim: true }, // Home, Office, etc.
+  label: { type: String, trim: true }, 
   street: { type: String, trim: true, maxlength: 100 },
   city: { type: String, trim: true, maxlength: 50 },
   state: { type: String, trim: true, maxlength: 50 },

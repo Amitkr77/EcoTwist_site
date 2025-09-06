@@ -41,9 +41,9 @@ export default function Wishlist() {
     <div>
       <Card className="bg-white dark:bg-gray-800 border-gray-200">
         <CardHeader>
-          <CardTitle className="text-gray-900 dark:text-gray-100">
-            My Wishlist
-          </CardTitle>
+          <CardTitle className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
+                        My Wishlist
+                      </CardTitle>
         </CardHeader>
         <CardContent>
           {userProfile.wishlist.length > 0 ? (
