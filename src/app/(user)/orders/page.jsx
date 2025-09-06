@@ -25,12 +25,10 @@ import { useCart } from "@/contexts/CartContext";
 import { Input } from "@/components/ui/input";
 
 const OrdersPage = React.memo(() => {
-  const { orders, isHydrated } = useCart();
-  console.log("Orders Loaded", orders);
+  const { orders, isHydrated } = useCart(); // Hook 1: useContext
+  const [searchTerm, setSearchTerm] = useState(""); // Hook 2: useState
 
-  const [searchTerm, setSearchTerm] = useState("");
-
-  // Memoized functions
+  // Hook 3: useMemo for getStatusColor
   const getStatusColor = useMemo(
     () => (status) => {
       switch (status) {
@@ -51,17 +49,22 @@ const OrdersPage = React.memo(() => {
     []
   );
 
+  // Hook 4: useMemo for formatDate
   const formatDate = useMemo(
-    () => (dateString) =>
-      new Date(dateString).toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      }),
+    () => (dateString) => {
+      const date = new Date(dateString);
+      return date.toString() !== "Invalid Date"
+        ? date.toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+          })
+        : "N/A";
+    },
     []
   );
 
-  // Filter orders based on search term
+  // Hook 5: useMemo for filteredOrders
   const filteredOrders = useMemo(() => {
     return orders
       .filter(
@@ -77,6 +80,16 @@ const OrdersPage = React.memo(() => {
       );
   }, [orders, searchTerm]);
 
+  // Hook 6: useMemo for totalSpent (moved before early returns)
+  const totalSpent = useMemo(
+    () =>
+      filteredOrders
+        .reduce((sum, order) => sum + order.totalAmount, 0)
+        .toFixed(2),
+    [filteredOrders]
+  );
+
+  // Early return for loading state
   if (!isHydrated) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -92,6 +105,7 @@ const OrdersPage = React.memo(() => {
     );
   }
 
+  // Early return for empty state
   if (filteredOrders.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -113,19 +127,10 @@ const OrdersPage = React.memo(() => {
     );
   }
 
-  // Calculate total spent
-  const totalSpent = useMemo(
-    () =>
-      filteredOrders
-        .reduce((sum, order) => sum + order.totalAmount, 0)
-        .toFixed(2),
-    [filteredOrders]
-  );
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-10 shadow-sm ">
+      <header className="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-10 shadow-sm mt-20">
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-semibold text-gray-900">My Orders</h1>
@@ -147,7 +152,7 @@ const OrdersPage = React.memo(() => {
         <div className="max-w-6xl mx-auto space-y-6">
           {filteredOrders.map((order) => (
             <Card
-              key={order.id}
+              key={order._id}
               className="overflow-hidden hover:shadow-lg transition-shadow duration-300"
             >
               <CardHeader className="p-4 bg-gray-50">
@@ -155,7 +160,7 @@ const OrdersPage = React.memo(() => {
                   <div>
                     <CardTitle className="flex items-center gap-2 text-lg font-bold">
                       <Package className="w-5 h-5 text-blue-600" />
-                      Order #{order.id}
+                      Order #{order.orderId}
                     </CardTitle>
                     <p className="text-sm text-gray-600 mt-1">
                       Placed on {formatDate(order.orderDate)}
@@ -178,23 +183,25 @@ const OrdersPage = React.memo(() => {
                   <div className="space-y-2">
                     {order.items.map((item) => (
                       <div
-                        key={item.product.id}
+                        key={item.productId}
                         className="flex items-center gap-3 p-2 bg-gray-50 rounded-lg"
                       >
-                        <img
-                          src={item.product.image || "/placeholder.svg"}
-                          alt={item.product.name}
-                          className="w-10 h-10 object-cover rounded-lg"
-                          loading="lazy"
-                        />
+                        {/* <Image
+                          src="/placeholder.svg" // Fallback since JSON lacks image
+                          alt={item.name}
+                          width={40}
+                          height={40}
+                          className="object-cover rounded-lg"
+                        /> */}
+
                         <div className="flex-1">
                           <p className="font-medium text-sm text-gray-900">
-                            {item.product.name}
+                            {item.name}
                           </p>
                           <p className="text-xs text-gray-600">
-                            ${item.product.price} × {item.quantity}
+                            ${item.price} × {item.quantity}
                           </p>
-                          <Link href={`/products/${item.product.id}`}>
+                          <Link href={`/products/${item.productId}`}>
                             <Button
                               variant="link"
                               size="sm"
@@ -205,7 +212,7 @@ const OrdersPage = React.memo(() => {
                           </Link>
                         </div>
                         <p className="font-medium text-sm text-gray-900">
-                          ${(item.product.price * item.quantity).toFixed(2)}
+                          ${(item.price * item.quantity).toFixed(2)}
                         </p>
                       </div>
                     ))}
@@ -226,7 +233,10 @@ const OrdersPage = React.memo(() => {
                         {order.deliveryAddress.street}
                         <br />
                         {order.deliveryAddress.city},{" "}
-                        {order.deliveryAddress.state}
+                        {order.deliveryAddress.postalCode &&
+                          `, ${order.deliveryAddress.postalCode}`}
+                        {order.deliveryAddress.country &&
+                          `, ${order.deliveryAddress.country}`}
                       </p>
                     </div>
                   </div>
@@ -279,7 +289,7 @@ const OrdersPage = React.memo(() => {
                   Total: ${order.totalAmount.toFixed(2)}
                 </p>
                 <div className="flex gap-2">
-                  <Link href={`/orders/${order.id}`}>
+                  <Link href={`/orders/${order._id}`}>
                     <Button
                       variant="outline"
                       size="sm"
@@ -294,7 +304,7 @@ const OrdersPage = React.memo(() => {
                       variant="destructive"
                       size="sm"
                       className="flex items-center"
-                      onClick={() => alert(`Cancel order ${order.id}?`)} // Replace with actual cancel logic
+                      onClick={() => alert(`Cancel order ${order.orderId}?`)}
                     >
                       <X className="w-4 h-4 mr-1" />
                       Cancel Order
@@ -312,8 +322,8 @@ const OrdersPage = React.memo(() => {
                     size="sm"
                     className="flex items-center"
                     onClick={() =>
-                      alert(`Contact support for order ${order.id}`)
-                    } // Replace with actual support logic
+                      alert(`Contact support for order ${order.orderId}`)
+                    }
                   >
                     <Phone className="w-4 h-4 mr-1" />
                     Contact Support

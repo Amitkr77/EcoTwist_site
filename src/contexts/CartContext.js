@@ -1,7 +1,7 @@
 "use client";
 
+import { authApi, getAuthToken } from "@/lib/authApi";
 import React, { createContext, useContext, useState, useEffect } from "react";
-import axios from "axios";
 
 const CartContext = createContext(undefined);
 
@@ -17,25 +17,20 @@ export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
   const [orders, setOrders] = useState([]);
   const [isHydrated, setIsHydrated] = useState(false);
-  const [user, setUser] = useState()
+  const [user, setUser] = useState();
 
-  // Fetch cart items on initial load
+  // Fetch cart and user
   useEffect(() => {
     const fetchCartAndUser = async () => {
+      const token = getAuthToken();
+      if (!token) {
+        console.warn("No token found. Skipping cart fetch.");
+        setIsHydrated(true);
+        return;
+      }
+
       try {
-        const token = localStorage.getItem("user-token");
-        if (!token) {
-          console.warn("No token found.");
-          setIsHydrated(true);
-          return;
-        }
-
-        const response = await axios.get("/api/cart", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
+        const response = await authApi("get", "/api/cart");
         const { items, userId } = response.data.cart;
 
         setCartItems(items || []);
@@ -50,16 +45,17 @@ export const CartProvider = ({ children }) => {
     fetchCartAndUser();
   }, []);
 
-
-  // Fetch orders on initial load
+  // Fetch orders
   useEffect(() => {
     const fetchOrders = async () => {
+      const token = getAuthToken();
+      if (!token) {
+        console.warn("No token found. Skipping orders fetch.");
+        return;
+      }
+
       try {
-        const response = await axios.get("/api/orders", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("user-token")}`,
-          },
-        });
+        const response = await authApi("get", "/api/orders");
         setOrders(response.data);
       } catch (error) {
         console.error("Error fetching orders:", error);
@@ -69,62 +65,52 @@ export const CartProvider = ({ children }) => {
     fetchOrders();
   }, []);
 
-  // Add item to cart
   const addToCart = async (productId, variantSku, quantity = 1) => {
+    const token = getAuthToken();
+    if (!token) return;
+
     try {
-      const response = await axios.post(
-        "/api/cart",
-        { productId, variantSku, quantity },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("user-token")}`,
-          },
-        }
-      );
+      const response = await authApi("post", "/api/cart", {
+        productId,
+        variantSku,
+        quantity,
+      });
       setCartItems(response.data.cart.items);
     } catch (error) {
       console.error("Error adding item to cart:", error);
     }
   };
 
-  // Remove item from cart
   const removeFromCart = async (productId, variantSku) => {
+    const token = getAuthToken();
+    if (!token) return;
+
     try {
-      const response = await axios.delete(`/api/cart/${productId}/${variantSku}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("user-token")}`,
-        },
-      });
+      const response = await authApi(
+        "delete",
+        `/api/cart/${productId}/${variantSku}`
+      );
       setCartItems(response.data.cart.items);
     } catch (error) {
       console.error("Error removing item from cart:", error);
     }
   };
 
-  // Update item quantity in cart
   const updateQuantity = async (productId, variantSku, quantity) => {
-    // Optional: validate quantity
+    const token = getAuthToken();
+    if (!token) return;
+
     if (quantity <= 0) {
       console.warn("Quantity must be greater than zero.");
       return;
     }
 
     try {
-      const token = localStorage.getItem("user-token");
-      if (!token) {
-        console.error("User token not found. Please log in.");
-        return;
-      }
-
-      const response = await axios.put(
-        "/api/cart",
-        { productId, variantSku, quantity },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await authApi("put", "/api/cart", {
+        productId,
+        variantSku,
+        quantity,
+      });
 
       if (response.status === 200 && response.data?.cart?.items) {
         setCartItems(response.data.cart.items);
@@ -133,27 +119,22 @@ export const CartProvider = ({ children }) => {
         console.warn("Unexpected response structure:", response);
       }
     } catch (error) {
-      console.error("Error updating item quantity:", error?.response?.data || error.message);
-      // Optionally use toast or alert here
-      // toast({ title: "Failed to update quantity", description: error?.response?.data?.message || "An error occurred", variant: "destructive" });
+      console.error("Error updating item quantity:", error);
     }
   };
 
-  // Clear cart
   const clearCart = async () => {
+    const token = getAuthToken();
+    if (!token) return;
+
     try {
-      await axios.delete("/api/cart", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("user-token")}`,
-        },
-      });
+      await authApi("delete", "/api/cart");
       setCartItems([]);
     } catch (error) {
       console.error("Error clearing cart:", error);
     }
   };
 
-  // Get total price
   const getTotalPrice = () => {
     return cartItems.reduce(
       (total, item) => total + item.price * item.quantity,
@@ -161,27 +142,21 @@ export const CartProvider = ({ children }) => {
     );
   };
 
-  // Get total items in cart
   const getTotalItems = () => {
     return cartItems.reduce((total, item) => total + item.quantity, 0);
   };
 
-  // Place order
   const placeOrder = async (deliveryAddress, paymentMethod) => {
+    const token = getAuthToken();
+    if (!token) return;
+
     try {
-      const response = await axios.post(
-        "/api/orders",
-        {
-          products: cartItems,
-          deliveryAddress,
-          paymentMethod,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("user-token")}`,
-          },
-        }
-      );
+      const response = await authApi("post", "/api/orders", {
+        products: cartItems,
+        deliveryAddress,
+        paymentMethod,
+      });
+
       setOrders((prevOrders) => [...prevOrders, response.data.orderId]);
       clearCart();
       return response.data.orderId;

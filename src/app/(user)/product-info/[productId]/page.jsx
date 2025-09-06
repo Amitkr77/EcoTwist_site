@@ -38,6 +38,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import WriteReviewDialog from "@/components/WriteReviewDialog";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
+import Head from "next/head";
 
 // Mock related products data
 const relatedProducts = [
@@ -78,10 +79,13 @@ export default function ProductPage() {
   const { isLoggedIn } = useAuth();
 
   useEffect(() => {
-    if (product) {
+    if (product && product.images && product.images.length > 0) {
       setSelectedColor(product.options[0].values[0]);
       setSelectedCapacity(product.options[1].values[0]);
-      setSelectedImage(product.images.find((img) => img.isPrimary).url);
+      setSelectedImage(
+        product.images.find((img) => img.isPrimary)?.url ||
+          product.images[0].url
+      );
     }
   }, [product]);
 
@@ -89,9 +93,9 @@ export default function ProductPage() {
     async function fetchProduct() {
       try {
         const res = await fetch(`/api/products/${productId}`);
+        if (!res.ok) throw new Error("Failed to fetch product");
         const data = await res.json();
         setProduct(data.data);
-        console.log(data.data);
       } catch (error) {
         console.error("Failed to load product:", error);
       }
@@ -179,6 +183,8 @@ export default function ProductPage() {
   };
 
   const handleQuantityChange = (value) => {
+    const parsedValue = parseInt(value);
+    if (isNaN(parsedValue)) return;
     const newQuantity = Math.max(
       1,
       Math.min(selectedVariant.inventory.quantity, value)
@@ -192,6 +198,11 @@ export default function ProductPage() {
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-28    min-h-screen">
+      <Head>
+        <title>{product.name} | Your Store</title>
+        <meta name="description" content={product.description} />
+        <meta name="keywords" content={product.tags.join(", ")} />
+      </Head>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -233,8 +244,8 @@ export default function ProductPage() {
               className="relative w-full h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px] rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white"
             >
               <Image
-                src={selectedImage }
-                alt={product.name}
+               src={selectedImage || "/product_image.png"}
+  alt={product.name || "Product image"}
                 fill
                 className="object-contain transition-transform duration-300"
                 style={{ transformOrigin: "center" }}
@@ -424,7 +435,7 @@ export default function ProductPage() {
                     className="flex-1"
                   >
                     <Button
-                    onClick={handleAddToCart}
+                      onClick={handleAddToCart}
                       className="w-full bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 cursor-pointer text-white"
                       disabled={!isAvailable}
                       size="lg"

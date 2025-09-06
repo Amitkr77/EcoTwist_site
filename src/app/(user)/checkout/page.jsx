@@ -164,7 +164,7 @@ const CheckoutPage = () => {
                     if (!product) return null;
 
                     return (
-                      <div key={product.id}>
+                      <div key={index}>
                         <div className="flex items-center gap-4">
                           <img
                             src={product.images[0].url || "/placeholder.svg"}
