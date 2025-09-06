@@ -26,9 +26,6 @@ const CartPage = () => {
     user,
   } = useCart();
   const userId = user
-  const productID = cartItems[0].productId
-  console.log(productID);
-
 
 
   const [deliveryAddress, setDeliveryAddress] = useState({
@@ -59,8 +56,6 @@ const CartPage = () => {
 
   const [userData, setUserData] = useState([]);
   const [productData, setProductData] = useState([])
-  console.log(productData);
-
 
 
   useEffect(() => {
@@ -89,6 +84,7 @@ const CartPage = () => {
   useEffect(() => {
     const fetchProduct = async () => {
       const token = localStorage.getItem("user-token")
+      const productID = cartItems[0].productId
 
       if (!token || !userId) return;
       try {
@@ -103,7 +99,7 @@ const CartPage = () => {
       }
     }
     fetchProduct();
-  }, [productID])
+  }, [])
 
   useEffect(() => {
     if (userData?.address) {

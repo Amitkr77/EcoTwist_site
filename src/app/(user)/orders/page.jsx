@@ -63,12 +63,18 @@ const OrdersPage = React.memo(() => {
 
   // Filter orders based on search term
   const filteredOrders = useMemo(() => {
-    return orders.filter((order) =>
-      order.id.toString().includes(searchTerm) ||
-      order.items.some((item) =>
-        item.product.name.toLowerCase().includes(searchTerm.toLowerCase())
+    return orders
+      .filter(
+        (order) =>
+          typeof order === "object" && order !== null && "items" in order
       )
-    );
+      .filter(
+        (order) =>
+          order.orderId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          order.items.some((item) =>
+            item.name.toLowerCase().includes(searchTerm.toLowerCase())
+          )
+      );
   }, [orders, searchTerm]);
 
   if (!isHydrated) {
@@ -110,7 +116,9 @@ const OrdersPage = React.memo(() => {
   // Calculate total spent
   const totalSpent = useMemo(
     () =>
-      filteredOrders.reduce((sum, order) => sum + order.totalAmount, 0).toFixed(2),
+      filteredOrders
+        .reduce((sum, order) => sum + order.totalAmount, 0)
+        .toFixed(2),
     [filteredOrders]
   );
 
@@ -156,7 +164,8 @@ const OrdersPage = React.memo(() => {
                   <Badge
                     className={`text-white ${getStatusColor(order.status)}`}
                   >
-                    {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                    {order.status.charAt(0).toUpperCase() +
+                      order.status.slice(1)}
                   </Badge>
                 </div>
               </CardHeader>
@@ -186,7 +195,11 @@ const OrdersPage = React.memo(() => {
                             ${item.product.price} × {item.quantity}
                           </p>
                           <Link href={`/products/${item.product.id}`}>
-                            <Button variant="link" size="sm" className="p-0 text-blue-500">
+                            <Button
+                              variant="link"
+                              size="sm"
+                              className="p-0 text-blue-500"
+                            >
                               View Product
                             </Button>
                           </Link>
@@ -212,7 +225,8 @@ const OrdersPage = React.memo(() => {
                         <br />
                         {order.deliveryAddress.street}
                         <br />
-                        {order.deliveryAddress.city}, {order.deliveryAddress.state}
+                        {order.deliveryAddress.city},{" "}
+                        {order.deliveryAddress.state}
                       </p>
                     </div>
                   </div>
@@ -220,7 +234,9 @@ const OrdersPage = React.memo(() => {
                   <div className="flex items-start gap-2">
                     <CreditCard className="w-4 h-4 mt-1 text-gray-500" />
                     <div>
-                      <p className="font-medium text-sm text-gray-900">Payment</p>
+                      <p className="font-medium text-sm text-gray-900">
+                        Payment
+                      </p>
                       <p className="text-xs text-gray-600">
                         {order.paymentMethod === "cod"
                           ? "Cash on Delivery"
@@ -247,7 +263,11 @@ const OrdersPage = React.memo(() => {
                   <div className="flex items-center gap-2 text-sm text-gray-600">
                     <p>Tracking ID: {order.trackingId || "N/A"}</p>
                     <Link href={`/track/${order.id}`}>
-                      <Button variant="link" size="sm" className="p-0 text-blue-500">
+                      <Button
+                        variant="link"
+                        size="sm"
+                        className="p-0 text-blue-500"
+                      >
                         Track Package
                       </Button>
                     </Link>
@@ -260,7 +280,11 @@ const OrdersPage = React.memo(() => {
                 </p>
                 <div className="flex gap-2">
                   <Link href={`/orders/${order.id}`}>
-                    <Button variant="outline" size="sm" className="flex items-center">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center"
+                    >
                       <Eye className="w-4 h-4 mr-1" />
                       View Details
                     </Button>
@@ -287,7 +311,9 @@ const OrdersPage = React.memo(() => {
                     variant="outline"
                     size="sm"
                     className="flex items-center"
-                    onClick={() => alert(`Contact support for order ${order.id}`)} // Replace with actual support logic
+                    onClick={() =>
+                      alert(`Contact support for order ${order.id}`)
+                    } // Replace with actual support logic
                   >
                     <Phone className="w-4 h-4 mr-1" />
                     Contact Support
@@ -305,7 +331,8 @@ const OrdersPage = React.memo(() => {
           </CardHeader>
           <CardContent className="p-4">
             <p className="text-gray-600">
-              Total Amount Spent: <span className="font-semibold text-gray-900">${totalSpent}</span>
+              Total Amount Spent:{" "}
+              <span className="font-semibold text-gray-900">${totalSpent}</span>
             </p>
             <Link href="/products">
               <Button className="mt-4">Shop More</Button>
