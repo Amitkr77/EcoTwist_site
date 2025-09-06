@@ -31,16 +31,14 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import Wishlist from "@/components/profile/Wishlist";
-import Orders from "@/components/profile/orders";
+import Orders from "@/components/profile/Orders";
 import Navbar from "@/components/profile/Navbar";
 
 import { Checkbox } from "@/components/ui/checkbox";
-import { Separator } from "@/components/ui/separator";
 
 const page = () => {
   const { orders, getTotalItems } = useCart();
   const [activeTab, setActiveTab] = useState("overview");
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [accountInfo, setAccountInfo] = useState({
@@ -49,6 +47,7 @@ const page = () => {
     email: "",
     phone: "",
   });
+
   const [userProfile, setUserProfile] = useState({
     name: "Amit kumar",
     email: "john.doe@example.com",
