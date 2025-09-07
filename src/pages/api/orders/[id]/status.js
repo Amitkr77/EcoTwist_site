@@ -7,8 +7,6 @@ import Order from '@/models/Order'; // Make sure your Order model is set up
 export default async function handler(req, res) {
   await dbConnect(); // ✅ Ensure DB connection
   const { id } = req.query;
-  console.log("orderId", id);
-
 
   if (req.method !== 'PUT') {
     return res.status(405).json({ error: 'Method Not Allowed' });

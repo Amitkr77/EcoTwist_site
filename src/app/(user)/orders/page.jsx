@@ -53,13 +53,15 @@ const OrdersPage = React.memo(() => {
   const formatDate = useMemo(
     () => (dateString) => {
       const date = new Date(dateString);
-      return date.toString() !== "Invalid Date"
-        ? date.toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "short",
-            day: "numeric",
-          })
-        : "N/A";
+      if (date.toString() === "Invalid Date") {
+        console.warn(`Invalid date provided: ${dateString}`);
+        return "N/A";
+      }
+      return date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
     },
     []
   );
@@ -69,7 +71,12 @@ const OrdersPage = React.memo(() => {
     return orders
       .filter(
         (order) =>
-          typeof order === "object" && order !== null && "items" in order
+          typeof order === "object" &&
+          // order !== null &&
+          "items" in order &&
+          "orderId" in order &&
+          "totalAmount" in order &&
+          Array.isArray(order.items)
       )
       .filter(
         (order) =>
@@ -126,6 +133,31 @@ const OrdersPage = React.memo(() => {
       </div>
     );
   }
+
+  const handleCancelOrder = async (orderId) => {
+    try {
+      await axios.post(
+        `/api/orders/${orderId}/cancel`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("user-token")}`,
+          },
+        }
+      );
+      toast({
+        title: "Order Cancelled",
+        description: `Order ${orderId} has been cancelled.`,
+        type: "success",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to cancel order.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -304,7 +336,7 @@ const OrdersPage = React.memo(() => {
                       variant="destructive"
                       size="sm"
                       className="flex items-center"
-                      onClick={() => alert(`Cancel order ${order.orderId}?`)}
+                      onClick={handleCancelOrder}
                     >
                       <X className="w-4 h-4 mr-1" />
                       Cancel Order

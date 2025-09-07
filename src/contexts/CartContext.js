@@ -18,6 +18,7 @@ export const CartProvider = ({ children }) => {
   const [orders, setOrders] = useState([]);
   const [isHydrated, setIsHydrated] = useState(false);
   const [user, setUser] = useState();
+  const [error, setError] = useState(null);
 
   // Fetch cart and user
   useEffect(() => {
@@ -31,11 +32,14 @@ export const CartProvider = ({ children }) => {
 
       try {
         const response = await authApi("get", "/api/cart");
-        const { items, userId } = response.data.cart;
-
-        setCartItems(items || []);
+        if (!response?.data?.cart) {
+          throw new Error("Invalid cart response");
+        }
+        const { items = [], userId } = response.data.cart;
+        setCartItems(items);
         setUser(userId);
       } catch (error) {
+        setError("Failed to load cart. Please try again.");
         console.error("Error fetching cart and user:", error);
       } finally {
         setIsHydrated(true);
@@ -67,7 +71,10 @@ export const CartProvider = ({ children }) => {
 
   const addToCart = async (productId, variantSku, quantity = 1) => {
     const token = getAuthToken();
-    if (!token) return;
+    if (!token) {
+      setError("Please log in to add items to cart.");
+      return;
+    }
 
     try {
       const response = await authApi("post", "/api/cart", {
@@ -83,7 +90,10 @@ export const CartProvider = ({ children }) => {
 
   const removeFromCart = async (productId, variantSku) => {
     const token = getAuthToken();
-    if (!token) return;
+    if (!token) {
+      setError("Please log in to add items to cart.");
+      return;
+    }
 
     try {
       const response = await authApi(
@@ -148,7 +158,11 @@ export const CartProvider = ({ children }) => {
 
   const placeOrder = async (deliveryAddress, paymentMethod) => {
     const token = getAuthToken();
-    if (!token) return;
+    if (!token) {
+      console.error("Please log in to place an order");
+      setError("Please log in to place an order.");
+      return;
+    }
 
     try {
       const response = await authApi("post", "/api/orders", {
@@ -156,12 +170,16 @@ export const CartProvider = ({ children }) => {
         deliveryAddress,
         paymentMethod,
       });
-
+      if (!response?.data?.orderId) {
+        throw new Error("Invalid order response");
+      }
       setOrders((prevOrders) => [...prevOrders, response.data.orderId]);
       clearCart();
       return response.data.orderId;
     } catch (error) {
+      setError("Failed to place order. Please try again.");
       console.error("Error placing order:", error);
+      throw error; 
     }
   };
 
@@ -172,6 +190,7 @@ export const CartProvider = ({ children }) => {
         cartItems,
         orders,
         isHydrated,
+        setError,
         addToCart,
         removeFromCart,
         updateQuantity,

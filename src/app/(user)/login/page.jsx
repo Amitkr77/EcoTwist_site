@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -21,33 +21,63 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useDebounce } from "use-debounce";
 
-export default function page() {
+// Constants for API endpoints
+const API_ENDPOINTS = {
+  LOGIN: "/api/user/auth/login",
+  FORGOT_PASSWORD: "/api/user/auth/forgot-password",
+};
+
+// Email validation regex
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ email: "", password: "" });
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState({ email: "", password: "", general: "" });
+  const [isLoading, setIsLoading] = useState(false);
   const [forgotOpen, setForgotOpen] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
   const [resetMessage, setResetMessage] = useState("");
+  const [resetLoading, setResetLoading] = useState(false);
+
+  // Debounce form input changes
+  const [debouncedFormData] = useDebounce(formData, 300);
+
+  // Validate form inputs
+  const validateForm = useCallback(() => {
+    const newErrors = { email: "", password: "", general: "" };
+    if (!debouncedFormData.email) {
+      newErrors.email = "Email is required.";
+    } else if (!EMAIL_REGEX.test(debouncedFormData.email)) {
+      newErrors.email = "Please enter a valid email.";
+    }
+    if (!debouncedFormData.password) {
+      newErrors.password = "Password is required.";
+    } else if (debouncedFormData.password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters.";
+    }
+    setErrors(newErrors);
+    return !newErrors.email && !newErrors.password;
+  }, [debouncedFormData]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    setError("");
+    setErrors((prev) => ({ ...prev, general: "" }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.email || !formData.password) {
-      setError("Please fill in all fields.");
-      return;
-    }
+    if (!validateForm()) return;
 
+    setIsLoading(true);
     try {
-      const res = await fetch("/api/user/auth/login", {
+      const res = await fetch(API_ENDPOINTS.LOGIN, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(debouncedFormData),
       });
 
       const data = await res.json();
@@ -56,34 +86,36 @@ export default function page() {
         localStorage.setItem("user-token", data.token);
         window.location.href = "/dashboard";
       } else {
-        setError(data.error || "Login failed.");
+        setErrors((prev) => ({ ...prev, general: data.error || "Login failed." }));
       }
     } catch (err) {
       console.error("Login error:", err);
-      setError("Something went wrong. Please try again.");
+      setErrors((prev) => ({ ...prev, general: "Something went wrong. Please try again." }));
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleForgotPassword = async (e) => {
     e.preventDefault();
-    if (!resetEmail) {
-      setResetMessage("Please enter your email.");
+    if (!resetEmail || !EMAIL_REGEX.test(resetEmail)) {
+      setResetMessage("Please enter a valid email.");
       return;
     }
+
+    setResetLoading(true);
     try {
-      const res = await fetch("api/user/auth/forgot-password", {
+      const res = await fetch(API_ENDPOINTS.FORGOT_PASSWORD, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: resetEmail }),
       });
       const data = await res.json();
-      if (res.ok) {
-        setResetMessage(data.message);
-      } else {
-        setResetMessage(data.error || "Failed to send reset link.");
-      }
+      setResetMessage(res.ok ? data.message : data.error || "Failed to send reset link.");
     } catch (err) {
       setResetMessage("An error occurred. Please try again.");
+    } finally {
+      setResetLoading(false);
     }
   };
 
@@ -99,7 +131,7 @@ export default function page() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
             <div className="space-y-2">
               <label
                 htmlFor="email"
@@ -114,8 +146,18 @@ export default function page() {
                 placeholder="Enter your email"
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full border-teal-200 focus:border-teal-400 focus:ring-teal-400"
+                className={`w-full border-teal-200 focus:border-teal-400 focus:ring-teal-400 transition-colors duration-200 ${
+                  errors.email ? "border-red-500" : ""
+                }`}
+                aria-invalid={!!errors.email}
+                aria-describedby={errors.email ? "email-error" : undefined}
+                disabled={isLoading}
               />
+              {errors.email && (
+                <p id="email-error" className="text-sm text-red-500">
+                  {errors.email}
+                </p>
+              )}
             </div>
             <div className="space-y-2">
               <label
@@ -132,23 +174,38 @@ export default function page() {
                   placeholder="Enter your password"
                   value={formData.password}
                   onChange={handleChange}
-                  className="w-full border-teal-200 focus:border-teal-400 focus:ring-teal-400 pr-10"
+                  className={`w-full border-teal-200 focus:border-teal-400 focus:ring-teal-400 transition-colors duration-200 pr-10 ${
+                    errors.password ? "border-red-500" : ""
+                  }`}
+                  aria-invalid={!!errors.password}
+                  aria-describedby={errors.password ? "password-error" : undefined}
+                  disabled={isLoading}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-400 rounded"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  disabled={isLoading}
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
+              {errors.password && (
+                <p id="password-error" className="text-sm text-red-500">
+                  {errors.password}
+                </p>
+              )}
             </div>
-            {error && <p className="text-sm text-red-500">{error}</p>}
+            {errors.general && (
+              <p className="text-sm text-red-500 text-center">{errors.general}</p>
+            )}
             <Button
               type="submit"
-              className="w-full bg-teal-500 text-white hover:bg-teal-600 transition-colors duration-300"
+              className="w-full bg-teal-500 text-white hover:bg-teal-600 transition-colors duration-300 disabled:bg-teal-300"
+              disabled={isLoading || !!errors.email || !!errors.password}
             >
-              Log In
+              {isLoading ? "Logging In..." : "Log In"}
             </Button>
           </form>
         </CardContent>
@@ -163,13 +220,13 @@ export default function page() {
             variant="link"
             onClick={() => setForgotOpen(true)}
             className="text-sm text-teal-600 hover:underline"
+            disabled={isLoading}
           >
             Forgot Password?
           </Button>
         </CardFooter>
       </Card>
 
-      {/* Forgot Password Modal */}
       <Dialog open={forgotOpen} onOpenChange={setForgotOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -180,7 +237,7 @@ export default function page() {
               Enter your email to receive a password reset link.
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleForgotPassword} className="space-y-4">
+          <form onSubmit={handleForgotPassword} className="space-y-4" noValidate>
             <div className="space-y-2">
               <label
                 htmlFor="reset-email"
@@ -193,17 +250,22 @@ export default function page() {
                 type="email"
                 placeholder="Enter your email"
                 value={resetEmail}
-                onChange={(e) => setResetEmail(e.target.value)}
-                className="w-full border-teal-200 focus:border-teal-400 focus:ring-teal-400"
+                onChange={(e) => {
+                  setResetEmail(e.target.value);
+                  setResetMessage("");
+                }}
+                className="w-full border-teal-200 focus:border-teal-400 focus:ring-teal-400 transition-colors duration-200"
+                aria-invalid={!!resetMessage && resetMessage.includes("error")}
+                aria-describedby={resetMessage ? "reset-email-error" : undefined}
+                disabled={resetLoading}
               />
             </div>
             {resetMessage && (
               <p
-                className={
-                  resetMessage.includes("error")
-                    ? "text-sm text-red-500"
-                    : "text-sm text-green-600"
-                }
+                id="reset-email-error"
+                className={`text-sm ${
+                  resetMessage.includes("error") ? "text-red-500" : "text-green-600"
+                }`}
               >
                 {resetMessage}
               </p>
@@ -211,9 +273,10 @@ export default function page() {
             <DialogFooter>
               <Button
                 type="submit"
-                className="bg-teal-500 text-white hover:bg-teal-600 transition-colors duration-300"
+                className="bg-teal-500 text-white hover:bg-teal-600 transition-colors duration-300 disabled:bg-teal-300"
+                disabled={resetLoading}
               >
-                Send Reset Link
+                {resetLoading ? "Sending..." : "Send Reset Link"}
               </Button>
             </DialogFooter>
           </form>

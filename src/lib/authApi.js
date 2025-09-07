@@ -1,5 +1,5 @@
 import axios from "axios";
-import {jwtDecode} from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 
 export const getAuthToken = () => {
     return localStorage.getItem("user-token");
@@ -10,7 +10,7 @@ const isTokenValid = (token) => {
 
     try {
         const decoded = jwtDecode(token);
-        const currentTime = Date.now() / 1000; 
+        const currentTime = Date.now() / 1000;
         if (decoded.exp && decoded.exp > currentTime) {
             return true;
         }
@@ -45,6 +45,9 @@ export const authApi = async (method, url, data = null) => {
 
         return response;
     } catch (error) {
+        if (error.response?.status === 401) {
+            throw new Error("Unauthorized: Please log in again.");
+        }
         console.error("authApi error:", error);
         throw error;
     }

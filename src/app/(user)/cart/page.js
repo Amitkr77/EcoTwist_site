@@ -25,10 +25,13 @@ const CartPage = () => {
     placeOrder,
     user,
   } = useCart();
-  const userId = user
 
-
-
+  const userId = user?.id || user;
+  if (!userId) {
+    toast({ title: "Error", description: "User not logged in.", variant: "destructive" });
+    router.push("/login");
+    return;
+  }
   const [deliveryAddress, setDeliveryAddress] = useState({
     fullName: "",
     street: "",
@@ -64,7 +67,11 @@ const CartPage = () => {
   useEffect(() => {
     const fetchUser = async () => {
       const token = localStorage.getItem("user-token");
-
+      if (!token) {
+        toast({ title: "Error", description: "Please log in to continue.", variant: "destructive" });
+        router.push("/login");
+        return;
+      }
       if (!token || !userId) return;
 
       try {
@@ -77,7 +84,7 @@ const CartPage = () => {
         setUserData(response.data.user);
       } catch (error) {
         console.error("Failed to fetch user data:", error);
-
+        toast({ title: "Error", description: "Failed to load user data.", variant: "destructive" });
       }
     };
 
@@ -108,7 +115,7 @@ const CartPage = () => {
       }
     };
     fetchProducts();
-  }, [cartItems, userId, toast]);
+  }, [cartItems, userId]);
 
   useEffect(() => {
     if (userData?.address) {
@@ -165,6 +172,10 @@ const CartPage = () => {
 
   const handleRazorpaySuccess = useCallback(
     (paymentId) => {
+      if (!paymentId) {
+    toast({ title: "Error", description: "Invalid payment ID.", variant: "destructive" });
+    return;
+  }
       if (!isAddressValid) {
         toast({
           title: "Missing Information",
@@ -198,7 +209,7 @@ const CartPage = () => {
   const handleRazorpayError = useCallback(
     (error) => {
       console.log(error);
-      
+
       toast({
         title: "Payment Failed",
         description: error?.description || "Please try again later.",
@@ -207,6 +218,10 @@ const CartPage = () => {
     },
     [toast]
   );
+
+  if (!productData.length && cartItems.length) {
+  return <div>Loading product details...</div>;
+}
 
   if (cartItems.length === 0) {
     return (

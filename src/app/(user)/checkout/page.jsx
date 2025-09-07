@@ -12,7 +12,7 @@ import axios from "axios";
 // Main Component
 const CheckoutPage = () => {
   const router = useRouter();
-  const { placeOrder } = useCart();
+  const { placeOrder,error } = useCart();
   const { toast } = useToast();
 
   const [checkoutData, setCheckoutData] = useState(null);
@@ -38,53 +38,81 @@ const CheckoutPage = () => {
     }
   }, [router]);
 
-  // Step 2: Fetch up-to-date product info for each item
   useEffect(() => {
-    const fetchProducts = async () => {
-      if (!checkoutData || !checkoutData.cartItems?.length) return;
+  if (error) {
+    toast({ title: "Error", description: error, variant: "destructive" });
+  }
+}, [error, toast]);
 
-      const token = localStorage.getItem("user-token");
-      if (!token) return;
+  // Step 2: Fetch up-to-date product info for each item
+  // useEffect(() => {
+  //   const fetchProducts = async () => {
+  //     if (!checkoutData || !checkoutData.cartItems?.length) return;
 
-      const fetchedProducts = {};
+  //     const token = localStorage.getItem("user-token");
+  //     if (!token) {
+  //       toast({
+  //         title: "Error",
+  //         description: "Please log in to continue.",
+  //         variant: "destructive",
+  //       });
+  //       router.push("/login");
+  //       return;
+  //     }
 
-      await Promise.all(
-        checkoutData.cartItems.map(async (item) => {
-          try {
-            const res = await axios.get(`/api/products/${item.productId}`, {
-              headers: { Authorization: `Bearer ${token}` },
-            });
+  //     const fetchedProducts = {};
 
-            fetchedProducts[item.productId] = res.data.data;
-          } catch (error) {
-            console.error(`Failed to fetch product ${item.productId}`, error);
-          }
-        })
-      );
+  //     await Promise.all(
+  //       checkoutData.cartItems.map(async (item) => {
+  //         try {
+  //           const res = await axios.get(`/api/products/${item.productId}`, {
+  //             headers: { Authorization: `Bearer ${token}` },
+  //           });
 
-      setProductDetailsMap(fetchedProducts);
-    };
+  //           fetchedProducts[item.productId] = res.data.data;
+  //         } catch (error) {
+  //           console.error(`Failed to fetch product ${item.productId}`, error);
+  //         }
+  //       })
+  //     );
 
-    fetchProducts();
-  }, [checkoutData]);
+  //     setProductDetailsMap(fetchedProducts);
+  //   };
+
+  //   fetchProducts();
+  // }, [checkoutData]);
 
   const handlePlaceOrder = () => {
-    const orderId = placeOrder(
-      checkoutData.deliveryAddress,
-      checkoutData.paymentMethod
-    );
+    try {
+      const orderId = placeOrder(
+        checkoutData.deliveryAddress,
+        checkoutData.paymentMethod
+      );
 
-    toast({
-      title: "Order Placed Successfully!",
-      description: `Your order ${orderId} has been confirmed.`,
-      type: "success",
-    });
-
-    router.push("/orders");
+      toast({
+        title: "Order Placed Successfully!",
+        description: `Your order ${orderId} has been confirmed.`,
+        type: "success",
+      });
+      sessionStorage.removeItem("checkoutData");
+      router.push("/orders");
+    } catch (error) {
+      console.error("Error while placing the order: ", error);
+      toast({
+        title: "Error",
+        description: "Failed to place order. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
-  if (loading || !checkoutData) return null;
-
+  if (loading || !checkoutData) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        Loading...
+      </div>
+    );
+  }
   const { deliveryAddress, paymentMethod, cartItems, totalAmount } =
     checkoutData;
 
@@ -161,7 +189,14 @@ const CheckoutPage = () => {
                   {cartItems.map((item, index) => {
                     const product = productDetailsMap[item.productId];
 
-                    if (!product) return null;
+                    // if (!product) return null;
+                    if (!product) {
+                      return (
+                        <div key={index} className="text-red-500">
+                          Product {item.productId} not found
+                        </div>
+                      );
+                    }
 
                     return (
                       <div key={index}>
@@ -174,18 +209,20 @@ const CheckoutPage = () => {
                           <div className="flex-1">
                             <h3 className="font-medium">{product.name}</h3>
                             <p className="text-sm text-gray-500">
-                              ${product.price} × {item.quantity}
+                              ${product.variants[0].price} × {item.quantity}
                             </p>
                           </div>
                           <p className="font-medium">
-                            ₹{(product.variants[0].price * item.quantity).toFixed(2)}
+                            ₹
+                            {(
+                              product.variants[0].price * item.quantity
+                            ).toFixed(2)}
                           </p>
                         </div>
                         {index < cartItems.length - 1 && (
                           <Separator className="mt-4" />
                         )}
                       </div>
-                      
                     );
                   })}
                 </div>
