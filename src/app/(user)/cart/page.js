@@ -16,6 +16,7 @@ import PaymentSection from "@/components/cart/PaymentSection";
 import axios from "axios";
 
 const CartPage = () => {
+  // Declare all hooks at the top, unconditionally
   const {
     cartItems,
     updateQuantity,
@@ -25,13 +26,8 @@ const CartPage = () => {
     placeOrder,
     user,
   } = useCart();
-
-  const userId = user?.id || user;
-  if (!userId) {
-    toast({ title: "Error", description: "User not logged in.", variant: "destructive" });
-    router.push("/login");
-    return;
-  }
+  const router = useRouter();
+  const { toast } = useToast();
   const [deliveryAddress, setDeliveryAddress] = useState({
     fullName: "",
     street: "",
@@ -40,16 +36,12 @@ const CartPage = () => {
     zipCode: "",
     phone: "",
   });
-
-
   const [paymentMethod, setPaymentMethod] = useState("cod");
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
-  const { toast } = useToast();
-
+  const [userData, setUserData] = useState([]);
+  const [productData, setProductData] = useState([]);
   const totalPrice = useMemo(() => getTotalPrice(), [getTotalPrice]);
   const totalItems = useMemo(() => getTotalItems(), [getTotalItems]);
-
   const isAddressValid = useMemo(
     () =>
       deliveryAddress.fullName.trim() &&
@@ -60,18 +52,23 @@ const CartPage = () => {
     [deliveryAddress]
   );
 
-  const [userData, setUserData] = useState([]);
-  const [productData, setProductData] = useState([])
+  // Handle authentication check after hooks
+  const userId = user?.id || user;
 
+  useEffect(() => {
+    if (!userId) {
+      toast({
+        title: "Error",
+        description: "Please log in to continue.",
+        variant: "destructive",
+      });
+      router.push("/login");
+    }
+  }, [userId, router, toast]);
 
   useEffect(() => {
     const fetchUser = async () => {
       const token = localStorage.getItem("user-token");
-      if (!token) {
-        toast({ title: "Error", description: "Please log in to continue.", variant: "destructive" });
-        router.push("/login");
-        return;
-      }
       if (!token || !userId) return;
 
       try {
@@ -80,16 +77,19 @@ const CartPage = () => {
             Authorization: `Bearer ${token}`,
           },
         });
-
         setUserData(response.data.user);
       } catch (error) {
         console.error("Failed to fetch user data:", error);
-        toast({ title: "Error", description: "Failed to load user data.", variant: "destructive" });
+        toast({
+          title: "Error",
+          description: "Failed to load user data.",
+          variant: "destructive",
+        });
       }
     };
 
     fetchUser();
-  }, [userId]);
+  }, [userId, toast]);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -115,7 +115,7 @@ const CartPage = () => {
       }
     };
     fetchProducts();
-  }, [cartItems, userId]);
+  }, [cartItems, userId, toast]);
 
   useEffect(() => {
     if (userData?.address) {
@@ -130,10 +130,12 @@ const CartPage = () => {
     }
   }, [userData]);
 
-
-  const handleAddressChange = useCallback((field, value) => {
-    setDeliveryAddress((prev) => ({ ...prev, [field]: value }));
-  }, []);
+  const handleAddressChange = useCallback(
+    (field, value) => {
+      setDeliveryAddress((prev) => ({ ...prev, [field]: value }));
+    },
+    []
+  );
 
   const handleCheckout = useCallback(async () => {
     if (!isAddressValid) {
@@ -168,14 +170,18 @@ const CartPage = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [isAddressValid, deliveryAddress, paymentMethod, cartItems, totalPrice, toast, router]);
+  }, [isAddressValid, deliveryAddress, paymentMethod, cartItems, totalPrice, router, toast]);
 
   const handleRazorpaySuccess = useCallback(
     (paymentId) => {
       if (!paymentId) {
-    toast({ title: "Error", description: "Invalid payment ID.", variant: "destructive" });
-    return;
-  }
+        toast({
+          title: "Error",
+          description: "Invalid payment ID.",
+          variant: "destructive",
+        });
+        return;
+      }
       if (!isAddressValid) {
         toast({
           title: "Missing Information",
@@ -203,13 +209,12 @@ const CartPage = () => {
         setIsLoading(false);
       }
     },
-    [isAddressValid, deliveryAddress, placeOrder, toast, router]
+    [isAddressValid, deliveryAddress, placeOrder, router, toast]
   );
 
   const handleRazorpayError = useCallback(
     (error) => {
       console.log(error);
-
       toast({
         title: "Payment Failed",
         description: error?.description || "Please try again later.",
@@ -219,9 +224,14 @@ const CartPage = () => {
     [toast]
   );
 
+  // Render loading state for product details
+  if (!userId) {
+    return null; // Render nothing while redirecting
+  }
+
   if (!productData.length && cartItems.length) {
-  return <div>Loading product details...</div>;
-}
+    return <div>Loading product details...</div>;
+  }
 
   if (cartItems.length === 0) {
     return (
