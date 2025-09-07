@@ -12,7 +12,7 @@ import { ArrowLeft, ShoppingBag } from "lucide-react";
 import { CartItems } from "@/components/cart/CartItems";
 import { DeliveryAddressForm } from "@/components/cart/DeliveryAddressForm";
 import { OrderSummary } from "@/components/cart/OrderSummary";
-import { PaymentSection } from "@/components/cart/PaymentSection";
+import PaymentSection from "@/components/cart/PaymentSection";
 import axios from "axios";
 
 const CartPage = () => {
@@ -26,6 +26,7 @@ const CartPage = () => {
     user,
   } = useCart();
   const userId = user
+
 
 
   const [deliveryAddress, setDeliveryAddress] = useState({
@@ -50,7 +51,9 @@ const CartPage = () => {
     () =>
       deliveryAddress.fullName.trim() &&
       deliveryAddress.street.trim() &&
-      deliveryAddress.city.trim(),
+      deliveryAddress.city.trim() &&
+      deliveryAddress.zipCode.trim() &&
+      deliveryAddress.phone.trim(),
     [deliveryAddress]
   );
 
@@ -82,24 +85,30 @@ const CartPage = () => {
   }, [userId]);
 
   useEffect(() => {
-    const fetchProduct = async () => {
-      const token = localStorage.getItem("user-token")
-      const productID = cartItems[0].productId
+    const fetchProducts = async () => {
+      const token = localStorage.getItem("user-token");
+      if (!token || !userId || cartItems.length === 0) return;
 
-      if (!token || !userId) return;
       try {
-        const response = await axios.get(`/api/products/${productID}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
-        setProductData(response.data.data)
+        const productPromises = cartItems.map((item) =>
+          axios.get(`/api/products/${item.productId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          })
+        );
+        const responses = await Promise.all(productPromises);
+        const products = responses.map((res) => res.data.data);
+        setProductData(products);
       } catch (error) {
         console.error("Failed to fetch product data:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load product details.",
+          variant: "destructive",
+        });
       }
-    }
-    fetchProduct();
-  }, [])
+    };
+    fetchProducts();
+  }, [cartItems, userId, toast]);
 
   useEffect(() => {
     if (userData?.address) {
@@ -188,6 +197,8 @@ const CartPage = () => {
 
   const handleRazorpayError = useCallback(
     (error) => {
+      console.log(error);
+      
       toast({
         title: "Payment Failed",
         description: error?.description || "Please try again later.",

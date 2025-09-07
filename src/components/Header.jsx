@@ -33,7 +33,7 @@ export default function Header({ cartItemsCount = 0, onCartClick }) {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    localStorage.removeItem("user-token");
     setIsAuthenticated(false);
     window.location.href = "/login";
   };

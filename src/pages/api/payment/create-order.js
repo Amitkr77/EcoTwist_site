@@ -1,5 +1,6 @@
-import { verifyToken } from "@/lib/adminToken";
+import authMiddleware from "@/lib/authMiddleware";
 import { razorpay } from "@/lib/razorpay";
+
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -7,14 +8,15 @@ export default async function handler(req, res) {
   }
 
   try {
-    const decoded = verifyToken(req);
-    if (!decoded) return res.status(401).json({ message: "Unauthorized" });
+    const user = await authMiddleware(req, res);
+    if (!user) return res.status(401).json({ message: 'Unauthorized' });
 
-    const { amount, currency = "INR", orderId } = req.body; 
+
+    const { amount, currency = "INR", orderId } = req.body;
     // amount in paise (e.g. ₹500 = 50000)
 
     const options = {
-      amount: amount, 
+      amount: amount,
       currency,
       receipt: orderId || `order_rcpt_${Date.now()}`,
     };

@@ -1,10 +1,13 @@
+// components/cart/PaymentSection.js
+"use client";
+
 import React from "react";
-import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import RazorpayPayment from "@/components/RazorpayPayment";
+import { Button } from "@/components/ui/button";
+import RazorpayPayment from "../RazorpayPayment";
 
-export const PaymentSection = ({
+const PaymentSection = ({
   paymentMethod,
   setPaymentMethod,
   handleCheckout,
@@ -13,43 +16,39 @@ export const PaymentSection = ({
   totalPrice,
   deliveryAddress,
   isAddressValid,
-  isLoading
+  isLoading,
 }) => {
   return (
-    <div className="p-4 space-y-4">
-      <RadioGroup
-        value={paymentMethod}
-        onValueChange={setPaymentMethod}
-        className="space-y-2"
-      >
-        <div className="flex items-center space-x-2">
+    <div className="p-6">
+      <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod}>
+        <div className="flex items-center space-x-2 mb-4">
           <RadioGroupItem value="cod" id="cod" />
-          <Label htmlFor="cod" className="text-gray-700">Cash on Delivery</Label>
+          <Label htmlFor="cod">Cash on Delivery</Label>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 mb-4">
           <RadioGroupItem value="online" id="online" />
-          <Label htmlFor="online" className="text-gray-700">Online Payment (Razorpay)</Label>
+          <Label htmlFor="online">Online Payment (Razorpay)</Label>
         </div>
       </RadioGroup>
-
-      {paymentMethod === "online" ? (
+      {paymentMethod === "cod" ? (
+        <Button
+          className="w-full mt-4"
+          onClick={handleCheckout}
+          disabled={isLoading || !isAddressValid}
+        >
+          {isLoading ? "Processing..." : "Proceed to Checkout"}
+        </Button>
+      ) : (
         <RazorpayPayment
           amount={totalPrice}
           onSuccess={handleRazorpaySuccess}
           onError={handleRazorpayError}
           deliveryAddress={deliveryAddress}
-          disabled={!isAddressValid || isLoading}
-          className="w-full"
+          disabled={isLoading || !isAddressValid}
         />
-      ) : (
-        <Button
-          onClick={handleCheckout}
-          disabled={!isAddressValid || isLoading}
-          className="w-full"
-        >
-          {isLoading ? "Processing..." : "Proceed to Checkout"}
-        </Button>
       )}
     </div>
   );
 };
+
+export default PaymentSection;
