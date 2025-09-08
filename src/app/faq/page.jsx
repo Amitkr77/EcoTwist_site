@@ -4,8 +4,8 @@ export default function FAQ() {
       category: "General Questions",
       questions: [
         {
-          q: "What is Ecotwist Innovations Private Limited?",
-          a: "Ecotwist Innovations is a company based in Patna, Bihar, focused on providing high-quality, eco-friendly products. Our mission is to promote sustainability by offering innovative and responsible alternatives to everyday items."
+          q: "What is Ecotwist Innovtions Private Limited?",
+          a: "Ecotwist Innovtions is a company based in Patna, Bihar, focused on providing high-quality, eco-friendly products. Our mission is to promote sustainability by offering innovative and responsible alternatives to everyday items."
         },
         {
           q: "Where are your offices located?",

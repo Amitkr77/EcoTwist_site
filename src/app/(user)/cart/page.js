@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
-import { ArrowLeft, ShoppingBag } from "lucide-react";
+import { ArrowLeft, Home, ShoppingBag } from "lucide-react";
 
 import { CartItems } from "@/components/cart/CartItems";
 import { DeliveryAddressForm } from "@/components/cart/DeliveryAddressForm";
@@ -55,16 +55,16 @@ const CartPage = () => {
   // Handle authentication check after hooks
   const userId = user?.id || user;
 
-  useEffect(() => {
-    if (!userId) {
-      toast({
-        title: "Error",
-        description: "Please log in to continue.",
-        variant: "destructive",
-      });
-      router.push("/login");
-    }
-  }, [userId, router, toast]);
+  // useEffect(() => {
+  //   if (!userId) {
+  //     toast({
+  //       title: "Error",
+  //       description: "Please log in to continue.",
+  //       variant: "destructive",
+  //     });
+  //     router.push("/login");
+  //   }
+  // }, [userId, router, toast]);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -252,7 +252,7 @@ const CartPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-10 mt-20">
+      {/* <header className="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-10 mt-20">
         <div className="flex items-center gap-4">
           <Link href="/products">
             <Button variant="ghost" size="sm">
@@ -265,9 +265,25 @@ const CartPage = () => {
             <p className="text-sm text-gray-500">{totalItems} items</p>
           </div>
         </div>
-      </header>
+      </header> */}
 
-      <div className="p-6">
+       {/* Breadcrumb Navigation */}
+      <div className="max-w-6xl mx-auto px-4 py-4 mt-16">
+        <nav className="flex items-center gap-2 text-sm text-gray-600">
+          <Link href="/" className="hover:text-teal-600 flex items-center">
+            <Home className="h-4 w-4 inline-block mr-2" />
+            Home
+          </Link>
+          <span>/</span>
+          <Link href="/products" className="hover:text-teal-600">
+            Products
+          </Link>
+          <span>/</span>
+          <span className="text-teal-600">Cart</span>
+        </nav>
+      </div>
+
+      <div className="p-6 max-w-6xl mx-auto">
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Left Section */}
           <div className="lg:col-span-2 space-y-6">

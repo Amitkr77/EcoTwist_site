@@ -27,7 +27,7 @@ export default function Footer() {
                   EcoTwist
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-600">
-                  Innovations Pvt. Ltd.
+                  Innovtions Pvt. Ltd.
                 </p>
               </div>
             </div>
@@ -196,7 +196,7 @@ export default function Footer() {
               {[
                 { name: "Return and Refund Policy", path: "/return-policy" },
                 { name: "Privacy Policy", path: "/privacy-policy" },
-                { name: "Terms of service", path: "/term-services" },
+                { name: "Terms of service", path: "/termsOfService" },
                 { name: "FAQ", path: "/faq" },
               ].map((item) => (
                 <li key={item.name}>
