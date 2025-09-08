@@ -1,7 +1,8 @@
 "use client";
 import React, { useState } from "react";
-import { Mail, MapIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { CiMail } from "react-icons/ci";
+import { FaXTwitter } from "react-icons/fa6";
+import { FaFacebook, FaInstagram, FaLinkedin, FaYoutube, FaPinterest, FaMapMarkerAlt  } from "react-icons/fa";import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
@@ -68,7 +69,7 @@ export default function page() {
 
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
-                  <Mail className="h-5 w-5 text-forest mt-1" />
+                  <CiMail className="h-5 w-5 text-forest mt-1" />
                   <div>
                     <p className="font-medium text-slate-800">Email</p>
                     <p className="text-slate-600">info@ecotwist.in</p>
@@ -77,7 +78,7 @@ export default function page() {
                 </div>
 
                 <div className="flex items-start gap-3">
-                  <MapIcon className="h-5 w-5 text-forest mt-1" />
+                  <FaMapMarkerAlt className="h-5 w-5 text-forest mt-1" />
                   <div>
                     <p className="font-medium text-slate-800">Address</p>
                     <p className="text-slate-600">
@@ -90,6 +91,106 @@ export default function page() {
                   </div>
                 </div>
               </div>
+              <div className="flex space-x-1 sm:space-x-0.5 mt-4 sm:mt-6 justify-center md:justify-start">
+                            <a
+                              href="https://www.facebook.com/ecotwiststores"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-slate-600 hover:text-teal-500 rounded-full p-2 transition-all duration-300"
+                              >
+                                <FaFacebook className="h-5 w-5 sm:h-6 sm:w-6 hover:text-teal-400 transition-all duration-300" />
+                              </Button>
+                            </a>
+              
+                            <a
+                              href="https://www.instagram.com/ecotwiststores/"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-slate-600 hover:text-pink-500 rounded-full p-2 transition-all duration-300"
+                              >
+                                <FaInstagram className="h-5 w-5 sm:h-6 sm:w-6 hover:text-pink-400 transition-all duration-300" />
+                              </Button>
+                            </a>
+              
+                            <a
+                              href="https://www.linkedin.com/company/ecotwiststores/"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-slate-600 hover:text-blue-400 rounded-full p-2 transition-all duration-300"
+                              >
+                                <FaLinkedin className="h-5 w-5 sm:h-6 sm:w-6 hover:text-blue-600 transition-all duration-300" />
+                              </Button>
+                            </a>
+              
+                            <a
+                              href="http://x.com/ecotwiststores"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-slate-600 hover:text-blue-400 rounded-full p-2 transition-all duration-300"
+                              >
+                                <FaXTwitter className="h-5 w-5 sm:h-6 sm:w-6 hover:text-blue-600 transition-all duration-300" />
+                              </Button>
+                            </a>
+              
+                            <a
+                              href="mailto:info@ecotwist.in"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-slate-600 hover:text-red-500 rounded-full p-2 transition-all duration-300"
+                              >
+                                <CiMail className="h-5 w-5 sm:h-6 sm:w-6 hover:text-red-400 transition-all duration-300" />
+                              </Button>
+                            </a>
+              
+                            <a
+                              href="https://www.pinterest.com/ecotwiststores/"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-slate-600 hover:text-red-500 rounded-full p-2 transition-all duration-300"
+                              >
+                                <FaPinterest className="h-5 w-5 sm:h-6 sm:w-6 hover:text-red-400 transition-all duration-300" />
+                              </Button>
+                            </a>
+              
+              
+                            <a
+                              href="https://www.youtube.com/@ecotwiststores"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-slate-600 hover:text-red-500 rounded-full p-2 transition-all duration-300"
+                              >
+                                <FaYoutube className="h-5 w-5 sm:h-6 sm:w-6 hover:text-red-400 transition-all duration-300" />
+                              </Button>
+                            </a>
+                          </div>
             </div>
 
             <div className="bg-white rounded-xl p-6 shadow-sm">
@@ -275,7 +376,7 @@ export default function page() {
                   >
                     <path d="M6 2a1 1 0 00-1 1v2h10V3a1 1 0 00-1-1H6zM4 7v10a2 2 0 002 2h8a2 2 0 002-2V7H4zm6 2a1 1 0 011 1v3a1 1 0 11-2 0v-3a1 1 0 011-1z" />
                   </svg>
-                  What's your typical delivery timeline?
+                  What's your typical dispatch timeline?
                 </h3>
                 <p className="text-slate-600 leading-relaxed">
                   Standard orders: <strong>1–2 business days</strong>.
@@ -333,7 +434,7 @@ export default function page() {
                   What's your return policy?
                 </h3>
                 <p className="text-slate-600 leading-relaxed">
-                  We offer a <strong>30-day return policy</strong> on all
+                  We offer a <strong>07-day return policy</strong> on all
                   standard items. Custom/branded products are non-returnable
                   unless defective.
                 </p>
