@@ -71,6 +71,7 @@ const ProductSchema = new Schema({
   name: { type: String, required: true, trim: true, maxlength: 140 },
   slug: { type: String, required: true, unique: true, lowercase: true, index: true },
   brand: { type: String, default: "Ecotwist" },
+  hsnCode: { type: String, required: true, trim: true, match: /^[0-9]{4,8}$/ },
 
   description: String,
   usage: String,
