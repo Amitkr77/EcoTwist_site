@@ -1,5 +1,5 @@
 import React from "react";
-import { Mail, Facebook, Instagram, Twitter, Linkedin } from "lucide-react";
+import { Mail, Facebook, Instagram, Twitter, Linkedin, Youtube } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
@@ -34,7 +34,7 @@ export default function Footer() {
             </p>
             <div className="flex space-x-3 sm:space-x-4 mt-4 sm:mt-6 justify-center md:justify-start">
               <a
-                href="https://www.facebook.com/ecotwiststore"
+                href="https://www.facebook.com/ecotwiststores"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -48,7 +48,7 @@ export default function Footer() {
               </a>
 
               <a
-                href="https://www.instagram.com/ecotwiststore/"
+                href="https://www.instagram.com/ecotwiststores/"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -62,7 +62,7 @@ export default function Footer() {
               </a>
 
               <a
-                href="https://www.linkedin.com/company/ecotwistinnovations/"
+                href="https://www.linkedin.com/company/ecotwiststores/"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -76,7 +76,7 @@ export default function Footer() {
               </a>
 
               <a
-                href="mailto:Info@ecotwist.in"
+                href="mailto:info@ecotwist.in"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -86,6 +86,21 @@ export default function Footer() {
                   className="text-slate-600 hover:text-red-500 rounded-full p-2 transition-all duration-300"
                 >
                   <Mail className="h-5 w-5 sm:h-6 sm:w-6 hover:text-red-400 transition-all duration-300" />
+                </Button>
+              </a>
+
+
+              <a
+                href="https://www.youtube.com/@ecotwiststores"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-slate-600 hover:text-red-500 rounded-full p-2 transition-all duration-300"
+                >
+                  <Youtube className="h-5 w-5 sm:h-6 sm:w-6 hover:text-red-400 transition-all duration-300" />
                 </Button>
               </a>
             </div>
