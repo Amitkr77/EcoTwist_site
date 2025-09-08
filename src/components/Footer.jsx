@@ -1,5 +1,8 @@
 import React from "react";
-import { Mail, Facebook, Instagram, Twitter, Linkedin } from "lucide-react";
+import { CiMail } from "react-icons/ci";
+import { FaXTwitter } from "react-icons/fa6";
+import { FaFacebook, FaInstagram, FaLinkedin, FaYoutube, FaPinterest } from "react-icons/fa";
+
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
@@ -34,7 +37,7 @@ export default function Footer() {
             </p>
             <div className="flex space-x-3 sm:space-x-4 mt-4 sm:mt-6 justify-center md:justify-start">
               <a
-                href="https://www.facebook.com/ecotwiststore"
+                href="https://www.facebook.com/ecotwiststores"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -43,12 +46,12 @@ export default function Footer() {
                   size="sm"
                   className="text-slate-600 hover:text-teal-500 rounded-full p-2 transition-all duration-300"
                 >
-                  <Facebook className="h-5 w-5 sm:h-6 sm:w-6 hover:text-teal-400 transition-all duration-300" />
+                  <FaFacebook className="h-5 w-5 sm:h-6 sm:w-6 hover:text-teal-400 transition-all duration-300" />
                 </Button>
               </a>
 
               <a
-                href="https://www.instagram.com/ecotwiststore/"
+                href="https://www.instagram.com/ecotwiststores/"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -57,12 +60,12 @@ export default function Footer() {
                   size="sm"
                   className="text-slate-600 hover:text-pink-500 rounded-full p-2 transition-all duration-300"
                 >
-                  <Instagram className="h-5 w-5 sm:h-6 sm:w-6 hover:text-pink-400 transition-all duration-300" />
+                  <FaInstagram className="h-5 w-5 sm:h-6 sm:w-6 hover:text-pink-400 transition-all duration-300" />
                 </Button>
               </a>
 
               <a
-                href="https://www.linkedin.com/company/ecotwistinnovtions/"
+                href="https://www.linkedin.com/company/ecotwiststores/"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -71,12 +74,26 @@ export default function Footer() {
                   size="sm"
                   className="text-slate-600 hover:text-blue-400 rounded-full p-2 transition-all duration-300"
                 >
-                  <Linkedin className="h-5 w-5 sm:h-6 sm:w-6 hover:text-blue-600 transition-all duration-300" />
+                  <FaLinkedin className="h-5 w-5 sm:h-6 sm:w-6 hover:text-blue-600 transition-all duration-300" />
                 </Button>
               </a>
 
               <a
-                href="mailto:Info@ecotwist.in"
+                href="http://x.com/ecotwiststores"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-slate-600 hover:text-blue-400 rounded-full p-2 transition-all duration-300"
+                >
+                  <FaXTwitter className="h-5 w-5 sm:h-6 sm:w-6 hover:text-blue-600 transition-all duration-300" />
+                </Button>
+              </a>
+
+              <a
+                href="mailto:info@ecotwist.in"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -85,7 +102,36 @@ export default function Footer() {
                   size="sm"
                   className="text-slate-600 hover:text-red-500 rounded-full p-2 transition-all duration-300"
                 >
-                  <Mail className="h-5 w-5 sm:h-6 sm:w-6 hover:text-red-400 transition-all duration-300" />
+                  <CiMail className="h-5 w-5 sm:h-6 sm:w-6 hover:text-red-400 transition-all duration-300" />
+                </Button>
+              </a>
+
+              <a
+                href="https://www.pinterest.com/ecotwiststores/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-slate-600 hover:text-red-500 rounded-full p-2 transition-all duration-300"
+                >
+                  <FaPinterest className="h-5 w-5 sm:h-6 sm:w-6 hover:text-red-400 transition-all duration-300" />
+                </Button>
+              </a>
+
+
+              <a
+                href="https://www.youtube.com/@ecotwiststores"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-slate-600 hover:text-red-500 rounded-full p-2 transition-all duration-300"
+                >
+                  <FaYoutube className="h-5 w-5 sm:h-6 sm:w-6 hover:text-red-400 transition-all duration-300" />
                 </Button>
               </a>
             </div>
@@ -169,8 +215,8 @@ export default function Footer() {
         {/* Copyright */}
         <div className="mt-6 sm:mt-8 lg:mt-12 pt-6 sm:pt-8 border-t border-slate-700 text-center">
           <p className="text-slate-600 text-xs sm:text-sm">
-            © 2025 EcoTwist Innovtions Pvt. Ltd. All rights reserved. | Made
-            with ❤️ for our planet
+            © 2025 EcoTwist | All rights reserved. | Made
+            with 💚 for our green planet
           </p>
         </div>
       </div>
