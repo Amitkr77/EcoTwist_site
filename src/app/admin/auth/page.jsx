@@ -1,9 +1,9 @@
-'use client';
-import { useState, useEffect } from 'react';
+"use client";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import toast from 'react-hot-toast';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import toast from "react-hot-toast";
 import {
   Card,
   CardContent,
@@ -14,48 +14,58 @@ import {
 import Link from "next/link";
 import { Mail, Lock, LogIn, ArrowRightCircle } from "lucide-react";
 
-export default function Page() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+// Separate component to handle useSearchParams
+function LoginLogic({ setErrorMessage }) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-useEffect(() => {
+  useEffect(() => {
     if (searchParams.get("error") === "login-first") {
       toast.error("You must log in first!", { duration: 6000 });
       const params = new URLSearchParams(searchParams.toString());
       params.delete("error");
 
-      router.replace(`${window.location.pathname}?${params.toString()}`, { scroll: false });
+      router.replace(`${window.location.pathname}?${params.toString()}`, {
+        scroll: false,
+      });
     }
   }, [searchParams]);
+
+  return null; // This component only handles logic, no UI
+}
+
+export default function Page() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const router = useRouter();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setErrorMessage('');
+    setErrorMessage("");
 
     try {
-      const response = await fetch('/api/admin/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
 
       const result = await response.json();
 
       if (!response.ok) {
-        setErrorMessage(result?.error || 'Invalid email or password.');
+        setErrorMessage(result?.error || "Invalid email or password.");
         return;
       }
 
       // ✅ Login successful → cookie is already set by API
-      router.push('/admin');
+      router.push("/admin");
     } catch (error) {
-      console.error('Login error:', error);
-      setErrorMessage('Something went wrong. Please try again later.');
+      console.error("Login error:", error);
+      setErrorMessage("Something went wrong. Please try again later.");
     } finally {
       setIsLoading(false);
     }
@@ -176,6 +186,11 @@ useEffect(() => {
               </Link>
             </div>
           </div>
+
+          {/* Wrap useSearchParams logic in Suspense */}
+          <Suspense fallback={<div>Loading...</div>}>
+            <LoginLogic setErrorMessage={setErrorMessage} />
+          </Suspense>
         </CardContent>
       </Card>
     </div>
