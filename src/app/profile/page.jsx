@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { jwtDecode } from "jwt-decode";
 
 import {
   User,
@@ -35,12 +36,15 @@ import Orders from "@/components/profile/Orders";
 import Navbar from "@/components/profile/Navbar";
 
 import { Checkbox } from "@/components/ui/checkbox";
+import axios from "axios";
 
 const page = () => {
   const { orders, getTotalItems } = useCart();
   const [activeTab, setActiveTab] = useState("overview");
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [user, setUser] = useState(null);
+  const [userData, setUserData] = useState([]);
   const [accountInfo, setAccountInfo] = useState({
     firstName: "",
     lastName: "",
@@ -79,6 +83,34 @@ const page = () => {
   useEffect(() => {
     document.documentElement.classList.toggle("dark", isDarkMode);
   }, [isDarkMode]);
+
+  useEffect(() => {
+    const token = localStorage.getItem("user-token");
+
+    if (token) {
+      const decoded = jwtDecode(token);
+      const userId = decoded.id;
+      setUser(userId);
+
+      // Define and call the async function here
+      const fetchUser = async () => {
+        try {
+          const res = await axios.get(`/api/user/services/${userId}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          setUserData(res.data.user);
+        } catch (error) {
+          console.error("Failed to fetch user services:", error);
+        }
+      };
+
+      fetchUser();
+    } else {
+      console.log("No token found");
+    }
+  }, []);
 
   const totalSpent = orders.reduce((sum, order) => sum + order.totalAmount, 0);
 
@@ -182,6 +214,9 @@ const page = () => {
     toast.success("Account information updated!");
   };
 
+  // UI rendering
+  if (!userData) return <div>Loading...</div>;
+
   const sidebarItems = [
     { icon: User, label: "Overview", value: "overview" },
     { icon: Package, label: "Orders", value: "orders" },
@@ -191,6 +226,18 @@ const page = () => {
     { icon: LogOut, label: "Logout", value: "logout" },
   ];
 
+  const data={
+    name:userData.fullName,
+    location:userData.address,
+    email: userData.email,
+    wishlist:userData?.wishlist?.length || 0,
+    //totalSpent:userData.totalSpent.toFixed(2),
+   // totalOrder:userData?.orders?.length
+
+  }
+  
+
+ 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950 font-sans relative ">
       <header className="bg-white dark:bg-gray-900 p-4 sticky top-0 z-40">
@@ -216,7 +263,7 @@ const page = () => {
             </button> */}
             <div className="md:block hidden">
               <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                Welcome, {userProfile.name}
+                Welcome, {userData.fullName}
               </h1>
               <p className="text-sm text-gray-600 dark:text-gray-300">
                 Your nature-inspired shopping hub
@@ -288,6 +335,7 @@ const page = () => {
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           sidebarItems={sidebarItems}
+          profileData={data}
         />
         <div className="">
           {/* Main Content */}
@@ -365,9 +413,9 @@ const page = () => {
                   <CardContent>
                     {orders.length > 0 ? (
                       <div className="space-y-4">
-                        {orders.slice(0, 3).map((order) => (
+                        {orders.slice(0, 3).map((order, index) => (
                           <div
-                            key={order.id}
+                            key={index}
                             className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-white/50 dark:bg-gray-800/50 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all duration-200"
                           >
                             <div className="flex items-center gap-4">

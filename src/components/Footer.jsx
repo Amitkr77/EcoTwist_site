@@ -24,7 +24,7 @@ export default function Footer() {
                   EcoTwist
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-600">
-                  Innovations Pvt. Ltd.
+                  Innovtions Pvt. Ltd.
                 </p>
               </div>
             </div>
@@ -62,7 +62,7 @@ export default function Footer() {
               </a>
 
               <a
-                href="https://www.linkedin.com/company/ecotwistinnovations/"
+                href="https://www.linkedin.com/company/ecotwistinnovtions/"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -150,7 +150,7 @@ export default function Footer() {
               {[
                 { name: "Return and Refund Policy", path: "/return-policy" },
                 { name: "Privacy Policy", path: "/privacy-policy" },
-                { name: "Terms of service", path: "/term-services" },
+                { name: "Terms of service", path: "/termsOfService" },
                 { name: "FAQ", path: "/faq" },
               ].map((item) => (
                 <li key={item.name}>
@@ -169,7 +169,7 @@ export default function Footer() {
         {/* Copyright */}
         <div className="mt-6 sm:mt-8 lg:mt-12 pt-6 sm:pt-8 border-t border-slate-700 text-center">
           <p className="text-slate-600 text-xs sm:text-sm">
-            © 2025 EcoTwist Innovations Pvt. Ltd. All rights reserved. | Made
+            © 2025 EcoTwist Innovtions Pvt. Ltd. All rights reserved. | Made
             with ❤️ for our planet
           </p>
         </div>
