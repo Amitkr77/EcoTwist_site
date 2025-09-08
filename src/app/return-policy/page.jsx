@@ -10,7 +10,7 @@ export default function ReturnRefundPolicy() {
         </h1>
 
         <p className="mb-4">
-          <strong>Ecotwist Innovations Private Limited</strong>
+          <strong>Ecotwist Innovtions Private Limited</strong>
         </p>
         <p className="mb-2">
           <strong>Registered Address:</strong> Near Euro Kids Play School,
@@ -41,7 +41,7 @@ export default function ReturnRefundPolicy() {
         {/* Sections */}
         <Section
           title="Our Commitment to Quality and Your Satisfaction"
-          content={`At Ecotwist Innovations Private Limited, we are dedicated to offering high-quality, sustainable products that meet and exceed your expectations. We understand that on rare occasions, a product may not be what you envisioned. This detailed Return and Refund Policy is designed to be a transparent and fair guide, ensuring your peace of mind while shopping with us. This policy is governed by the principles of the Consumer Protection Act, 2019, and all other applicable laws in India, guaranteeing your rights as a consumer.`}
+          content={`At Ecotwist Innovtions Private Limited, we are dedicated to offering high-quality, sustainable products that meet and exceed your expectations. We understand that on rare occasions, a product may not be what you envisioned. This detailed Return and Refund Policy is designed to be a transparent and fair guide, ensuring your peace of mind while shopping with us. This policy is governed by the principles of the Consumer Protection Act, 2019, and all other applicable laws in India, guaranteeing your rights as a consumer.`}
         />
 
         <Section
@@ -163,7 +163,7 @@ export default function ReturnRefundPolicy() {
 
         <p className="text-sm text-gray-600 italic">
           Disclaimer: This policy is a binding agreement between you and Ecotwist
-          Innovations Private Limited. We reserve the right to amend or update
+          Innovtions Private Limited. We reserve the right to amend or update
           this policy at any time. Changes will be posted on our website, and
           continued use of our services will be deemed as acceptance.
         </p>

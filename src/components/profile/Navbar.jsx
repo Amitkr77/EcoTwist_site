@@ -13,17 +13,23 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-const Navbar = React.memo(({ activeTab, setActiveTab, sidebarItems }) => {
+const Navbar = React.memo(({ activeTab, setActiveTab, sidebarItems,profileData }) => {
   const [userProfile] = useState({
-    name: "Amit Kumar",
-    email: "john.doe@example.com",
+    name: profileData.name || "user",
+    email: profileData.email || "user Email",
     phone: "+1 (555) 123-4567",
-    location: "San Francisco, CA",
-    totalOrders: 25,
+    // location: profileData?.location?.[0]
+    // ? `${profileData.location[0].city || "Unknown City"} ${profileData.location[0].country || ""}`
+    // : "Unknown City",
+
+   // totalOrders: profileData.totalOrder,
     totalSpent: 4500,
-    wishlistItems: 12,
+    wishlistItems: profileData.wishlist 
   });
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  console.log(profileData);
+ // console.log(profileData.location[0].city)
+  
 
   // Filter out logout from sidebarItems as it's now a separate button
   const navItems = sidebarItems.filter((item) => item.value !== "logout");

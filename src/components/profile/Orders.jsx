@@ -7,9 +7,16 @@ import { Button } from "../ui/button";
 import { Heart, Truck, Package, Eye } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import Link from "next/link";
+import { toast } from "sonner"; // ✅ make sure toast is imported
 
 export default function Orders() {
   const { orders, getTotalItems } = useCart();
+
+  // ✅ Added userProfile state
+  const [userProfile, setUserProfile] = useState({
+    wishlist: [],
+  });
+
   const [orderSort, setOrderSort] = useState("date-desc");
   const [orderFilter, setOrderFilter] = useState("all");
 
@@ -58,11 +65,12 @@ export default function Orders() {
               Order History
             </CardTitle>
             <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+              {/* Filters & Sorting */}
               <Select value={orderFilter} onValueChange={setOrderFilter}>
-                <SelectTrigger className="w-full sm:w-[160px] bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 transition-all duration-200">
+                <SelectTrigger className="w-full sm:w-[160px]">
                   <SelectValue placeholder="All Status" />
                 </SelectTrigger>
-                <SelectContent className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-lg">
+                <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
                   <SelectItem value="pending">Pending</SelectItem>
                   <SelectItem value="confirmed">Confirmed</SelectItem>
@@ -72,10 +80,10 @@ export default function Orders() {
                 </SelectContent>
               </Select>
               <Select value={orderSort} onValueChange={setOrderSort}>
-                <SelectTrigger className="w-full sm:w-[160px] bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 transition-all duration-200">
+                <SelectTrigger className="w-full sm:w-[160px]">
                   <SelectValue placeholder="Newest First" />
                 </SelectTrigger>
-                <SelectContent className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-lg">
+                <SelectContent>
                   <SelectItem value="date-desc">Newest First</SelectItem>
                   <SelectItem value="date-asc">Oldest First</SelectItem>
                   <SelectItem value="amount-desc">Highest Amount</SelectItem>
@@ -85,43 +93,45 @@ export default function Orders() {
             </div>
           </div>
         </CardHeader>
+
         <CardContent className="pt-4">
           {filteredOrders.length > 0 ? (
             <div className="space-y-6">
               {filteredOrders.map((order) => (
                 <div
                   key={order.id}
-                  className="border border-gray-200 dark:border-gray-700 rounded-xl p-4 sm:p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-300"
+                  className="border border-gray-200 dark:border-gray-700 rounded-xl p-4 sm:p-6 bg-white/80 dark:bg-gray-800/80 shadow-sm"
                 >
+                  {/* Order Header */}
                   <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                      <h3 className="text-lg font-semibold">
                         Order #{order.id}
                       </h3>
                       <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                         Placed on {formatDate(order.orderDate)}
                       </p>
                     </div>
-                    <Badge className={`${getStatusColor(order.status)} font-medium px-3 py-1 rounded-full transition-colors duration-200`}>
+                    <Badge className={`${getStatusColor(order.status)} px-3 py-1`}>
                       {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                     </Badge>
                   </div>
+
+                  {/* Items */}
                   <div className="space-y-4 mb-6">
                     {order.items.map((item) => (
                       <div
-                        key={item.product.id}
-                        className="flex items-center gap-4 text-sm p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200"
+                        key={item?.product?.id}
+                        className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition"
                       >
                         <img
-                          src={item.product.image || "/placeholder.svg"}
-                          alt={item.product.name}
-                          className="w-16 h-16 object-cover rounded-md border border-gray-200 dark:border-gray-600"
+                          src={item?.product?.image || "/placeholder.svg"}
+                          alt={item?.product?.name}
+                          className="w-16 h-16 object-cover rounded-md border"
                         />
                         <div className="flex-1">
-                          <p className="font-medium text-gray-900 dark:text-gray-100">
-                            {item.product.name}
-                          </p>
-                          <p className="text-gray-600 dark:text-gray-400 mt-1">
+                          <p className="font-medium">{item?.product?.name}</p>
+                          <p className="text-sm text-gray-600">
                             Quantity: {item.quantity}
                           </p>
                         </div>
@@ -129,7 +139,6 @@ export default function Orders() {
                           variant="outline"
                           size="sm"
                           onClick={() => handleAddToWishlist(item.product)}
-                          className="border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors duration-200"
                         >
                           <Heart className="w-4 h-4 mr-2" />
                           Add to Wishlist
@@ -137,24 +146,18 @@ export default function Orders() {
                       </div>
                     ))}
                   </div>
+
+                  {/* Footer */}
                   <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                    <span className="font-semibold text-lg text-gray-900 dark:text-gray-100">
+                    <span className="font-semibold text-lg">
                       Total: ₹{order.totalAmount.toFixed(2)}
                     </span>
-                    <div className="flex gap-2 w-full sm:w-auto">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex-1 sm:flex-none border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors duration-200"
-                      >
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm">
                         <Truck className="w-4 h-4 mr-2" />
                         Track Order
                       </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex-1 sm:flex-none border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors duration-200"
-                      >
+                      <Button variant="outline" size="sm">
                         <Eye className="w-4 h-4 mr-2" />
                         View Details
                       </Button>
@@ -165,14 +168,10 @@ export default function Orders() {
             </div>
           ) : (
             <div className="text-center py-12">
-              <Package className="w-16 h-16 mx-auto text-gray-600 dark:text-gray-300 mb-4" />
-              <p className="text-gray-600 dark:text-gray-300 text-lg">
-                No orders match your criteria
-              </p>
+              <Package className="w-16 h-16 mx-auto text-gray-600 mb-4" />
+              <p className="text-gray-600 text-lg">No orders match your criteria</p>
               <Link href="/products">
-                <Button className="mt-4 bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors duration-200">
-                  Start Shopping
-                </Button>
+                <Button className="mt-4">Start Shopping</Button>
               </Link>
             </div>
           )}

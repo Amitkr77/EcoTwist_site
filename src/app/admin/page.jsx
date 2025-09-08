@@ -1,95 +1,149 @@
-"use client"
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Users, ShoppingCart, DollarSign, TrendingUp, Package, FileText, Megaphone, Settings, Shield, Activity, Bell, AlertTriangle, Server, Database } from 'lucide-react';
-import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import UserManagement from '@/components/admin/UserManagement';
-import SalesDashboard from '@/components/admin/SalesDashboard';
-import FinanceDashboard from '@/components/admin/FinanceDashboard';
-import MarketingDashboard from '@/components/admin/MarketingDashboard';
-import GlobalOverview from '@/components/admin/GlobalOverview';
-import MasterAnalytics from '@/components/admin/MasterAnalytics';
-import DepartmentOverview from '@/components/admin/DepartmentOverview';
-import SystemSettings from '@/components/admin/SystemSettings';
-import AuditLogs from '@/components/admin/AuditLogs';
-import NotificationCenter from '@/components/admin/NotificationCenter';
-import IntegrationsPanel from '@/components/admin/IntegrationsPanel';
-import BackupRecovery from '@/components/admin/BackupRecovery';
-
-// Mock user data - replace with actual auth
-const mockUser = {
-  id: 1,
-  name: 'John Admin',
-  role: 'super_admin',
-  department: 'all',
-  permissions: ['all']
-};
+"use client";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { CiLogout } from "react-icons/ci";
+import {
+  Users,
+  ShoppingCart,
+  DollarSign,
+  TrendingUp,
+  Package,
+  FileText,
+  Megaphone,
+  Settings,
+  Shield,
+  Activity,
+  Bell,
+  AlertTriangle,
+  Server,
+  Database,
+} from "lucide-react";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import UserManagement from "@/components/admin/UserManagement";
+import SalesDashboard from "@/components/admin/SalesDashboard";
+import FinanceDashboard from "@/components/admin/FinanceDashboard";
+import MarketingDashboard from "@/components/admin/MarketingDashboard";
+import GlobalOverview from "@/components/admin/GlobalOverview";
+import MasterAnalytics from "@/components/admin/MasterAnalytics";
+import DepartmentOverview from "@/components/admin/DepartmentOverview";
+import SystemSettings from "@/components/admin/SystemSettings";
+import AuditLogs from "@/components/admin/AuditLogs";
+import NotificationCenter from "@/components/admin/NotificationCenter";
+import IntegrationsPanel from "@/components/admin/IntegrationsPanel";
+import BackupRecovery from "@/components/admin/BackupRecovery";
 
 const Page = () => {
-  const [currentUser] = useState(mockUser);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [currentUser, setCurrentUser] = useState(null);
+  const [activeTab, setActiveTab] = useState("overview");
+  const router = useRouter();
+
+  // Fetch logged-in admin from API
+  useEffect(() => {
+    const fetchAdmin = async () => {
+      try {
+        const res = await fetch("/api/admin/profile");
+        if (!res.ok) {
+          router.push("/admin/auth"); 
+          return;
+        }
+        const data = await res.json();
+        setCurrentUser(data.admin);
+      } catch (err) {
+        console.error("Error fetching admin:", err);
+        toast.error("Failed to fetch admin data");
+        router.push("/admin/auth");
+      }
+    };
+    fetchAdmin();
+  }, [router]);
+
+   const handleLogout = async () => {
+    await fetch('/api/admin/logout', { method: 'POST' }); 
+    router.push('/admin/auth');
+  };
+
+  if (!currentUser) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p>Loading admin dashboard...</p>
+      </div>
+    );
+  }
 
   const sidebarMenuItems = [
     {
-      label: 'Overview',
+      label: "Overview",
       items: [
-        { id: 'overview', label: 'Global Overview', icon: TrendingUp },
-        { id: 'analytics', label: 'Master Analytics', icon: FileText },
-      ]
+        { id: "overview", label: "Global Overview", icon: TrendingUp },
+        { id: "analytics", label: "Master Analytics", icon: FileText },
+      ],
     },
     {
-      label: 'Management',
+      label: "Management",
       items: [
-        { id: 'users', label: 'User Management', icon: Users },
-        { id: 'departments', label: 'Department Overview', icon: Package },
-      ]
+        { id: "users", label: "User Management", icon: Users },
+        { id: "departments", label: "Department Overview", icon: Package },
+      ],
     },
     {
-      label: 'Departments',
+      label: "Departments",
       items: [
-        { id: 'sales', label: 'Sales & Products', icon: ShoppingCart },
-        { id: 'finance', label: 'Finance', icon: DollarSign },
-        { id: 'marketing', label: 'Marketing', icon: Megaphone },
-      ]
+        { id: "sales", label: "Sales & Products", icon: ShoppingCart },
+        { id: "finance", label: "Finance", icon: DollarSign },
+        { id: "marketing", label: "Marketing", icon: Megaphone },
+      ],
     },
     {
-      label: 'System',
+      label: "System",
       items: [
-        { id: 'settings', label: 'System Settings', icon: Settings },
-        { id: 'notifications', label: 'Notifications', icon: Bell },
-        { id: 'audit', label: 'Audit Logs', icon: Activity },
-        { id: 'integrations', label: 'Integrations', icon: Server },
-        { id: 'backup', label: 'Backup & Recovery', icon: Database },
-      ]
-    }
+        { id: "settings", label: "System Settings", icon: Settings },
+        { id: "notifications", label: "Notifications", icon: Bell },
+        { id: "audit", label: "Audit Logs", icon: Activity },
+        { id: "integrations", label: "Integrations", icon: Server },
+        { id: "backup", label: "Backup & Recovery", icon: Database },
+      ],
+    },
   ];
 
   const renderActiveContent = () => {
     switch (activeTab) {
-      case 'overview':
+      case "overview":
         return <GlobalOverview />;
-      case 'analytics':
+      case "analytics":
         return <MasterAnalytics />;
-      case 'users':
+      case "users":
         return <UserManagement />;
-      case 'departments':
+      case "departments":
         return <DepartmentOverview />;
-      case 'sales':
+      case "sales":
         return <SalesDashboard />;
-      case 'finance':
+      case "finance":
         return <FinanceDashboard />;
-      case 'marketing':
+      case "marketing":
         return <MarketingDashboard />;
-      case 'settings':
+      case "settings":
         return <SystemSettings />;
-      case 'notifications':
+      case "notifications":
         return <NotificationCenter />;
-      case 'audit':
+      case "audit":
         return <AuditLogs />;
-      case 'integrations':
+      case "integrations":
         return <IntegrationsPanel />;
-      case 'backup':
+      case "backup":
         return <BackupRecovery />;
       default:
         return <GlobalOverview />;
@@ -102,13 +156,21 @@ const Page = () => {
         <Sidebar className="border-r">
           <SidebarContent>
             <div className="p-4 border-b">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+              <div className="flex items-center justify-between space-x-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
                   <Shield className="w-5 h-5 text-white" />
                 </div>
-                <div>
-                  <h2 className="font-semibold text-lg">Super Admin</h2>
+                <div className="">
+                  <h2 className="font-semibold text-lg">Admin</h2>
                   <p className="text-sm text-gray-500">{currentUser.name}</p>
+                  
+                </div>
+                </div>
+                <div>
+                  <Button variant="destructive" size="sm" onClick={handleLogout} className="flex items-center gap-1  bg-slate-700 hover:cursor-pointer:">
+                    <CiLogout className="w-4 h-4" />
+                  </Button>
                 </div>
               </div>
             </div>
@@ -147,8 +209,8 @@ const Page = () => {
                 <div>
                   <h1 className="text-2xl font-semibold text-gray-900">
                     {sidebarMenuItems
-                      .flatMap(section => section.items)
-                      .find(item => item.id === activeTab)?.label || 'Dashboard'}
+                      .flatMap((section) => section.items)
+                      .find((item) => item.id === activeTab)?.label || "Dashboard"}
                   </h1>
                   <p className="text-sm text-gray-500">
                     Manage your platform with comprehensive oversight
@@ -170,9 +232,7 @@ const Page = () => {
             </div>
           </header>
 
-          <main className="flex-1 p-6 overflow-auto">
-            {renderActiveContent()}
-          </main>
+          <main className="flex-1 p-6 overflow-auto">{renderActiveContent()}</main>
         </div>
       </div>
     </SidebarProvider>
