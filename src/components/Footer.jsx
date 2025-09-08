@@ -215,8 +215,8 @@ export default function Footer() {
         {/* Copyright */}
         <div className="mt-6 sm:mt-8 lg:mt-12 pt-6 sm:pt-8 border-t border-slate-700 text-center">
           <p className="text-slate-600 text-xs sm:text-sm">
-            © 2025 EcoTwist, All rights reserved. | Made
-            with 💚 for our planet
+            © 2025 EcoTwist | All rights reserved. | Made
+            with 💚 for our green planet
           </p>
         </div>
       </div>
