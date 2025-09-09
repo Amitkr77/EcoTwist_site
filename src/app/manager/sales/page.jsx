@@ -48,6 +48,7 @@ import {
 
 // Import section components
 import ProductCatalog from "@/components/manager/sales/ProductCatalog";
+import AddProductForm from "@/components/manager/sales/AddProduct";
 import OrderManagement from "@/components/manager/sales/OrderManagement";
 import InventoryManagement from "@/components/manager/sales/InventoryManagement";
 import UserProfile from "@/components/manager/sales/UserProfile";
@@ -293,6 +294,8 @@ const SalesManagerDashboard = () => {
         return renderDashboardOverview();
       case "product-catalog":
         return <ProductCatalog />;
+      case "add-product":
+        return <AddProductForm />;
       case "order-list":
         return <OrderManagement />;
       case "inventory-overview":
