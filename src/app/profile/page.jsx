@@ -230,9 +230,9 @@ const page = () => {
     name:userData.fullName,
     location:userData.address,
     email: userData.email,
-    wishlist:userData?.wishlist?.length || 0,
+    wishlist:userData?.wishlist?.length || 1
     //totalSpent:userData.totalSpent.toFixed(2),
-   // totalOrder:userData?.orders?.length
+   //totalOrder:userData?.orders?.length
 
   }
   

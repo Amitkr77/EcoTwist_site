@@ -26,7 +26,6 @@ export default function PrivacyPolicy() {
           </header>
 
           <section className="prose prose-gray max-w-none prose-h2:text-gray-800 prose-h3:text-gray-700 prose-p:text-gray-600 prose-li:text-gray-600 prose-a:text-blue-600 prose-strong:text-gray-900">
-            
             <h2>1. Company & Contact</h2>
             <div className="grid gap-2 sm:grid-cols-2">
               <p>
@@ -45,17 +44,16 @@ export default function PrivacyPolicy() {
                 <strong>CIN:</strong> U16292BR2025PTC074427
               </p>
               <p>
-  <strong>Website:</strong>{" "}
-  <a
-    href="https://ecotwist.in"
-    target="_blank"
-    rel="noopener noreferrer"
-    className="text-blue-600 hover:underline"
-  >
-    https://ecotwist.in
-  </a>
-</p>
-
+                <strong>Website:</strong>{" "}
+                <a
+                  href="https://ecotwist.in"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline"
+                >
+                  https://ecotwist.in
+                </a>
+              </p>
             </div>
 
             <h2>2. Introduction</h2>
@@ -63,10 +61,10 @@ export default function PrivacyPolicy() {
               Welcome to Ecotwist innovtions Private Limited. We're committed to
               protecting the privacy and security of your personal information.
               This Privacy Policy outlines how we collect, use, disclose, and
-              protect the information you provide to us when you use our website,{" "}
-              <a href="https://ecotwist.in">https://ecotwist.in</a>, and our
-              services. By accessing or using our website, you agree to the
-              terms of this Privacy Policy.
+              protect the information you provide to us when you use our
+              website, <a href="https://ecotwist.in">https://ecotwist.in</a>,
+              and our services. By accessing or using our website, you agree to
+              the terms of this Privacy Policy.
             </p>
 
             <h2>3. Information We Collect</h2>
@@ -77,8 +75,8 @@ export default function PrivacyPolicy() {
               <li>Phone Number</li>
               <li>Billing and Shipping Address</li>
               <li>
-                Payment Information (processed securely via third-party gateways,
-                not stored by us)
+                Payment Information (processed securely via third-party
+                gateways, not stored by us)
               </li>
             </ul>
 
@@ -104,12 +102,12 @@ export default function PrivacyPolicy() {
             <h2>4. How We Use Your Information</h2>
             <ul className="list-decimal pl-6">
               <li>
-                <strong>To Provide Services:</strong> Process and fulfill orders,
-                manage accounts, and deliver products.
+                <strong>To Provide Services:</strong> Process and fulfill
+                orders, manage accounts, and deliver products.
               </li>
               <li>
-                <strong>To Communicate:</strong> Send confirmations, updates, and
-                transactional emails.
+                <strong>To Communicate:</strong> Send confirmations, updates,
+                and transactional emails.
               </li>
               <li>
                 <strong>To Improve Services:</strong> Analyze usage and customer
@@ -120,8 +118,8 @@ export default function PrivacyPolicy() {
                 opt-out options).
               </li>
               <li>
-                <strong>Security:</strong> Protect against fraud and unauthorized
-                access.
+                <strong>Security:</strong> Protect against fraud and
+                unauthorized access.
               </li>
               <li>
                 <strong>Legal Compliance:</strong> Meet legal and regulatory
@@ -141,8 +139,8 @@ export default function PrivacyPolicy() {
                 law or to protect rights and safety.
               </li>
               <li>
-                <strong>Business Transfers:</strong> Data may transfer in case of
-                merger, acquisition, or asset sale.
+                <strong>Business Transfers:</strong> Data may transfer in case
+                of merger, acquisition, or asset sale.
               </li>
             </ul>
 
@@ -190,26 +188,25 @@ export default function PrivacyPolicy() {
             <p>
               Ecotwist innovtions Private Limited
               <br />
-             <p className="mb-6">
-  <strong>Email:</strong>{" "}
-  <a
-    href="mailto:support@ecotwist.in"
-    className="text-blue-600 hover:underline"
-  >
-    support@ecotwist.in
-  </a>
-  <br />
-  <strong>Website:</strong>{" "}
-  <a
-    href="https://ecotwist.in"
-    target="_blank"
-    rel="noopener noreferrer"
-    className="text-blue-600 hover:underline"
-  >
-    https://ecotwist.in
-  </a>
-</p>
-
+              <p className="mb-6">
+                <strong>Email:</strong>{" "}
+                <a
+                  href="mailto:support@ecotwist.in"
+                  className="text-blue-600 hover:underline"
+                >
+                  support@ecotwist.in
+                </a>
+                <br />
+                <strong>Website:</strong>{" "}
+                <a
+                  href="https://ecotwist.in"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline"
+                >
+                  https://ecotwist.in
+                </a>
+              </p>
             </p>
           </section>
         </div>

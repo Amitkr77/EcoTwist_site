@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useParams } from "next/navigation"; // Next.js 13+ App Router
+import Link from "next/link";
 
 import {
   Accordion,
@@ -244,8 +245,8 @@ export default function ProductPage() {
               className="relative w-full h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px] rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white"
             >
               <Image
-               src={selectedImage || "/product_image.png"}
-  alt={product.name || "Product image"}
+                src={selectedImage || "/product_image.png"}
+                alt={product.name || "Product image"}
                 fill
                 className="object-contain transition-transform duration-300"
                 style={{ transformOrigin: "center" }}
@@ -470,33 +471,7 @@ export default function ProductPage() {
               </CardContent>
             </Card>
 
-            {product.subscriptionOffer.enabled && (
-              <Card className="border-gray-200 bg-gray-50 shadow-sm">
-                <CardHeader className="pb-2 sm:pb-4">
-                  <CardTitle className="text-base sm:text-lg text-gray-900">
-                    Subscription Offer
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2 sm:space-y-3">
-                  <p className="text-gray-700 text-sm sm:text-base">
-                    Save {product.subscriptionOffer.firstOrderDiscountPct}% on
-                    your first order and{" "}
-                    {product.subscriptionOffer.recurringDiscountPct}% on
-                    recurring orders.
-                  </p>
-                  <p className="text-gray-700 text-sm sm:text-base">
-                    Delivered every {product.subscriptionOffer.interval.count}{" "}
-                    {product.subscriptionOffer.interval.unit}s. Cancel anytime.
-                  </p>
-                  <Button
-                    variant="outline"
-                    className="mt-2 sm:mt-4 border-gray-500 text-gray-600 w-full sm:w-auto"
-                  >
-                    Subscribe Now
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
+
           </div>
         </div>
 
@@ -627,10 +602,13 @@ export default function ProductPage() {
                         ₹{related.price}
                       </p>
                       <Button
+                        aschild
                         variant="outline"
                         className="mt-2 w-full border-gray-500 text-gray-600 text-sm sm:text-base"
                       >
-                        View Product
+                        <Link href={`/product/${related.id}`}>
+                          View Product
+                        </Link>
                       </Button>
                     </CardContent>
                   </Card>

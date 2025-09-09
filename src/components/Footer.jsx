@@ -35,7 +35,7 @@ export default function Footer() {
               Transforming waste into premium corporate gifts. Every purchase
               contributes to a sustainable future.
             </p>
-            <div className="flex space-x-3 sm:space-x-4 mt-4 sm:mt-6 justify-center md:justify-start">
+            <div className="flex space-x-1 sm:space-x-2 mt-4 sm:mt-6 justify-center md:justify-start">
               <a
                 href="https://www.facebook.com/ecotwiststores"
                 target="_blank"
@@ -214,10 +214,16 @@ export default function Footer() {
 
         {/* Copyright */}
         <div className="mt-6 sm:mt-8 lg:mt-12 pt-6 sm:pt-8 border-t border-slate-700 text-center">
-          <p className="text-slate-600 text-xs sm:text-sm">
-            © 2025 EcoTwist | All rights reserved. | Made
-            with 💚 for our green planet
-          </p>
+           <p>
+        © 2025{" "}
+        <Link
+          href="/"
+          className="font-semibold text-teal-600 hover:text-teal-800 transition-colors duration-300"
+        >
+          EcoTwist
+        </Link>{" "}
+        | All rights reserved. | Made with 💚 for our green planet
+      </p>
         </div>
       </div>
     </footer>
