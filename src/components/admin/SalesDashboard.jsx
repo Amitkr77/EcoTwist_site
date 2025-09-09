@@ -83,7 +83,7 @@ const SalesDashboard = () => {
 
       toast.success(`Sales Manager created! Password: ${data.password}`);
       setManagerEmail("");
-      // You can call fetchManagers() here if you implement fetching managers from DB
+      fetchManagers();
     } catch (err) {
       console.error(err);
       toast.error("Something went wrong");
