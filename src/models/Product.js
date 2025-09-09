@@ -48,17 +48,17 @@ const VariantSchema = new Schema({
   isActive: { type: Boolean, default: true },
 }, { _id: false });
 
-const SubscriptionOfferSchema = new Schema({
-  enabled: { type: Boolean, default: false },
-  firstOrderDiscountPct: { type: Number, min: 0, max: 100, default: 0 },
-  recurringDiscountPct: { type: Number, min: 0, max: 100, default: 0 },
-  interval: {
-    unit: { type: String, enum: ["day", "week", "month"], default: "month" },
-    count: { type: Number, min: 1, default: 1 },
-  },
-  shippingInsured: { type: Boolean, default: false },
-  cancelAnytime: { type: Boolean, default: true },
-}, { _id: false });
+// const SubscriptionOfferSchema = new Schema({
+//   enabled: { type: Boolean, default: false },
+//   firstOrderDiscountPct: { type: Number, min: 0, max: 100, default: 0 },
+//   recurringDiscountPct: { type: Number, min: 0, max: 100, default: 0 },
+//   interval: {
+//     unit: { type: String, enum: ["day", "week", "month"], default: "month" },
+//     count: { type: Number, min: 1, default: 1 },
+//   },
+//   shippingInsured: { type: Boolean, default: false },
+//   cancelAnytime: { type: Boolean, default: true },
+// }, { _id: false });
 
 const FAQSchema = new Schema({
   question: { type: String, required: true, trim: true },
@@ -71,6 +71,7 @@ const ProductSchema = new Schema({
   name: { type: String, required: true, trim: true, maxlength: 140 },
   slug: { type: String, required: true, unique: true, lowercase: true, index: true },
   brand: { type: String, default: "Ecotwist" },
+  hsnCode: { type: String, required: true, trim: true, match: /^[0-9]{4,8}$/ },
 
   description: String,
   usage: String,
@@ -92,7 +93,7 @@ const ProductSchema = new Schema({
   ratingAverage: { type: Number, default: 0, min: 0, max: 5 },
   ratingCount: { type: Number, default: 0, min: 0 },
 
-  subscriptionOffer: { type: SubscriptionOfferSchema, default: {} },
+  // subscriptionOffer: { type: SubscriptionOfferSchema, default: {} },
 
   seo: {
     metaTitle: String,

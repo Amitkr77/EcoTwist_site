@@ -31,12 +31,13 @@ function LoginLogic({ setErrorMessage }) {
     }
   }, [searchParams]);
 
-  return null; // This component only handles logic, no UI
+  return null; 
 }
 
 export default function Page() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState("select");
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -47,12 +48,20 @@ export default function Page() {
     setIsLoading(true);
     setErrorMessage("");
 
+    const apiEndpoints = {
+      sales: "/api/managers/sales",
+      finance: "/api/managers/finance",
+      marketing: "/api/managers/marketing",
+    };
+
+    const selectedEndpoint = apiEndpoints[role];
+
     try {
-      const response = await fetch("/api/admin/login", {
+      const response = await fetch(selectedEndpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
-      });
+    });
 
       const result = await response.json();
 
@@ -62,7 +71,7 @@ export default function Page() {
       }
 
       // ✅ Login successful → cookie is already set by API
-      router.push("/admin");
+      router.push(`/manager/${role}`);
     } catch (error) {
       console.error("Login error:", error);
       setErrorMessage("Something went wrong. Please try again later.");
@@ -79,7 +88,7 @@ export default function Page() {
             <img src="/logo.png" alt="EcoTwist Logo" className="h-20" />
           </div>
           <CardTitle className="text-3xl font-bold text-slate-800">
-            Welcome Back
+            Manager's Portal
           </CardTitle>
           <CardDescription className="text-slate-600 hidden">
             Sign in to your EcoTwist account
@@ -87,32 +96,23 @@ export default function Page() {
         </CardHeader>
 
         <CardContent>
-          {/* Google Sign-In Button */}
-          <Button
-            type="button"
-            onClick={() => console.log("Google Sign In")}
-            className="w-full bg-white text-slate-800 border border-slate-200 hover:bg-slate-50 py-2.5 font-medium rounded-md flex items-center justify-center gap-3 transition-all shadow-sm mb-5"
-          >
-            <img src="/google.png" alt="" className="h-5 w-5" />
-            Continue with Google
-          </Button>
-
-          {/* OR Divider */}
-          <div className="my-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-slate-200" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="bg-white/80 px-3 text-slate-500">
-                  Or Sign in to your EcoTwist account
-                </span>
-              </div>
-            </div>
-          </div>
 
           {/* Login Form */}
           <form onSubmit={handleLogin} className="space-y-5">
+
+            <div>
+              <select
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                className="w-full p-2 border border-slate-300 rounded-md bg-white/70 focus:ring-2 focus:ring-forest/50 focus:outline-none transition"
+              >
+                <option value="select">--select your role--</option>
+                <option value="sales">Sales Manager</option>
+                <option value="finance">Finance Manager</option>
+                <option value="marketing">Marketing Manager</option>
+              </select>
+            </div>
+
             {/* Email Input with Icon */}
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
