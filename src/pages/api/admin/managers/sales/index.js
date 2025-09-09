@@ -1,6 +1,7 @@
 import dbConnect from "@/lib/mongodb";
 import { verifyToken } from "@/lib/adminToken";
 import { hashPassword } from "@/lib/hashPassword"; 
+import sendEmail from "@/lib/nodemailer/mail-handler";
 import SalesManager from "@/models/salesManager";
 
 
@@ -41,6 +42,46 @@ export default async function handler(req, res) {
 
       const newManager = new SalesManager({ name, email, password: hashedPassword });
       await newManager.save();
+
+      const emailHtml = `
+  <div style="max-width: 600px; margin: auto; padding: 20px; font-family: Arial, sans-serif; border: 1px solid #e0e0e0; border-radius: 8px; background-color: #fafafa;">
+    <h2 style="color: #333;">Hello ${name},</h2>
+
+    <p style="font-size: 16px; color: #555;">
+      <strong>Congratulations!</strong> 💐 on being appointed as Sales Manager of <strong>EcoTwist</strong> Below are the login credentials and steps to login:
+    </p>
+
+    <div style="text-align: center; margin: 30px 0;">
+      <span style="display: inline-block; padding: 12px 24px; font-size: 24px; font-weight: bold; color: Black; border-radius: 5px;">
+       <strong>Email:</strong>  ${email}
+      </span>
+      <span style="display: inline-block; padding: 12px 24px; font-size: 24px; font-weight: bold; color: Black; border-radius: 5px;">
+       <strong>Password:</strong>  ${password}
+      </span>
+    </div>
+
+    <p style="font-size: 14px; color: #888;">
+      To change the password you can contact admin@example.com. If you did not request this, please ignore this email.
+    </p>
+
+    <p style="margin-top: 40px; font-size: 16px; color: #333;">
+      Best regards,<br/>
+      Technical team
+    </p>
+
+    <hr style="margin: 40px 0; border: none; border-top: 1px solid #eee;" />
+
+    <p style="font-size: 12px; color: #aaa; text-align: center;">
+      &copy; ${new Date().getFullYear()} EcoTwist Pvt Ltd. All rights reserved.
+    </p>
+  </div>
+`
+
+await sendEmail({
+        to: email,
+        subject: "Welcome Onboard",
+        html: emailHtml
+      });
 
       return res.status(201).json({
         success: true,
