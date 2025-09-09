@@ -26,7 +26,7 @@ export function middleware(req) {
   // Skip check for auth/register pages
   if (
     pathname.startsWith("/admin/auth") ||
-    pathname.startsWith("/managers/login") ||
+    pathname.startsWith("/manager/login") ||
     pathname.startsWith("/login") ||
     pathname.startsWith("/signup")
   ) {
@@ -35,7 +35,7 @@ export function middleware(req) {
 
   // Protect admin routes
   if (pathname.startsWith("/admin")) {
-    const decoded = verifyToken(adminToken, process.env.ADMIN_JWT_SECRET);
+    const decoded = verifyToken(adminToken, process.env.ADMIN_JWT_SECRET || "admin_jwt_secret_key");
     if (!decoded || decoded.role !== "admin") {
       const loginUrl = new URL("/admin/auth", req.url);
       loginUrl.searchParams.set("error", "login-first");
@@ -45,10 +45,10 @@ export function middleware(req) {
   }
 
   // Protect sales manager routes
-  if (pathname.startsWith("/managers/sales")) {
+  if (pathname.startsWith("/manager/sales")) {
     const decoded = verifyToken(salesToken, process.env.MANAGER_JWT_SECRET);
     if (!decoded || decoded.role !== "manager:sales") {
-      const loginUrl = new URL("/managers/login", req.url);
+      const loginUrl = new URL("/manager/login", req.url);
       loginUrl.searchParams.set("error", "login-first");
       return NextResponse.redirect(loginUrl);
     }
@@ -56,10 +56,10 @@ export function middleware(req) {
   }
 
   // Protect finance manager routes
-  if (pathname.startsWith("/managers/finance")) {
+  if (pathname.startsWith("/manager/finance")) {
     const decoded = verifyToken(financeToken, process.env.MANAGER_JWT_SECRET);
     if (!decoded || decoded.role !== "manager:finance") {
-      const loginUrl = new URL("/managers/login", req.url);
+      const loginUrl = new URL("/manager/login", req.url);
       loginUrl.searchParams.set("error", "login-first");
       return NextResponse.redirect(loginUrl);
     }
@@ -67,10 +67,10 @@ export function middleware(req) {
   }
 
   // Protect marketing manager routes
-  if (pathname.startsWith("/managers/marketing")) {
-    const decoded = verifyToken(marketingToken, process.env.MANAGER_JWT_SECRET);
+  if (pathname.startsWith("/manager/marketing")) {
+    const decoded = verifyToken(marketingToken, process.env.MANAGER_JWT_SECRET || "manager-secret-key");
     if (!decoded || decoded.role !== "manager:marketing") {
-      const loginUrl = new URL("/managers/login", req.url);
+      const loginUrl = new URL("/manager/login", req.url);
       loginUrl.searchParams.set("error", "login-first");
       return NextResponse.redirect(loginUrl);
     }
@@ -91,10 +91,8 @@ export function middleware(req) {
 
 export const config = {
   matcher: [
-    "/admin/:path*",
-    "/managers/sales/:path*",
-    "/managers/finance/:path*",
-    "/managers/marketing/:path*",
+    "/admin/:path((?!auth|register).*)",
+    "/manager/(sales|finance|marketing)/:path((?!login).*)",
     "/profile/:path*",
   ],
 };
