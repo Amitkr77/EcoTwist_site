@@ -1,6 +1,6 @@
 import User from "@/models/User.js";
 import dbConnect from "@/lib/mongodb";
-import sendEmail from "../../nodemailer/mail-handler";
+import sendEmail from "@/lib/nodemailer/mail-handler";
 
 const rateLimitMap = new Map();
 
