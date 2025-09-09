@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "./ui/checkbox";
 
 export default function AddProductForm() {
   const [isLoading, setIsLoading] = useState(false);
@@ -35,14 +36,7 @@ export default function AddProductForm() {
       ],
       faqs: [{ question: "", answer: "" }],
       seo: { metaTitle: "", metaDescription: "" },
-      subscriptionOffer: {
-        enabled: false,
-        firstOrderDiscountPct: 0,
-        recurringDiscountPct: 0,
-        interval: { unit: "month", count: 1 },
-        shippingInsured: false,
-        cancelAnytime: true,
-      },
+      status: false,
     },
   });
 
@@ -117,6 +111,52 @@ export default function AddProductForm() {
       setValue(`variants.${vIndex}.optionValues`, updatedOptionValues);
     });
   }, [options, variants, setValue]);
+
+  const handleImageUpload = useCallback(
+    (index) => async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const productName = watch("name");
+      if (!productName) {
+        alert("Please enter the product name before uploading images.");
+        e.target.value = "";
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("productName", productName);
+      formData.append("file", file);
+
+      try {
+        const token = localStorage.getItem("sale-manager-token");
+
+        const response = await fetch(
+          "http://localhost:3000/api/products/image-upload",
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            body: formData,
+          }
+        );
+
+        const data = await response.json();
+        if (data.success && data.urls && data.urls.length > 0) {
+          setValue(`images.${index}.url`, data.urls[0]);
+        } else {
+          alert("Image upload failed.");
+          e.target.value = "";
+        }
+      } catch (error) {
+        console.error("Upload error:", error);
+        alert("Error uploading image.");
+        e.target.value = "";
+      }
+    },
+    [watch, setValue]
+  );
 
   const onSubmit = async (data) => {
     setIsLoading(true);
@@ -209,7 +249,7 @@ export default function AddProductForm() {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="space-y-6 p-4 max-w-4xl mx-auto"
+      className="space-y-6 p-4 max-w-4xl mx-auto mt-20"
     >
       <h2 className="text-2xl font-bold">Add New Product</h2>
 
@@ -228,12 +268,12 @@ export default function AddProductForm() {
       )}
 
       {/* Basic Information */}
-      <div className="border p-4 rounded bg-gray-50">
-        <h3 className="text-lg font-semibold mb-2">Basic Information</h3>
+      <div className="  ">
+        <h3 className="text-lg font-semibold mb-4">Basic Information</h3>
         <div className="space-y-4">
           <div>
-            <Label htmlFor="name">
-              Product Name <span className="text-red-500">*</span>
+            <Label htmlFor="name" className="mb-2">
+              Product Name <span className="text-red-500 ">*</span>
             </Label>
             <Input
               id="name"
@@ -245,7 +285,7 @@ export default function AddProductForm() {
             )}
           </div>
           <div>
-            <Label htmlFor="hsnCode">
+            <Label className="mb-2" htmlFor="hsnCode">
               HSN Code (4-8 digits) <span className="text-red-500">*</span>
             </Label>
             <Input
@@ -266,26 +306,34 @@ export default function AddProductForm() {
             )}
           </div>
           <div>
-            <Label htmlFor="description">Description</Label>
+            <Label className="mb-2" htmlFor="description">
+              Description
+            </Label>
             <Textarea id="description" {...register("description")} />
           </div>
           <div>
-            <Label htmlFor="bestUse">Best Use</Label>
+            <Label className="mb-2" htmlFor="bestUse">
+              Best Use
+            </Label>
             <Textarea id="bestUse" {...register("bestUse")} />
           </div>
           <div>
-            <Label htmlFor="usage">Usage Instructions</Label>
+            <Label className="mb-2" htmlFor="usage">
+              Usage Instructions
+            </Label>
             <Textarea id="usage" {...register("usage")} />
           </div>
           <div>
-            <Label htmlFor="ingredients">Ingredients</Label>
+            <Label className="mb-2" htmlFor="ingredients">
+              Ingredients
+            </Label>
             <Textarea id="ingredients" {...register("ingredients")} />
           </div>
         </div>
       </div>
 
       {/* Benefits */}
-      <div className="border p-4 rounded bg-gray-50">
+      <div className="border p-4 rounded ">
         <h3 className="text-lg font-semibold mb-2">Benefits</h3>
         {benefitFields.map((field, index) => (
           <div key={field.id} className="flex items-center space-x-2 mt-2">
@@ -331,7 +379,7 @@ export default function AddProductForm() {
       </div>
 
       {/* Categories */}
-      <div className="border p-4 rounded bg-gray-50">
+      <div className="border p-4 rounded ">
         <h3 className="text-lg font-semibold mb-2">Categories</h3>
         {categoryFields.map((field, index) => (
           <div key={field.id} className="flex items-center space-x-2 mt-2">
@@ -377,7 +425,7 @@ export default function AddProductForm() {
       </div>
 
       {/* Tags */}
-      <div className="border p-4 rounded bg-gray-50">
+      <div className="border p-4 rounded ">
         <h3 className="text-lg font-semibold mb-2">Tags</h3>
         {tagFields.map((field, index) => (
           <div key={field.id} className="flex items-center space-x-2 mt-2">
@@ -419,7 +467,7 @@ export default function AddProductForm() {
       </div>
 
       {/* Images */}
-      <div className="border p-4 rounded bg-gray-50">
+      <div className="border p-4 rounded ">
         <h3 className="text-lg font-semibold mb-2">Images</h3>
         {imageFields.map((field, index) => (
           <div
@@ -427,15 +475,14 @@ export default function AddProductForm() {
             className="space-y-2 mt-2 border p-4 rounded bg-white"
           >
             <div>
-              <Label htmlFor={`images.${index}.url`}>
-                Image URL <span className="text-red-500">*</span>
+              <Label className="mb-2" htmlFor={`images.${index}.file`}>
+                Upload Image <span className="text-red-500">*</span>
               </Label>
               <Input
-                id={`images.${index}.url`}
-                {...register(`images.${index}.url`, {
-                  required: "Image URL is required",
-                })}
-                placeholder="Image URL"
+                id={`images.${index}.file`}
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload(index)}
                 className={errors.images?.[index]?.url ? "border-red-500" : ""}
               />
               {errors.images?.[index]?.url && (
@@ -445,7 +492,22 @@ export default function AddProductForm() {
               )}
             </div>
             <div>
-              <Label htmlFor={`images.${index}.alt`}>Alt Text</Label>
+              <Label className="mb-2" htmlFor={`images.${index}.url`}>
+                Uploaded Image URL
+              </Label>
+              <Input
+                id={`images.${index}.url`}
+                {...register(`images.${index}.url`, {
+                  required: "Image is required",
+                })}
+                placeholder="Uploaded URL will appear here"
+                readOnly
+              />
+            </div>
+            <div>
+              <Label className="mb-2" htmlFor={`images.${index}.alt`}>
+                Alt Text
+              </Label>
               <Input
                 id={`images.${index}.alt`}
                 {...register(`images.${index}.alt`)}
@@ -456,7 +518,7 @@ export default function AddProductForm() {
               <input
                 type="checkbox"
                 {...register(`images.${index}.isPrimary`)}
-                className="form-checkbox h-5 w-5 text-blue-600"
+                className="form-checkbox h-4 w-4 text-blue-600 "
               />
               <span>Is Primary Image</span>
             </label>
@@ -493,7 +555,7 @@ export default function AddProductForm() {
       </div>
 
       {/* Options */}
-      <div className="border p-4 rounded bg-gray-50">
+      <div className="border p-4 rounded ">
         <h3 className="text-lg font-semibold mb-2">Options</h3>
         {optionFields.map((field, index) => (
           <div
@@ -501,7 +563,7 @@ export default function AddProductForm() {
             className="space-y-2 mt-2 border p-4 rounded bg-white"
           >
             <div>
-              <Label htmlFor={`options.${index}.name`}>
+              <Label className="mb-2" htmlFor={`options.${index}.name`}>
                 Option Name <span className="text-red-500">*</span>
               </Label>
               <Input
@@ -521,7 +583,7 @@ export default function AddProductForm() {
               )}
             </div>
             <div>
-              <Label>
+              <Label className="mb-2">
                 Option Values <span className="text-red-500">*</span>
               </Label>
               <div className="space-y-2">
@@ -596,7 +658,7 @@ export default function AddProductForm() {
       </div>
 
       {/* Variants */}
-      <div className="border p-4 rounded bg-gray-50">
+      <div className="border p-4 rounded ">
         <h3 className="text-lg font-semibold mb-2">Variants</h3>
         {variantFields.map((field, index) => (
           <div
@@ -604,7 +666,7 @@ export default function AddProductForm() {
             className="space-y-2 mt-2 border p-4 rounded bg-white"
           >
             <div>
-              <Label htmlFor={`variants.${index}.sku`}>
+              <Label className="mb-2" htmlFor={`variants.${index}.sku`}>
                 SKU <span className="text-red-500">*</span>
               </Label>
               <Input
@@ -624,7 +686,7 @@ export default function AddProductForm() {
               )}
             </div>
             <div>
-              <Label htmlFor={`variants.${index}.price`}>
+              <Label className="mb-2" htmlFor={`variants.${index}.price`}>
                 Price <span className="text-red-500">*</span>
               </Label>
               <Input
@@ -648,7 +710,10 @@ export default function AddProductForm() {
               )}
             </div>
             <div>
-              <Label htmlFor={`variants.${index}.inventory.quantity`}>
+              <Label
+                className="mb-2"
+                htmlFor={`variants.${index}.inventory.quantity`}
+              >
                 Inventory Quantity <span className="text-red-500">*</span>
               </Label>
               <Input
@@ -673,12 +738,15 @@ export default function AddProductForm() {
               )}
             </div>
             <div>
-              <Label>
+              <Label className="mb-2">
                 Option Values <span className="text-red-500">*</span>
               </Label>
               {options.map((opt, oIndex) => (
                 <div key={oIndex} className="mt-2">
-                  <Label htmlFor={`variants.${index}.optionValues.${opt.name}`}>
+                  <Label
+                    className="mb-2"
+                    htmlFor={`variants.${index}.optionValues.${opt.name}`}
+                  >
                     {opt.name || `Option ${oIndex + 1}`}
                   </Label>
                   <select
@@ -689,7 +757,7 @@ export default function AddProductForm() {
                         (opt.values || []).some((v) => v.value === value) ||
                         "Invalid option value",
                     })}
-                    className={`w-full border rounded p-2 ${
+                    className={`w-full border rounded p-2 mb-2 ${
                       errors.variants?.[index]?.optionValues?.[opt.name]
                         ? "border-red-500"
                         : ""
@@ -757,7 +825,7 @@ export default function AddProductForm() {
       </div>
 
       {/* FAQs */}
-      <div className="border p-4 rounded bg-gray-50">
+      <div className="border p-4 rounded ">
         <h3 className="text-lg font-semibold mb-2">FAQs</h3>
         {faqFields.map((field, index) => (
           <div
@@ -765,7 +833,7 @@ export default function AddProductForm() {
             className="space-y-2 mt-2 border p-4 rounded bg-white"
           >
             <div>
-              <Label htmlFor={`faqs.${index}.question`}>
+              <Label className="mb-2" htmlFor={`faqs.${index}.question`}>
                 Question <span className="text-red-500">*</span>
               </Label>
               <Input
@@ -785,7 +853,7 @@ export default function AddProductForm() {
               )}
             </div>
             <div>
-              <Label htmlFor={`faqs.${index}.answer`}>
+              <Label className="mb-2" htmlFor={`faqs.${index}.answer`}>
                 Answer <span className="text-red-500">*</span>
               </Label>
               <Textarea
@@ -828,11 +896,13 @@ export default function AddProductForm() {
       </div>
 
       {/* SEO */}
-      <div className="border p-4 rounded bg-gray-50">
+      <div className="border p-4 rounded ">
         <h3 className="text-lg font-semibold mb-2">SEO</h3>
         <div className="space-y-2">
           <div>
-            <Label htmlFor="seo.metaTitle">Meta Title</Label>
+            <Label className="mb-2" htmlFor="seo.metaTitle">
+              Meta Title
+            </Label>
             <Input
               id="seo.metaTitle"
               {...register("seo.metaTitle")}
@@ -840,7 +910,9 @@ export default function AddProductForm() {
             />
           </div>
           <div>
-            <Label htmlFor="seo.metaDescription">Meta Description</Label>
+            <Label className="mb-2" htmlFor="seo.metaDescription">
+              Meta Description
+            </Label>
             <Textarea
               id="seo.metaDescription"
               {...register("seo.metaDescription")}
@@ -850,130 +922,16 @@ export default function AddProductForm() {
         </div>
       </div>
 
-      {/* Subscription Offer */}
-      <div className="border p-4 rounded bg-gray-50">
-        <h3 className="text-lg font-semibold mb-2">Subscription Offer</h3>
-        <div className="space-y-4">
-          <label className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              {...register("subscriptionOffer.enabled")}
-              className="form-checkbox h-5 w-5 text-blue-600"
-            />
-            <span>Enable Subscription Offer</span>
-          </label>
-          <div>
-            <Label htmlFor="subscriptionOffer.firstOrderDiscountPct">
-              First Order Discount (%)
-            </Label>
-            <Input
-              id="subscriptionOffer.firstOrderDiscountPct"
-              type="number"
-              step="0.01"
-              {...register("subscriptionOffer.firstOrderDiscountPct", {
-                valueAsNumber: true,
-                min: { value: 0, message: "Discount cannot be negative" },
-                max: { value: 100, message: "Discount cannot exceed 100%" },
-              })}
-              placeholder="First Order Discount (%)"
-              className={
-                errors.subscriptionOffer?.firstOrderDiscountPct
-                  ? "border-red-500"
-                  : ""
-              }
-            />
-            {errors.subscriptionOffer?.firstOrderDiscountPct && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.subscriptionOffer.firstOrderDiscountPct.message}
-              </p>
-            )}
-          </div>
-          <div>
-            <Label htmlFor="subscriptionOffer.recurringDiscountPct">
-              Recurring Discount (%)
-            </Label>
-            <Input
-              id="subscriptionOffer.recurringDiscountPct"
-              type="number"
-              step="0.01"
-              {...register("subscriptionOffer.recurringDiscountPct", {
-                valueAsNumber: true,
-                min: { value: 0, message: "Discount cannot be negative" },
-                max: { value: 100, message: "Discount cannot exceed 100%" },
-              })}
-              placeholder="Recurring Discount (%)"
-              className={
-                errors.subscriptionOffer?.recurringDiscountPct
-                  ? "border-red-500"
-                  : ""
-              }
-            />
-            {errors.subscriptionOffer?.recurringDiscountPct && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.subscriptionOffer.recurringDiscountPct.message}
-              </p>
-            )}
-          </div>
-          <div>
-            <Label htmlFor="subscriptionOffer.interval.unit">
-              Interval Unit
-            </Label>
-            <select
-              id="subscriptionOffer.interval.unit"
-              {...register("subscriptionOffer.interval.unit")}
-              className="w-full border rounded p-2"
-            >
-              <option value="month">Month</option>
-              <option value="week">Week</option>
-              <option value="year">Year</option>
-            </select>
-          </div>
-          <div>
-            <Label htmlFor="subscriptionOffer.interval.count">
-              Interval Count <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="subscriptionOffer.interval.count"
-              type="number"
-              {...register("subscriptionOffer.interval.count", {
-                required: "Interval count is required",
-                valueAsNumber: true,
-                min: { value: 1, message: "Interval count must be at least 1" },
-              })}
-              placeholder="Interval Count"
-              className={
-                errors.subscriptionOffer?.interval?.count
-                  ? "border-red-500"
-                  : ""
-              }
-            />
-            {errors.subscriptionOffer?.interval?.count && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.subscriptionOffer.interval.count.message}
-              </p>
-            )}
-          </div>
-          <label className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              {...register("subscriptionOffer.shippingInsured")}
-              className="form-checkbox h-5 w-5 text-blue-600"
-            />
-            <span>Shipping Insured</span>
-          </label>
-          <label className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              {...register("subscriptionOffer.cancelAnytime")}
-              className="form-checkbox h-5 w-5 text-blue-600"
-            />
-            <span>Cancel Anytime</span>
-          </label>
+      {/* Status */}
+      <div className="space-y-4 p-4 border rounded">
+        <h2 className="text-lg font-semibold">Status</h2>{" "}
+        <div className="flex items-center gap-3">
+          <Checkbox id="status" {...register(`status`)} />
+          <Label htmlFor="status">Featured Product</Label>
         </div>
       </div>
 
-      {/* Submit Button */}
-      <Button type="submit" disabled={isLoading}>
+      <Button type="submit" disabled={isLoading} className="cursor-pointer">
         {isLoading ? "Submitting..." : "Add Product"}
       </Button>
     </form>
