@@ -1,15 +1,27 @@
 import { NextResponse } from "next/server";
-import jwt from "jsonwebtoken";
+// import jwt from "jsonwebtoken";
+import { jwtVerify } from "jose"; // replaced this with jsonwebtoken.verify because not working on edge runtime
 
-function verifyToken(token, secret) {
+// function verifyToken(token, secret) {
+//   try {
+//     return jwt.verify(token, secret);
+//   } catch (err) {
+//     console.log("token verification failed", err);
+//     return null;
+//   }
+// }
+
+async function verifyToken(token, secret) {
   try {
-    return jwt.verify(token, secret);
+    const secretKey = new TextEncoder().encode(secret);
+    const { payload } = await jwtVerify(token, secretKey);
+    return payload; // contains id, role, etc.
   } catch (err) {
     return null;
   }
 }
 
-export function middleware(req) {
+export async function middleware(req) {
   const { pathname } = req.nextUrl;
 
   // Admin token
@@ -19,6 +31,8 @@ export function middleware(req) {
   const salesToken = req.cookies.get("manager-sales-token")?.value;
   const financeToken = req.cookies.get("manager-finance-token")?.value;
   const marketingToken = req.cookies.get("manager-marketing-token")?.value;
+
+  console.log("sales", salesToken);
 
   // User token
   const userToken = req.cookies.get("user-token")?.value;
@@ -35,7 +49,7 @@ export function middleware(req) {
 
   // Protect admin routes
   if (pathname.startsWith("/admin")) {
-    const decoded = verifyToken(adminToken, process.env.ADMIN_JWT_SECRET || "admin_jwt_secret_key");
+    const decoded = await verifyToken(adminToken, process.env.ADMIN_JWT_SECRET || "admin_jwt_secret_key");
     if (!decoded || decoded.role !== "admin") {
       const loginUrl = new URL("/admin/auth", req.url);
       loginUrl.searchParams.set("error", "login-first");
@@ -46,7 +60,7 @@ export function middleware(req) {
 
   // Protect sales manager routes
   if (pathname.startsWith("/manager/sales")) {
-    const decoded = verifyToken(salesToken, process.env.MANAGER_JWT_SECRET);
+    const decoded = await verifyToken(salesToken, process.env.MANAGER_JWT_SECRET);
     if (!decoded || decoded.role !== "manager:sales") {
       const loginUrl = new URL("/manager/login", req.url);
       loginUrl.searchParams.set("error", "login-first");
@@ -57,7 +71,7 @@ export function middleware(req) {
 
   // Protect finance manager routes
   if (pathname.startsWith("/manager/finance")) {
-    const decoded = verifyToken(financeToken, process.env.MANAGER_JWT_SECRET);
+    const decoded = await verifyToken(financeToken, process.env.MANAGER_JWT_SECRET);
     if (!decoded || decoded.role !== "manager:finance") {
       const loginUrl = new URL("/manager/login", req.url);
       loginUrl.searchParams.set("error", "login-first");
@@ -68,7 +82,7 @@ export function middleware(req) {
 
   // Protect marketing manager routes
   if (pathname.startsWith("/manager/marketing")) {
-    const decoded = verifyToken(marketingToken, process.env.MANAGER_JWT_SECRET || "manager-secret-key");
+    const decoded = await verifyToken(marketingToken, process.env.MANAGER_JWT_SECRET || "manager-secret-key");
     if (!decoded || decoded.role !== "manager:marketing") {
       const loginUrl = new URL("/manager/login", req.url);
       loginUrl.searchParams.set("error", "login-first");
@@ -79,7 +93,7 @@ export function middleware(req) {
 
   // Protect user profile routes
   if (pathname.startsWith("/profile")) {
-    const decoded = verifyToken(userToken, process.env.JWT_SECRET);
+    const decoded = await verifyToken(userToken, process.env.JWT_SECRET);
     if (!decoded || decoded.role !== "user") {
       const loginUrl = new URL("/login", req.url);
       loginUrl.searchParams.set("error", "login-first");
@@ -92,7 +106,8 @@ export function middleware(req) {
 export const config = {
   matcher: [
     "/admin/:path((?!auth|register).*)",
-    "/manager/(sales|finance|marketing)/:path((?!login).*)",
+    "/manager/:path((?!login).*)",    
+    // "/manager/(sales|finance|marketing)",
     "/profile/:path*",
-  ],
+  ],  
 };
