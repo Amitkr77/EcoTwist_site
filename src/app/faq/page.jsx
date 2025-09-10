@@ -1,3 +1,5 @@
+import Footer from "@/components/Footer";
+
 export default function FAQ() {
   const faqs = [
     {
@@ -105,7 +107,7 @@ export default function FAQ() {
   ];
 
   return (
-    <div className="container mx-auto px-6 py-12 text-slate-700">
+    <div className="container  mx-auto px-6 py-12 text-slate-700">
       <h1 className="text-3xl font-bold mb-6">Frequently Asked Questions (FAQ)</h1>
       <p className="mb-10">
         Here are some of the most common questions we receive. If you can't find what you’re looking for, 
@@ -128,6 +130,8 @@ export default function FAQ() {
           </div>
         </div>
       ))}
+      <Footer/>
     </div>
+    
   );
 }

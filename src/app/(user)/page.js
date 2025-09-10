@@ -285,15 +285,15 @@ export default function Home() {
                       variant="outline"
                       className="mt-2 w-full border-gray-400 text-gray-700 text-sm"
                     >
-                      <Link href={`/product/${product._id}`}>View Product</Link>
+                      <Link href={`/product-info/${product._id}`}>View Product</Link>
                     </Button>
                   </CardContent>
                 </Card>
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious />
-          <CarouselNext />
+          <CarouselPrevious className="left-[-2rem]" />
+          <CarouselNext  className="right-[-2rem]" />
         </Carousel>
       </div>
     </section>

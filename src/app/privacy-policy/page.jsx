@@ -1,4 +1,5 @@
 import Head from "next/head";
+import Footer from "@/components/Footer";
 
 export default function PrivacyPolicy() {
   return (
@@ -211,6 +212,7 @@ export default function PrivacyPolicy() {
           </section>
         </div>
       </main>
+      <Footer/>
     </>
   );
 }
