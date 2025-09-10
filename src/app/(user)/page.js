@@ -4,9 +4,17 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
-import ProductCard from "@/components/ProductCard";
+
 import { Star, Truck, Shield, Recycle, Award, MoveRight, ArrowRight } from "lucide-react";
 import { useEffect, useState } from "react";
+
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 export default function Home() {
   const [products, setProducts] = useState([])
@@ -225,37 +233,70 @@ export default function Home() {
 
       {/* Featured Products */}
       <section className="py-8 sm:py-12 lg:py-16 bg-ivory">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row w-full justify-between items-center sm:items-end mb-8 sm:mb-10 px-0 sm:px-4 lg:px-10">
-            <div className="text-center sm:text-left">
-              <h2 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-800 mb-3 sm:mb-4">
-                Featured Products
-              </h2>
-              <p className="text-base sm:text-lg lg:text-xl text-slate-600 max-w-md sm:max-w-lg lg:max-w-2xl mx-auto sm:mx-0">
-                Handcrafted with care, designed for impact. Each product tells a
-                story of transformation.
-              </p>
-            </div>
-            <div className="flex justify-center mt-4 sm:mt-8">
-              <Button
-                asChild
-                className="text-sm sm:text-lg px-6 sm:px-8 py-2 sm:py-3 cursor-pointer rounded-full font-medium inline-flex items-center gap-1 sm:gap-2 hover:gap-2 sm:hover:gap-3 transition-all duration-300"
-              >
-                <Link href="/products">
-                  View All
-                  <MoveRight className="w-4 sm:w-5 h-4 sm:h-5" />
-                </Link>
-              </Button>
-            </div>
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Heading + Button */}
+        <div className="flex flex-col sm:flex-row w-full justify-between items-center sm:items-end mb-8 sm:mb-10 px-0 sm:px-4 lg:px-10">
+          <div className="text-center sm:text-left">
+            <h2 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-800 mb-3 sm:mb-4">
+              Featured Products
+            </h2>
+            <p className="text-base sm:text-lg lg:text-xl text-slate-600 max-w-md sm:max-w-lg lg:max-w-2xl mx-auto sm:mx-0">
+              Handcrafted with care, designed for impact. Each product tells a
+              story of transformation.
+            </p>
           </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4  gap-4 sm:gap-6 px-0 sm:px-4 lg:px-10 mb-8 sm:mb-12">
-            {products.map((product, index) => (
-              <ProductCard key={index} product={product} />
-            ))}
+          <div className="flex justify-center mt-4 sm:mt-8">
+            <Button
+              asChild
+              className="text-sm sm:text-lg px-6 sm:px-8 py-2 sm:py-3 cursor-pointer rounded-full font-medium inline-flex items-center gap-1 sm:gap-2 hover:gap-2 sm:hover:gap-3 transition-all duration-300"
+            >
+              <Link href="/products">
+                View All
+                <MoveRight className="w-4 sm:w-5 h-4 sm:h-5" />
+              </Link>
+            </Button>
           </div>
         </div>
-      </section>
+
+        {/* Product Carousel */}
+        <Carousel className="w-full">
+          <CarouselContent>
+            {products.map((product) => (
+              <CarouselItem
+                key={product._id}
+                className="basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4"
+              >
+                <Card className="border border-gray-200 shadow-sm">
+                  <CardContent className="p-4">
+                    <div className="relative w-full h-48 rounded-md overflow-hidden">
+                      <Image
+                        src={product.images?.[0]?.url || "/product_image.png"}
+                        alt={product.name}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                    <h3 className="mt-2 text-lg font-semibold text-slate-900">
+                      {product.name}
+                    </h3>
+                    <p className="text-slate-600 text-sm">₹{product.price}</p>
+                    <Button
+                      asChild
+                      variant="outline"
+                      className="mt-2 w-full border-gray-400 text-gray-700 text-sm"
+                    >
+                      <Link href={`/product-info/${product._id}`}>View Product</Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious className="left-[-2rem]" />
+          <CarouselNext  className="right-[-2rem]" />
+        </Carousel>
+      </div>
+    </section>
 
       {/* Customer Testimonials */}
       <section className="py-8 sm:py-12 lg:py-16 bg-white">

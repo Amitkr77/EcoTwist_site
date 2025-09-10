@@ -4,7 +4,7 @@ import { Search } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 
-const page = () => {
+const Page = () => {
   const [products, setProducts] = useState([]); 
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -21,7 +21,6 @@ const page = () => {
         if (!res.ok) throw new Error("Failed to fetch products");
         const data = await res.json();
         setProducts(data.data);
-       
       } catch (err) {
         setError(err.message);
       } finally {
@@ -35,6 +34,19 @@ const page = () => {
     new Set(products.map((product) => product.categories[0]))
   );
 
+  const [priceRange, setPriceRange] = useState({ min: "", max: "" });
+  const [minRating, setMinRating] = useState(0);
+  const [sortBy, setSortBy] = useState("default");
+
+  const resetFilters = () => {
+    setSearchTerm("");
+    setSelectedCategory("");
+    setPriceRange({ min: "", max: "" });
+    setMinRating(0);
+    setSortBy("default");
+  };
+
+  // Filtering
   const filteredProducts = products.filter((product) => {
     const matchesSearch =
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -44,21 +56,28 @@ const page = () => {
     return matchesSearch && matchesCategory;
   });
 
-  const [priceRange, setPriceRange] = useState({ min: "", max: "" });
-  const [minRating, setMinRating] = useState(0);
-  const [sortBy, setSortBy] = useState("default");
-
-  const resetFilters = () => {
-    setSearchTerm("");
-    setSelectedCategory("");
-    setPriceRange({ min: "", max: "" });
-    setAvailability({ inStock: false, outOfStock: false });
-    setMinRating(0);
-    setSortBy("default");
-  };
+  // Sorting
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    // if (sortBy === "priceLowHigh") {
+    //   return a.price - b.price;
+    // }
+    // if (sortBy === "priceHighLow") {
+    //   return b.price - a.price;
+    // }
+    if (sortBy === "ratingHighLow") {
+      return b.rating - a.rating;
+    }
+    if (sortBy === "nameAZ") {
+      return a.name.localeCompare(b.name);
+    }
+    if (sortBy === "nameZA") {
+      return b.name.localeCompare(a.name);
+    }
+    return 0; // default (no sorting)
+  });
 
   return (
-    <div className="min-h-screen bg-gray-50 ">
+    <div className="min-h-screen pt-20  bg-gray-50 ">
       <div className="text-center pt-10">
         <h1 className="font-heading text-4xl md:text-5xl font-bold text-[#1B4332] mb-4 tracking-tight">
           Discover Sustainable Gifts
@@ -72,7 +91,7 @@ const page = () => {
       {/* Main Content */}
       <div className="max-w-screen-2xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-4 gap-8 ">
         {/* Sidebar Filters */}
-        <aside className="lg:col-span-1 bg-white p-6 rounded-lg shadow-md border border-gray-200 space-y-6 transition-all duration-300 sticky top-1 z-10 h-fit">
+        <aside className="lg:col-span-1 bg-white p-6 rounded-lg shadow-md border border-gray-200 space-y-6 sticky top-1 z-10 h-fit">
           {/* Search */}
           <div>
             <label
@@ -97,19 +116,7 @@ const page = () => {
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                   aria-label="Clear search"
                 >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
+                  ✕
                 </button>
               )}
             </div>
@@ -121,132 +128,29 @@ const page = () => {
               Category
             </h3>
             <div className="space-y-3 text-sm">
-              <label className="flex items-center space-x-3 cursor-pointer hover:text-green-600 transition-colors duration-200">
+              <label className="flex items-center space-x-3 cursor-pointer">
                 <input
                   type="radio"
                   name="category"
                   checked={selectedCategory === ""}
                   onChange={() => setSelectedCategory("")}
-                  className="form-radio text-green-600 focus:ring-green-500 h-4 w-4"
+                  className="form-radio text-green-600 h-4 w-4"
                 />
                 <span>All Categories</span>
               </label>
               {categories.map((category) => (
                 <label
                   key={category}
-                  className="flex items-center space-x-3 cursor-pointer hover:text-green-600 transition-colors duration-200"
+                  className="flex items-center space-x-3 cursor-pointer"
                 >
                   <input
                     type="radio"
                     name="category"
                     checked={selectedCategory === category}
                     onChange={() => setSelectedCategory(category)}
-                    className="form-radio text-green-600 focus:ring-green-500 h-4 w-4"
+                    className="form-radio text-green-600 h-4 w-4"
                   />
                   <span>{category}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          {/* Price Range */}
-          <div>
-            <h3 className="text-sm font-semibold text-gray-800 mb-3">
-              Price Range (₹)
-            </h3>
-            <div className="grid grid-cols-2 gap-3">
-              <input
-                type="number"
-                placeholder="Min"
-                value={priceRange.min}
-                onChange={(e) =>
-                  setPriceRange((prev) => ({ ...prev, min: e.target.value }))
-                }
-                className="text-sm border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200"
-                min="0"
-                aria-label="Minimum price"
-              />
-              <input
-                type="number"
-                placeholder="Max"
-                value={priceRange.max}
-                onChange={(e) =>
-                  setPriceRange((prev) => ({ ...prev, max: e.target.value }))
-                }
-                className="text-sm border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200"
-                min="0"
-                aria-label="Maximum price"
-              />
-            </div>
-          </div>
-
-          {/* Availability */}
-          {/* <div>
-            <h3 className="text-sm font-semibold text-gray-800 mb-3">
-              Availability
-            </h3>
-            <div className="space-y-3 text-sm">
-              <label className="flex items-center space-x-3 cursor-pointer hover:text-green-600 transition-colors duration-200">
-                <input
-                  type="checkbox"
-                  checked={availability.inStock}
-                  onChange={() => handleAvailabilityChange("inStock")}
-                  className="form-checkbox text-green-600 focus:ring-green-500 h-4 w-4"
-                />
-                <span>In Stock</span>
-              </label>
-              <label className="flex items-center space-x-3 cursor-pointer hover:text-green-600 transition-colors duration-200">
-                <input
-                  type="checkbox"
-                  checked={availability.outOfStock}
-                  onChange={() => handleAvailabilityChange("outOfStock")}
-                  className="form-checkbox text-green-600 focus:ring-green-500 h-4 w-4"
-                />
-                <span>Out of Stock</span>
-              </label>
-            </div>
-          </div> */}
-
-          {/* Ratings */}
-          <div>
-            <h3 className="text-sm font-semibold text-gray-800 mb-3">
-              Minimum Rating
-            </h3>
-            <div className="space-y-3 text-sm">
-              {[5, 4, 3, 2, 1].map((rating) => (
-                <label
-                  key={rating}
-                  className="flex items-center space-x-3 cursor-pointer hover:text-green-600 transition-colors duration-200"
-                >
-                  <input
-                    type="radio"
-                    name="rating"
-                    checked={minRating === rating}
-                    onChange={() => setMinRating(rating)}
-                    className="form-radio text-green-600 focus:ring-green-500 h-4 w-4"
-                  />
-                  <span className="flex items-center">
-                    {[...Array(rating)].map((_, i) => (
-                      <svg
-                        key={i}
-                        className="w-4 h-4 text-yellow-400"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path d="M10 15l-5.878 3.09 1.122-6.545L.488 6.91l6.561-.955L10 0l2.951 5.955 6.561.955-4.756 4.635 1.122 6.545z" />
-                      </svg>
-                    ))}
-                    {[...Array(5 - rating)].map((_, i) => (
-                      <svg
-                        key={i}
-                        className="w-4 h-4 text-gray-300"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path d="M10 15l-5.878 3.09 1.122-6.545L.488 6.91l6.561-.955L10 0l2.951 5.955 6.561.955-4.756 4.635 1.122 6.545z" />
-                      </svg>
-                    ))}
-                  </span>
                 </label>
               ))}
             </div>
@@ -260,14 +164,14 @@ const page = () => {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="w-full text-sm border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200"
-              aria-label="Sort products"
+              className="w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500"
             >
-              <option value="default">Relevance</option>
-              <option value="price-asc">Price: Low to High</option>
-              <option value="price-desc">Price: High to Low</option>
-              <option value="rating-desc">Highest Rated</option>
-              <option value="newest">Newest First</option>
+              <option value="default">Default</option>
+              {/* <option value="priceLowHigh">Price: Low to High</option>
+              <option value="priceHighLow">Price: High to Low</option> */}
+              <option value="ratingHighLow">Rating: High to Low</option>
+              <option value="nameAZ">Name: A to Z</option>
+              <option value="nameZA">Name: Z to A</option>
             </select>
           </div>
 
@@ -275,7 +179,6 @@ const page = () => {
           <button
             onClick={resetFilters}
             className="w-full py-2 px-4 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors duration-200 text-sm font-medium"
-            aria-label="Reset all filters"
           >
             Reset Filters
           </button>
@@ -296,25 +199,21 @@ const page = () => {
                 </div>
               ))}
             </div>
-          ) : filteredProducts.length === 0 ? (
-            <div
-              className="text-center py-12 bg-white rounded-lg shadow-md border border-gray-200"
-              role="alert"
-              aria-live="polite"
-            >
+          ) : sortedProducts.length === 0 ? (
+            <div className="text-center py-12 bg-white rounded-lg shadow-md border border-gray-200">
               <p className="text-gray-500 text-lg font-medium">
                 No products found matching your criteria.
               </p>
               <button
                 onClick={resetFilters}
-                className="mt-4 inline-block px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors duration-200 text-sm font-medium"
+                className="mt-4 px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm font-medium"
               >
                 Clear Filters
               </button>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredProducts.map((product, index) => (
+              {sortedProducts.map((product, index) => (
                 <ProductCard key={index} product={product} />
               ))}
             </div>
@@ -322,8 +221,8 @@ const page = () => {
         </main>
       </div>
 
+      {/* Impact Section */}
       <div className="p-4">
-        {/* Impact Message */}
         <div className="mt-20 bg-gradient-to-r from-[#2E7D32] to-[#1B4332] text-white rounded-2xl px-8 py-12 text-center shadow-lg">
           <div className="max-w-3xl mx-auto">
             <DotLottieReact
@@ -331,14 +230,13 @@ const page = () => {
               loop
               autoplay
             />
-            <h3 className="font-heading text-3xl md:text-4xl font-bold mb-4 leading-tight">
+            <h3 className="font-heading text-3xl md:text-4xl font-bold mb-4">
               Every Purchase Makes a Difference
             </h3>
-            <p className="text-lg md:text-xl text-white/90 leading-relaxed">
+            <p className="text-lg md:text-xl text-white/90">
               When you shop with <strong>EcoTwist</strong>, you're not just
               buying a product — you're empowering artisan communities,
-              supporting sustainable practices, and helping us reduce
-              environmental waste with every order.
+              supporting sustainable practices, and helping us reduce waste.
             </p>
           </div>
         </div>
@@ -347,4 +245,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;

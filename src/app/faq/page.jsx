@@ -1,3 +1,5 @@
+import Footer from "@/components/Footer";
+
 export default function FAQ() {
   const faqs = [
     {
@@ -13,7 +15,7 @@ export default function FAQ() {
         },
         {
           q: "How can I contact customer support?",
-          a: "You can reach us at support@ecotwist.in. We aim to respond within 24–48 business hours."
+          a: "You can reach us at <a href='mailto:support@ecotwist.in'>support@ecotwist.in</a>. We aim to respond within 24–48 business hours"
         },
       ],
     },
@@ -22,7 +24,7 @@ export default function FAQ() {
       questions: [
         {
           q: "What payment methods do you accept?",
-          a: "We accept all major credit/debit cards, Net Banking, UPI, and COD on eligible orders."
+          a: "We accept all major credit/debit cards, Net Banking, and UPI on eligible orders."
         },
         {
           q: "How can I track my order?",
@@ -30,7 +32,7 @@ export default function FAQ() {
         },
         {
           q: "Can I change or cancel my order?",
-          a: "Yes, only if it has not yet been dispatched. Please contact support@ecotwist.in with your order number."
+          a: "Yes, only if it has not yet been dispatched. Please contact <a href='mailto:support@ecotwist.in'>support@ecotwist.in</a> with your order number."
         },
       ],
     },
@@ -105,7 +107,7 @@ export default function FAQ() {
   ];
 
   return (
-    <div className="container mx-auto px-6 py-12 text-slate-700">
+    <div className="container  mx-auto px-6 py-12 text-slate-700">
       <h1 className="text-3xl font-bold mb-6">Frequently Asked Questions (FAQ)</h1>
       <p className="mb-10">
         Here are some of the most common questions we receive. If you can't find what you’re looking for, 
@@ -128,6 +130,8 @@ export default function FAQ() {
           </div>
         </div>
       ))}
+      <Footer/>
     </div>
+    
   );
 }

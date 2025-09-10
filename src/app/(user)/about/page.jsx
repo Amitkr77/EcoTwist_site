@@ -53,7 +53,7 @@ export default function page() {
               social good — helping companies gift with heart and purpose.
             </p>
             <div>
-              <Link href="/shop">
+              <Link href="/products">
                 <Button className="bg-[#1B4332] hover:bg-[#2D6A4F] text-white px-6 py-3 rounded-md shadow-md transition duration-300">
                   Explore Our Products
                 </Button>

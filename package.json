@@ -8,6 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "postbuild": "next-sitemap",
     "seed-admin": "node src/scripts/seedAdmin.js"
   },
   "dependencies": {
@@ -51,6 +52,7 @@
     "multer": "^2.0.2",
     "next": "15.3.3",
     "next-auth": "^4.24.11",
+    "next-sitemap": "^4.2.3",
     "nodemailer": "^6.10.1",
     "puppeteer": "^22.12.0",
     "razorpay": "^2.9.6",

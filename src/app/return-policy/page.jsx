@@ -1,5 +1,5 @@
 import React from "react";
-
+import Footer from "@/components/Footer";
 export default function ReturnRefundPolicy() {
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800">
@@ -168,6 +168,7 @@ export default function ReturnRefundPolicy() {
           continued use of our services will be deemed as acceptance.
         </p>
       </div>
+      <Footer/>
     </div>
   );
 }
