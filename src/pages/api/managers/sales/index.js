@@ -22,12 +22,13 @@ export default async function handler(req, res) {
        return res.status(401).json({ error: "Invalid credentials" });
       }
 
+      const JWT_SECRET=process.env.MANAGER_JWT_SECRET;
       const token = jwt.sign(
         {
-            id: "user-id-123",
-            role: "manager:sales"
+            id: manager._id,
+            role: manager.role
         },
-        process.env.MANAGER_JWT_SECRET,
+        JWT_SECRET,
         { expiresIn: "1h" }
       );
 
