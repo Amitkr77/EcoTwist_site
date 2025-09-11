@@ -236,7 +236,7 @@ export default function Home() {
                 story of transformation.
               </p>
             </div>
-            <div className="flex justify-center mt-4 sm:mt-8">
+            {/* <div className="flex justify-center mt-4 sm:mt-8">
               <Button
                 asChild
                 className="text-sm sm:text-lg px-6 sm:px-8 py-2 sm:py-3 cursor-pointer rounded-full font-medium inline-flex items-center gap-1 sm:gap-2 hover:gap-2 sm:hover:gap-3 transition-all duration-300"
@@ -246,7 +246,7 @@ export default function Home() {
                   <MoveRight className="w-4 sm:w-5 h-4 sm:h-5" />
                 </Link>
               </Button>
-            </div>
+            </div> */}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4  gap-4 sm:gap-6 px-0 sm:px-4 lg:px-10 mb-8 sm:mb-12">
