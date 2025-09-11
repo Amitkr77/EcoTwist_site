@@ -48,19 +48,18 @@ export default function Page() {
     setIsLoading(true);
     setErrorMessage("");
 
-    const apiEndpoints = {
-      sales: "/api/managers/sales",
-      finance: "/api/managers/finance",
-      marketing: "/api/managers/marketing",
-    };
-
-    const selectedEndpoint = apiEndpoints[role];
-
+    const roleManager = `manager:${role}`;
+    
+    if (role === "select") {
+      toast.error("Please select your role");
+      setIsLoading(false);
+      return; 
+    } 
     try {
-      const response = await fetch(selectedEndpoint, {
+      const response = await fetch("/api/managers/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, roleManager }),
     });
 
       const result = await response.json();
@@ -171,18 +170,19 @@ export default function Page() {
               </div>
               <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-white/80 px-3 text-slate-500">
-                  Don’t have an account?
+                  Trouble signing in?
                 </span>
               </div>
             </div>
 
             <div className="mt-4 text-center">
               <Link
-                href="/register"
-                className="flex items-center justify-center gap-1 text-forest hover:text-forest-600 font-medium transition"
+                href="mailto:admin@example.com"
+                className="flex items-center justify-center gap-2 text-forest hover:text-forest-600 font-medium transition"
               >
-                Create new account
-                <ArrowRightCircle className="w-4 h-4" />
+                 Contact Admin
+                 <span className="underline text-blue-500">admin@example.com</span>
+                <Mail className="w-4 h-4" />
               </Link>
             </div>
           </div>
