@@ -1,5 +1,5 @@
 import Head from "next/head";
-
+import Footer from "@/components/Footer";
 export default function TermsOfService() {
   return (
     <>
@@ -11,7 +11,7 @@ export default function TermsOfService() {
         />
       </Head>
 
-      <main className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-16 px-6 sm:px-12">
+      <main className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-16 px-6 sm:px-12 ">
         <div className="mx-auto max-w-5xl bg-white shadow-xl rounded-2xl p-10 md:p-16 border border-gray-200">
           <header className="mb-12 text-center">
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-gray-900">
@@ -216,7 +216,9 @@ export default function TermsOfService() {
             </p>
           </section>
         </div>
+        
       </main>
+      <Footer/>
     </>
   );
 }
