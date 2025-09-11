@@ -4,7 +4,7 @@ import "./globals.css";
 import { CartProvider } from "@/contexts/CartContext";
 import { ToastProvider } from "@/hooks/use-toast";
 import { AuthProvider } from "@/contexts/AuthContext";
-import GoogleAnalytics from "@/components/googleAnalytics"
+import GoogleAnalytics from "@/components/GoogleAnalytics"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
