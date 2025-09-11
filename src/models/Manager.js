@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const SalesManagerSchema = new mongoose.Schema({
+const ManagerSchema = new mongoose.Schema({
   name: { type: String, required: true }, 
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true }, // hashed
@@ -8,4 +8,4 @@ const SalesManagerSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
-export default mongoose.models.SalesManager || mongoose.model("SalesManager", SalesManagerSchema);
+export default mongoose.models.Manager || mongoose.model("Manager", ManagerSchema);
