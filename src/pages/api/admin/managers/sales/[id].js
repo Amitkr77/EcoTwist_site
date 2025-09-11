@@ -1,6 +1,6 @@
 import dbConnect from "@/lib/mongodb";
 import { verifyToken } from "@/lib/adminToken";
-import SalesManager from "@/models/salesManager";
+import Manager from "@/models/Manager";
 import bcrypt from "bcryptjs";
 
 export default async function handler(req, res) {
@@ -22,14 +22,14 @@ export default async function handler(req, res) {
       }
 
       const hashedPassword = await bcrypt.hash(newPassword, 10);
-      await SalesManager.findByIdAndUpdate(id, { password: hashedPassword });
+      await Manager.findByIdAndUpdate(id, { password: hashedPassword });
 
       return res.status(200).json({ success: true, message: "Password reset successfully" });
     }
 
     if (req.method === "DELETE") {
       // Delete manager
-      await SalesManager.findByIdAndDelete(id);
+      await Manager.findByIdAndDelete(id);
       return res.status(200).json({ success: true, message: "Manager deleted successfully" });
     }
 
