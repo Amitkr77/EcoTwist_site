@@ -107,6 +107,7 @@ export default function FAQ() {
   ];
 
   return (
+    <div>
     <div className="container  mx-auto px-6 py-12 text-slate-700">
       <h1 className="text-3xl font-bold mb-6">Frequently Asked Questions (FAQ)</h1>
       <p className="mb-10">
@@ -125,12 +126,16 @@ export default function FAQ() {
               <div key={qIdx} className="border-b pb-4">
                 <p className="font-medium text-lg mb-1">Q: {item.q}</p>
                 <p className="text-slate-600">A: {item.a}</p>
-              </div>
+              </div >
             ))}
           </div>
         </div>
       ))}
-      <Footer/>
+
+      
+      
+    </div>
+    <Footer/>
     </div>
     
   );
