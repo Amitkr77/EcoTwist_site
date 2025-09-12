@@ -2,7 +2,7 @@ import dbConnect from "@/lib/mongodb";
 import { verifyToken } from "@/lib/adminToken";
 import { hashPassword } from "@/lib/hashPassword"; 
 import sendEmail from "@/lib/nodemailer/mail-handler";
-import SalesManager from "@/models/salesManager";
+import Manager from "@/models/Manager";
 
 
 function generatePassword(length = 12) {
@@ -21,18 +21,18 @@ export default async function handler(req, res) {
   try {
     if (req.method === "GET") {
       // Fetch all sales managers
-      const managers = await SalesManager.find().select("-password");
+      const managers = await Manager.find().select("-password");
       return res.status(200).json({ success: true, managers });
     }
 
     if (req.method === "POST") {
-      const { name, email } = req.body;
+      const { name, email, role } = req.body;
 
-      if (!name || !email) {
+      if (!name || !email || !role) {
         return res.status(400).json({ message: "All fields are required" });
       }
 
-      const existing = await SalesManager.findOne({ email });
+      const existing = await Manager.findOne({ email });
       if (existing) {
         return res.status(400).json({ message: "Email already exists" });
       }
@@ -40,8 +40,9 @@ export default async function handler(req, res) {
       const password = generatePassword();
       const hashedPassword = await hashPassword(password);
 
-      const newManager = new SalesManager({ name, email, password: hashedPassword });
+      const newManager = new Manager({ name, email, password: hashedPassword, role});
       await newManager.save();
+      
 
       const emailHtml = `
   <div style="max-width: 600px; margin: auto; padding: 20px; font-family: Arial, sans-serif; border: 1px solid #e0e0e0; border-radius: 8px; background-color: #fafafa;">
@@ -89,6 +90,7 @@ await sendEmail({
           id: newManager._id,
           name: newManager.name,
           email: newManager.email,
+          role: newManager.role,
           password: password
         },
       });

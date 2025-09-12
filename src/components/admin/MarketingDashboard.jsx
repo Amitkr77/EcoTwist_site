@@ -1,9 +1,12 @@
-
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '../ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Megaphone, Users, TrendingUp, Calendar, Plus, Eye, Play } from 'lucide-react';
+import { Megaphone, Users, TrendingUp, Calendar, Plus, Eye, Play, Trash2 } from 'lucide-react';
+import { toast } from 'react-hot-toast';
+
 
 const mockCampaigns = [
   { id: 1, name: 'Spring Sale 2024', type: 'Email', status: 'active', clicks: 1250, conversions: 45, budget: 500 },
@@ -18,6 +21,14 @@ const mockSocialPosts = [
 ];
 
 const MarketingDashboard = () => {
+
+  const [managerName, setManagerName] = useState('');
+      const [managerEmail, setManagerEmail] = useState('');
+      const [isCreating, setIsCreating] = useState(false);
+      const [managers, setManagers] = useState([]);
+      const [isLoadingManagers, setIsLoadingManagers] = useState(true);
+      const managerRole = "manager:marketing";
+
   const getCampaignBadge = (status) => {
     switch (status) {
       case 'active': return <Badge variant="default">Active</Badge>;
@@ -36,8 +47,149 @@ const MarketingDashboard = () => {
     }
   };
 
+  const fetchManagers = async () => {
+      try {
+        const res = await fetch("/api/admin/managers/sales");
+        const data = await res.json();
+        if (res.ok) {
+          const filteredManagers = data.managers.filter(m => m.role === managerRole);
+          setManagers(filteredManagers);
+        } else {
+          toast.error(data.message || "Failed to fetch managers");
+        }
+      } catch (err) {
+        console.error(err);
+        toast.error("Something went wrong");
+      } finally {
+        setIsLoadingManagers(false);
+      }
+    };
+  
+    useEffect(() => {
+      fetchManagers();
+    }, []);
+  
+    // create manager
+      const handleCreateManager = async () => {
+        if (!managerEmail || !managerName) return toast.error("All fields are required!");
+    
+        setIsCreating(true);
+        try {
+          const res = await fetch("/api/admin/managers/sales", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name:managerName, email: managerEmail, role: managerRole}),
+          });
+          const data = await res.json();
+          
+          if (!res.ok) return toast.error(data.message || "Failed to create manager");
+    
+          toast.success("Manager created!");
+          setManagerEmail("");
+          fetchManagers();
+        } catch (err) {
+          console.error(err);
+          toast.error("Something went wrong");
+        } finally {
+          setIsCreating(false);
+        }
+      };
+  
+      // Delete sales manager
+    const handleDeleteManager = async (id) => {
+      if (!confirm("Are you sure you want to delete this manager?")) return;
+  
+      try {
+        const res = await fetch(`/api/admin/managers/sales/${id}`, {
+          method: "DELETE",
+        });
+        const data = await res.json();
+        if (res.ok) {
+          toast.success("Manager deleted");
+          fetchManagers();
+        } else {
+          toast.error(data.message || "Failed to delete manager");
+        }
+      } catch (err) {
+        console.error(err);
+        toast.error("Something went wrong");
+      }
+    };
+
   return (
     <div className="space-y-4">
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Create Marketing Manager</CardTitle>
+          <CardDescription>
+            Enter manager's email to create an account. A strong password will be auto-generated.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex gap-2 items-center">
+          <Input
+            type="name"
+            placeholder="Manager Name"
+            value={managerName}
+            onChange={(e) => setManagerName(e.target.value)}
+            className="flex-1"
+          />
+          <Input
+            type="email"
+            placeholder="Manager Email"
+            value={managerEmail}
+            onChange={(e) => setManagerEmail(e.target.value)}
+            className="flex-1"
+          />
+          <Button onClick={handleCreateManager} disabled={isCreating}>
+            {isCreating ? "Creating..." : "Create Manager"}
+          </Button>
+        </CardContent>
+      </Card>
+
+    <Card>
+        <CardHeader>
+          <CardTitle>Marketing Managers</CardTitle>
+          <CardDescription>List of all registered marketing managers</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {isLoadingManagers ? (
+            <p>Loading...</p>
+          ) : managers.length === 0 ? (
+            <p className="text-muted-foreground">No manager found</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Created At</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {managers.map((manager) => (
+                  <TableRow key={manager._id}>
+                    <TableCell className="font-medium">{manager.name}</TableCell>
+                    <TableCell>{manager.email}</TableCell>
+                    <TableCell>{new Date(manager.createdAt).toLocaleDateString()}</TableCell>
+                    <TableCell>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => handleDeleteManager(manager._id)}
+                      >
+                        <Trash2 className="h-4 w-4 mr-1" /> Delete
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Marketing Metrics */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>

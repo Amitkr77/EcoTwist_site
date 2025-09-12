@@ -1,5 +1,5 @@
 import dbConnect from "@/lib/mongodb";
-import SalesManager from "@/models/salesManager";
+import Manager from "@/models/Manager";
 import { comparePassword } from "@/lib/hashPassword";
 import cookie from "cookie";
 import jwt from "jsonwebtoken";
@@ -8,12 +8,12 @@ export default async function handler(req, res) {
   await dbConnect();
 
   if (req.method === "POST") {
-    const { email, password } = req.body;
+    const { email, password, roleManager } = req.body;
 
     try {
-      const manager = await SalesManager.findOne({ email });
-      if (!manager) {
-        return res.status(401).json({ error: "Invalid credentials" });
+      const manager = await Manager.findOne({ email });
+      if (!manager || manager.role!=roleManager) {
+        return res.status(401).json({ error: "Invalid credentials or selected role" });
       }
 
       const isMatch = await comparePassword(password, manager.password);
@@ -34,7 +34,7 @@ export default async function handler(req, res) {
 
       res.setHeader(
         "Set-Cookie",
-          cookie.serialize("manager-sales-token", token, {
+          cookie.serialize(`${manager.role}-token`, token, {
           httpOnly: true,
           secure: process.env.NODE_ENV === "production",
           maxAge: 60 * 60 * 24,
@@ -43,7 +43,7 @@ export default async function handler(req, res) {
        })
       );
 
-      return res.status(200).json({ success: true, role: "sales" });
+      return res.status(200).json({ success: true, role: manager.role });
     } catch (error) {
       return res.status(500).json({ error: "Something went wrong" });
     }

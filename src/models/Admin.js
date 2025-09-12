@@ -5,7 +5,7 @@ const adminSchema = new mongoose.Schema(
         // Basic Info
         name: {
             type: String,
-              required: true,
+            //   required: true,
             trim: true,
         },
         avatar: { type: String ,default : null},
