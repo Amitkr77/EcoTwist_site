@@ -82,7 +82,7 @@ const Page = () => {
         <h1 className="font-heading text-4xl md:text-5xl font-bold text-[#1B4332] mb-4 tracking-tight">
           Discover Sustainable Gifts
         </h1>
-        <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
+        <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed ">
           Explore our handpicked collection of eco-friendly, artisan-made, and
           biodegradable products — curated with care for conscious gifting.
         </p>
