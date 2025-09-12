@@ -42,7 +42,7 @@ export default async function handler(req, res) {
 
       const newManager = new Manager({ name, email, password: hashedPassword, role});
       await newManager.save();
-      console.log("Manager details:", newManager);
+      
 
       const emailHtml = `
   <div style="max-width: 600px; margin: auto; padding: 20px; font-family: Arial, sans-serif; border: 1px solid #e0e0e0; border-radius: 8px; background-color: #fafafa;">
