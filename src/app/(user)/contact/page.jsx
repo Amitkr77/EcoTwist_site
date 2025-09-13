@@ -323,7 +323,7 @@ export default function page() {
           </div>
         </div>
 
-        {/* FAQ Section */}
+        FAQ Section
         <div className="mt-20 bg-white rounded-2xl p-10  border border-slate-200">
           <h2 className="font-heading text-3xl md:text-4xl font-extrabold text-slate-900 mb-10 text-center">
             Frequently Asked Questions

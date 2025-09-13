@@ -28,6 +28,7 @@ const SalesDashboard = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [managers, setManagers] = useState([]);
   const [isLoadingManagers, setIsLoadingManagers] = useState(true);
+  const managerRole = "manager:sales";
 
   const getStockBadge = (status) => {
     switch (status) {
@@ -51,7 +52,8 @@ const SalesDashboard = () => {
       const res = await fetch("/api/admin/managers/sales");
       const data = await res.json();
       if (res.ok) {
-        setManagers(data.managers);
+        const filteredManagers = data.managers.filter(m => m.role === managerRole);
+        setManagers(filteredManagers);
       } else {
         toast.error(data.message || "Failed to fetch managers");
       }
@@ -76,7 +78,7 @@ const SalesDashboard = () => {
       const res = await fetch("/api/admin/managers/sales", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name:managerName, email: managerEmail }),
+        body: JSON.stringify({ name:managerName, email: managerEmail, role: managerRole }),
       });
       const data = await res.json();
       if (!res.ok) return toast.error(data.message || "Failed to create manager");

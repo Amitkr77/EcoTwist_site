@@ -162,7 +162,7 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Categories - Hidden on smaller screens */}
+          {/* Categories - Hidden on smaller screens
           <div className="space-y-4 sm:space-y-6 hidden md:block">
             <h3 className="font-heading font-semibold text-lg sm:text-xl mb-3 sm:mb-4 text-slate-600">
               Categories
@@ -185,7 +185,7 @@ export default function Footer() {
                 </li>
               ))}
             </ul>
-          </div>
+          </div> */}
 
           {/* Support */}
           <div className="space-y-4 sm:space-y-6 ">

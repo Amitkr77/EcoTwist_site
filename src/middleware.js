@@ -28,11 +28,10 @@ export async function middleware(req) {
   const adminToken = req.cookies.get("token")?.value;
 
   // Manager tokens
-  const salesToken = req.cookies.get("manager-sales-token")?.value;
-  const financeToken = req.cookies.get("manager-finance-token")?.value;
-  const marketingToken = req.cookies.get("manager-marketing-token")?.value;
+  const salesToken = req.cookies.get("manager:sales-token")?.value;
+  const financeToken = req.cookies.get("manager:finance-token")?.value;
+  const marketingToken = req.cookies.get("manager:marketing-token")?.value;
 
-  console.log("sales", salesToken);
 
   // User token
   const userToken = req.cookies.get("user-token")?.value;
