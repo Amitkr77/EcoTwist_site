@@ -119,7 +119,7 @@ userSchema.virtual('cart', {
   ref: 'Cart',
   localField: '_id',
   foreignField: 'userId',
-  justOne: true, // assuming 1 cart per user
+  justOne: true, 
 });
 
 userSchema.virtual('address', {

@@ -1,30 +1,57 @@
 "use client";
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { useRouter } from "next/navigation";
 import { Card, CardTitle, CardHeader, CardContent } from "../ui/card";
-import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "../ui/select";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "../ui/select";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Heart, Truck, Package, Eye } from "lucide-react";
-import { useCart } from "@/contexts/CartContext";
 import Link from "next/link";
-import { toast } from "sonner"; // ✅ make sure toast is imported
+import { toast } from "sonner";
+import { addToWishlist } from "@/store/slices/userSlice";
 
 export default function Orders() {
-  const { orders, getTotalItems } = useCart();
-
-  // ✅ Added userProfile state
-  const [userProfile, setUserProfile] = useState({
-    wishlist: [],
-  });
+  const dispatch = useDispatch();
+  const router = useRouter();
+  const { orders, status: ordersStatus } = useSelector((state) => state.orders);
+  const {
+    profile,
+    wishlist,
+    status: userStatus,
+    error: userError,
+  } = useSelector((state) => state.user);
+  const { items: cartItems } = useSelector((state) => state.cart);
 
   const [orderSort, setOrderSort] = useState("date-desc");
   const [orderFilter, setOrderFilter] = useState("all");
 
-  const handleAddToWishlist = (product) => {
-    setUserProfile((prev) => ({
-      ...prev,
-      wishlist: [...prev.wishlist, { ...product, priceAlert: false }],
-    }));
+  useEffect(() => {
+    if (userError) toast.error(userError);
+  }, [userError]);
+
+  const handleAddToWishlist = async (product) => {
+    if (!profile?._id) {
+      toast.error("Please log in to add items to your wishlist.");
+      router.push("/login");
+      return;
+    }
+
+    const productId = product._id || product.id;
+
+    if (wishlist.some((item) => item.productId === productId)) {
+      toast.info("This item is already in your wishlist.");
+      return;
+    }
+
+    await dispatch(addToWishlist({ userId: profile._id, productId }));
     toast.success("Added to wishlist!");
   };
 
@@ -38,26 +65,40 @@ export default function Orders() {
     }[status] || "bg-gray-100 text-gray-800 hover:bg-gray-200");
 
   const filteredOrders = orders
-    .filter((order) => orderFilter === "all" || order.status === orderFilter)
+    ?.filter((order) => orderFilter === "all" || order.status === orderFilter)
     .sort((a, b) => {
-      if (orderSort === "date-desc")
-        return new Date(b.orderDate) - new Date(a.orderDate);
-      if (orderSort === "date-asc")
-        return new Date(a.orderDate) - new Date(b.orderDate);
-      if (orderSort === "amount-desc") return b.totalAmount - a.totalAmount;
-      return a.totalAmount - b.totalAmount;
+      const dateA = new Date(a.orderDate);
+      const dateB = new Date(b.orderDate);
+
+      switch (orderSort) {
+        case "date-asc":
+          return dateA - dateB;
+        case "amount-desc":
+          return b.totalAmount - a.totalAmount;
+        case "amount-asc":
+          return a.totalAmount - b.totalAmount;
+        default:
+          return dateB - dateA;
+      }
     });
 
-  const formatDate = (date) => {
-    return new Date(date).toLocaleDateString("en-US", {
+  const formatDate = (date) =>
+    new Date(date).toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",
     });
-  };
+
+  if (ordersStatus === "loading") {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-600 dark:text-gray-300">Loading orders...</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-0 min-h-screen">
+    <div className="p-4 sm:p-6 min-h-screen">
       <Card className="bg-white dark:bg-gray-800/90 backdrop-blur-sm shadow-xl rounded-2xl border border-gray-200 dark:border-gray-700 transition-all duration-300">
         <CardHeader className="pb-4">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -65,7 +106,6 @@ export default function Orders() {
               Order History
             </CardTitle>
             <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-              {/* Filters & Sorting */}
               <Select value={orderFilter} onValueChange={setOrderFilter}>
                 <SelectTrigger className="w-full sm:w-[160px]">
                   <SelectValue placeholder="All Status" />
@@ -81,7 +121,7 @@ export default function Orders() {
               </Select>
               <Select value={orderSort} onValueChange={setOrderSort}>
                 <SelectTrigger className="w-full sm:w-[160px]">
-                  <SelectValue placeholder="Newest First" />
+                  <SelectValue placeholder="Sort By" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="date-desc">Newest First</SelectItem>
@@ -95,18 +135,18 @@ export default function Orders() {
         </CardHeader>
 
         <CardContent className="pt-4">
-          {filteredOrders.length > 0 ? (
+          {filteredOrders?.length > 0 ? (
             <div className="space-y-6">
               {filteredOrders.map((order) => (
                 <div
-                  key={order.id}
+                  key={order._id || order.id}
                   className="border border-gray-200 dark:border-gray-700 rounded-xl p-4 sm:p-6 bg-white/80 dark:bg-gray-800/80 shadow-sm"
                 >
                   {/* Order Header */}
                   <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
                     <div>
                       <h3 className="text-lg font-semibold">
-                        Order #{order.id}
+                        Order #{order._id || order.id}
                       </h3>
                       <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                         Placed on {formatDate(order.orderDate)}
@@ -117,50 +157,75 @@ export default function Orders() {
                     </Badge>
                   </div>
 
-                  {/* Items */}
+                  {/* Order Items */}
                   <div className="space-y-4 mb-6">
-                    {order.items.map((item) => (
-                      <div
-                        key={item?.product?.id}
-                        className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition"
-                      >
-                        <img
-                          src={item?.product?.image || "/placeholder.svg"}
-                          alt={item?.product?.name}
-                          className="w-16 h-16 object-cover rounded-md border"
-                        />
-                        <div className="flex-1">
-                          <p className="font-medium">{item?.product?.name}</p>
-                          <p className="text-sm text-gray-600">
-                            Quantity: {item.quantity}
-                          </p>
-                        </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleAddToWishlist(item.product)}
+                    {order.items?.map((item) => {
+                      const productId = item?.product?._id || item?.product?.id;
+                      const isInWishlist = wishlist.some(
+                        (w) => w.productId === productId
+                      );
+
+                      return (
+                        <div
+                          key={productId}
+                          className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition"
                         >
-                          <Heart className="w-4 h-4 mr-2" />
-                          Add to Wishlist
-                        </Button>
-                      </div>
-                    ))}
+                          <img
+                            src={item?.product?.image || "/placeholder.svg"}
+                            alt={item?.product?.name || "Product"}
+                            className="w-16 h-16 object-cover rounded-md border"
+                            onError={(e) =>
+                              (e.currentTarget.src = "/placeholder.svg")
+                            }
+                          />
+                          <div className="flex-1">
+                            <p className="font-medium">
+                              {item?.product?.name || "Unknown Product"}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              Quantity: {item.quantity}
+                            </p>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleAddToWishlist(item.product)}
+                            disabled={userStatus === "loading" || isInWishlist}
+                            className={
+                              isInWishlist
+                                ? "bg-gray-200 dark:bg-gray-600 cursor-not-allowed"
+                                : ""
+                            }
+                          >
+                            <Heart className="w-4 h-4 mr-2" />
+                            {isInWishlist ? "In Wishlist" : "Add to Wishlist"}
+                          </Button>
+                        </div>
+                      );
+                    })}
                   </div>
 
-                  {/* Footer */}
+                  {/* Order Footer */}
                   <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
                     <span className="font-semibold text-lg">
                       Total: ₹{order.totalAmount.toFixed(2)}
                     </span>
                     <div className="flex gap-2">
-                      <Button variant="outline" size="sm">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled
+                        className="cursor-not-allowed"
+                      >
                         <Truck className="w-4 h-4 mr-2" />
                         Track Order
                       </Button>
-                      <Button variant="outline" size="sm">
-                        <Eye className="w-4 h-4 mr-2" />
-                        View Details
-                      </Button>
+                      <Link href={`/orders/${order._id || order.id}`}>
+                        <Button variant="outline" size="sm">
+                          <Eye className="w-4 h-4 mr-2" />
+                          View Details
+                        </Button>
+                      </Link>
                     </div>
                   </div>
                 </div>
