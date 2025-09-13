@@ -177,11 +177,10 @@ export default function Page() {
 
             <div className="mt-4 text-center">
               <Link
-                href="mailto:admin@example.com"
-                className="flex items-center justify-center gap-2 text-forest hover:text-forest-600 font-medium transition"
+                href="mailto:info@ecotwist.in"
+                className="flex items-center text-zinc-600 gap-2 justify-center hover:text-forest-600 font-medium transition"
               >
                  Contact Admin
-                 <span className="underline text-blue-500">admin@example.com</span>
                 <Mail className="w-4 h-4" />
               </Link>
             </div>

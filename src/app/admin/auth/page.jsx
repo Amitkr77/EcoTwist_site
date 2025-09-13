@@ -12,7 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Link from "next/link";
-import { Mail, Lock, LogIn, ArrowRightCircle } from "lucide-react";
+import { Mail, Lock, LogIn, ArrowRightCircle, Send } from "lucide-react";
 
 // Separate component to handle useSearchParams
 function LoginLogic({ setErrorMessage }) {
@@ -74,38 +74,27 @@ export default function Page() {
   return (
     <div className="min-h-screen flex items-center justify-center py-12 px-4 relative">
       <Card className="w-full max-w-md bg-white backdrop-blur-lg shadow-2xl rounded-xl border border-white/30">
-        <CardHeader className="text-center space-y-2">
+        <CardHeader className="text-center space-y-1">
           <div className="flex justify-center mb-2">
             <img src="/logo.png" alt="EcoTwist Logo" className="h-20" />
           </div>
           <CardTitle className="text-3xl font-bold text-slate-800">
-            Welcome Back
+            Admin Dashboard
           </CardTitle>
-          <CardDescription className="text-slate-600 hidden">
+          {/* <CardDescription className="text-slate-600 hidden">
             Sign in to your EcoTwist account
-          </CardDescription>
+          </CardDescription> */}
         </CardHeader>
 
         <CardContent>
-          {/* Google Sign-In Button */}
-          <Button
-            type="button"
-            onClick={() => console.log("Google Sign In")}
-            className="w-full bg-white text-slate-800 border border-slate-200 hover:bg-slate-50 py-2.5 font-medium rounded-md flex items-center justify-center gap-3 transition-all shadow-sm mb-5"
-          >
-            <img src="/google.png" alt="" className="h-5 w-5" />
-            Continue with Google
-          </Button>
-
-          {/* OR Divider */}
-          <div className="my-6">
+          <div className="my-6 mt-0.5">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t border-slate-200" />
               </div>
               <div className="relative flex justify-center text-sm">
                 <span className="bg-white/80 px-3 text-slate-500">
-                  Or Sign in to your EcoTwist account
+                  Sign in to your EcoTwist account
                 </span>
               </div>
             </div>
@@ -171,18 +160,18 @@ export default function Page() {
               </div>
               <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-white/80 px-3 text-slate-500">
-                  Don’t have an account?
+                  Trouble signing in?
                 </span>
               </div>
             </div>
 
             <div className="mt-4 text-center">
               <Link
-                href="/register"
-                className="flex items-center justify-center gap-1 text-forest hover:text-forest-600 font-medium transition"
+                href="mailto:amit@homeasy.io?cc=abhinav@homeasy.io"
+                className="flex text-zinc-600 items-center justify-center gap-1 text-forest hover:text-forest-600 font-medium transition"
               >
-                Create new account
-                <ArrowRightCircle className="w-4 h-4" />
+                Contact Tech team 
+               <Mail className="w-4 h-4" />
               </Link>
             </div>
           </div>
