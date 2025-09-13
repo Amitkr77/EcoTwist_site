@@ -141,7 +141,7 @@ function ProductCard({ product, viewMode = "grid" }) {
             <Button
               variant="ghost"
               size="sm"
-              className="absolute left-2 top-1/2 -translate-y-1/2 p-1 bg-white/80 hover:bg-white rounded-full focus:ring-2 focus:ring-indigo-500 z-10"
+              className="absolute left-2 top-1/2 -translate-y-1/2 p-1 bg-white/50 hover:bg-white rounded-full focus:ring-2 focus:ring-indigo-500 z-10"
               onClick={handlePrevImage}
               aria-label="Previous image"
             >
@@ -150,7 +150,7 @@ function ProductCard({ product, viewMode = "grid" }) {
             <Button
               variant="ghost"
               size="sm"
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 bg-white/80 hover:bg-white rounded-full focus:ring-2 focus:ring-indigo-500 z-10"
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 bg-white/50 hover:bg-white rounded-full focus:ring-2 focus:ring-indigo-500 z-10"
               onClick={handleNextImage}
               aria-label="Next image"
             >
@@ -178,12 +178,12 @@ function ProductCard({ product, viewMode = "grid" }) {
         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent z-0" />
         <Link href={`/product-info/${product._id}`} passHref>
           <motion.button
-            className="absolute top-3 left-3 p-2 bg-white/80 rounded-full hover:bg-white transition-colors focus:ring-2 focus:ring-indigo-500 z-10"
+            className="absolute top-3 left-3 p-1 bg-white/80 rounded-full hover:bg-white transition-colors focus:ring-2 focus:ring-indigo-500 z-10 "
             aria-label="Quick view product"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
           >
-            <Eye className="w-5 h-5 text-gray-700" />
+            <Eye className="w-3 h-3 text-gray-700" />
           </motion.button>
         </Link>
       </div>
