@@ -70,7 +70,7 @@ export default function Home() {
   ];
   return (
     <div className="min-h-screen">
-      <section className="relative z-10 text-gray-800 py-20 sm:py-16 lg:py-32 overflow-hidden flex flex-col lg:flex-row items-center bg-gradient-to-br from-white via-teal-50 to-white">
+      <section className="relative z-10 text-gray-800 py-20 sm:py-12 lg:py-15 overflow-hidden flex flex-col lg:flex-row items-center bg-gradient-to-br from-white via-teal-50 to-white">
 
         {/* Decorative SVG Line */}
         <div className="absolute inset-0 opacity-10 pointer-events-none">
@@ -136,7 +136,7 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section className="py-8 sm:py-12 lg:py-16 bg-white">
+      <section className="py-8 sm:py-12 lg:py-10 bg-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8 sm:mb-10 lg:mb-12">
             <h2 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-800 mb-3 sm:mb-4">
@@ -197,7 +197,7 @@ export default function Home() {
       </section>
 
       {/* Impact Stats */}
-      <section className="py-8 sm:py-12 lg:py-16 bg-gradient-to-r from-forest to-forest-600 text-black">
+      <section className="py-8 sm:py-12 lg:py-8 bg-gradient-to-r from-forest to-forest-600 text-black">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8 sm:mb-10 lg:mb-12">
             <h2 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4">
@@ -299,7 +299,7 @@ export default function Home() {
     </section>
 
       {/* Customer Testimonials */}
-      <section className="py-8 sm:py-12 lg:py-16 bg-white">
+      <section className="py-8 sm:py-12 lg:py-8 bg-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8 sm:mb-10 lg:mb-12">
             <h2 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-800 mb-3 sm:mb-4">
@@ -317,7 +317,7 @@ export default function Home() {
                 <CardContent className="p-4 sm:p-6">
                   <div className="flex items-center mb-3 sm:mb-4">
                     {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star
+                      <Star 
                         key={i}
                         className="h-3 sm:h-4 w-3 sm:w-4 text-green-400 fill-current"
                       />

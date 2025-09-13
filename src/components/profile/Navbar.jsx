@@ -45,7 +45,7 @@ const Navbar = React.memo(({ activeTab, setActiveTab, sidebarItems,profileData }
               src="./Avatar.png"
               alt="User Avatar"
               className="w-24 h-24 sm:w-32 sm:h-32 rounded-full object-cover border-4 border-white dark:border-gray-700 shadow-md transition-transform duration-300 group-hover:scale-105"
-              onError={(e) => (e.target.src = "https://via.placeholder.com/150")} // Fallback image
+              onError={(e) => (e.target.src = "https://via.placeholder.com/150")} 
             />
             <div className="absolute inset-0 rounded-full bg-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           </div>
