@@ -10,7 +10,6 @@ import {
   clearCart,
   resetError,
 } from "@/store/slices/cartSlice";
-import { fetchProducts } from "@/store/slices/productSlice";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,6 +28,7 @@ import { Loader2, Trash2, ShoppingBag, ArrowLeft, Tag, CheckCircle, ChevronDown,
 import Image from "next/image";
 import { toast } from "sonner";
 import debounce from "lodash/debounce";
+import { fetchProducts } from "@/store/slices/productSlices";
 
 export default function CartPage() {
   const dispatch = useDispatch();
