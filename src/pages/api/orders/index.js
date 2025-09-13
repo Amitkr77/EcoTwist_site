@@ -2,6 +2,7 @@ import authMiddleware from '@/lib/authMiddleware';
 import Order from '@/models/Order';
 import Product from '@/models/Product';
 import dbConnect from '@/lib/mongodb';
+import Invoice from '@/models/Invoice';
 import { v4 as uuidv4 } from 'uuid';
 
 export default async function handler(req, res) {
@@ -85,6 +86,7 @@ export default async function handler(req, res) {
             return res.status(201).json({
                 message: 'Order placed successfully',
                 orderId: newOrder.orderId,
+                data: newOrder
             });
         } if (req.method === 'GET') {
             // Authenticate user
@@ -95,8 +97,12 @@ export default async function handler(req, res) {
 
             // Retrieve orders by userId
             try {
-                const orders = await Order.find({ userId: user.userId }); // Get all orders for the authenticated user
+                const orders = await Order.find({ userId: user.userId })
 
+                    .populate({
+                        path: 'invoice',
+                        options: { strictPopulate: false }, // Allow population of virtual field
+                    });
                 if (!orders || orders.length === 0) {
                     return res.status(404).json({ message: 'No orders found' });
                 }

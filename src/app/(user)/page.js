@@ -1,13 +1,15 @@
 
 "use client"
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
-
+import { useDispatch, useSelector } from "react-redux";
+import { fetchUserProfile } from "@/store/slices/userSlice";
 import { Star, Truck, Shield, Recycle, Award, MoveRight, ArrowRight } from "lucide-react";
 import { useEffect, useState } from "react";
-
+import { jwtDecode } from "jwt-decode";
 import {
   Carousel,
   CarouselContent,
@@ -20,6 +22,7 @@ export default function Home() {
   const [products, setProducts] = useState([])
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(null);
+  const { status: userStatus, error: userError, profile } = useSelector((state) => state.user);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -38,6 +41,34 @@ export default function Home() {
     }
     fetchProducts();
   }, [])
+
+  const dispatch = useDispatch();
+  useEffect(() => {
+    const token = localStorage.getItem("user-token"); // Fixed to user-token
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        const userId = decoded?.userId || decoded?.id || decoded?.sub;
+        if (userId) {
+          dispatch(fetchUserProfile(userId));
+        } else {
+          console.error("User ID not found in token");
+          // toast({
+          //   title: "Error",
+          //   description: "Invalid user token. Please log in again.",
+          //   variant: "destructive",
+          // });
+        }
+      } catch (error) {
+        console.error("Invalid token", error);
+        // toast({
+        //   title: "Error",
+        //   description: "Invalid token. Please log in again.",
+        //   variant: "destructive",
+        // });
+      }
+    }
+  }, [dispatch]);
 
 
   const testimonials = [
@@ -69,7 +100,7 @@ export default function Home() {
     },
   ];
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen ">
       <section className="relative z-10 text-gray-800 py-20 sm:py-16 lg:py-32 overflow-hidden flex flex-col lg:flex-row items-center bg-gradient-to-br from-white via-teal-50 to-white">
 
         {/* Decorative SVG Line */}
@@ -233,70 +264,70 @@ export default function Home() {
 
       {/* Featured Products */}
       <section className="py-8 sm:py-12 lg:py-16 bg-ivory">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Heading + Button */}
-        <div className="flex flex-col sm:flex-row w-full justify-between items-center sm:items-end mb-8 sm:mb-10 px-0 sm:px-4 lg:px-10">
-          <div className="text-center sm:text-left">
-            <h2 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-800 mb-3 sm:mb-4">
-              Featured Products
-            </h2>
-            <p className="text-base sm:text-lg lg:text-xl text-slate-600 max-w-md sm:max-w-lg lg:max-w-2xl mx-auto sm:mx-0">
-              Handcrafted with care, designed for impact. Each product tells a
-              story of transformation.
-            </p>
-          </div>
-          <div className="flex justify-center mt-4 sm:mt-8">
-            <Button
-              asChild
-              className="text-sm sm:text-lg px-6 sm:px-8 py-2 sm:py-3 cursor-pointer rounded-full font-medium inline-flex items-center gap-1 sm:gap-2 hover:gap-2 sm:hover:gap-3 transition-all duration-300"
-            >
-              <Link href="/products">
-                View All
-                <MoveRight className="w-4 sm:w-5 h-4 sm:h-5" />
-              </Link>
-            </Button>
-          </div>
-        </div>
-
-        {/* Product Carousel */}
-        <Carousel className="w-full">
-          <CarouselContent>
-            {products.map((product) => (
-              <CarouselItem
-                key={product._id}
-                className="basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4"
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Heading + Button */}
+          <div className="flex flex-col sm:flex-row w-full justify-between items-center sm:items-end mb-8 sm:mb-10 px-0 sm:px-4 lg:px-10">
+            <div className="text-center sm:text-left">
+              <h2 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-800 mb-3 sm:mb-4">
+                Featured Products
+              </h2>
+              <p className="text-base sm:text-lg lg:text-xl text-slate-600 max-w-md sm:max-w-lg lg:max-w-2xl mx-auto sm:mx-0">
+                Handcrafted with care, designed for impact. Each product tells a
+                story of transformation.
+              </p>
+            </div>
+            <div className="flex justify-center mt-4 sm:mt-8">
+              <Button
+                asChild
+                className="text-sm sm:text-lg px-6 sm:px-8 py-2 sm:py-3 cursor-pointer rounded-full font-medium inline-flex items-center gap-1 sm:gap-2 hover:gap-2 sm:hover:gap-3 transition-all duration-300"
               >
-                <Card className="border border-gray-200 shadow-sm">
-                  <CardContent className="p-4">
-                    <div className="relative w-full h-48 rounded-md overflow-hidden">
-                      <Image
-                        src={product.images?.[0]?.url || "/product_image.png"}
-                        alt={product.name}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
-                    <h3 className="mt-2 text-lg font-semibold text-slate-900">
-                      {product.name}
-                    </h3>
-                    <p className="text-slate-600 text-sm">₹{product.price}</p>
-                    <Button
-                      asChild
-                      variant="outline"
-                      className="mt-2 w-full border-gray-400 text-gray-700 text-sm"
-                    >
-                      <Link href={`/product-info/${product._id}`}>View Product</Link>
-                    </Button>
-                  </CardContent>
-                </Card>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          <CarouselPrevious className="left-[-2rem]" />
-          <CarouselNext  className="right-[-2rem]" />
-        </Carousel>
-      </div>
-    </section>
+                <Link href="/products">
+                  View All
+                  <MoveRight className="w-4 sm:w-5 h-4 sm:h-5" />
+                </Link>
+              </Button>
+            </div>
+          </div>
+
+          {/* Product Carousel */}
+          <Carousel className="w-full">
+            <CarouselContent>
+              {products.map((product) => (
+                <CarouselItem
+                  key={product._id}
+                  className="basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4"
+                >
+                  <Card className="border border-gray-200 shadow-sm">
+                    <CardContent className="p-4">
+                      <div className="relative w-full h-48 rounded-md overflow-hidden">
+                        <Image
+                          src={product.images?.[0]?.url || "/product_image.png"}
+                          alt={product.name}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                      <h3 className="mt-2 text-lg font-semibold text-slate-900">
+                        {product.name}
+                      </h3>
+                      <p className="text-slate-600 text-sm">₹{product.price}</p>
+                      <Button
+                        asChild
+                        variant="outline"
+                        className="mt-2 w-full border-gray-400 text-gray-700 text-sm"
+                      >
+                        <Link href={`/product-info/${product._id}`}>View Product</Link>
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious className="left-[-2rem]" />
+            <CarouselNext className="right-[-2rem]" />
+          </Carousel>
+        </div>
+      </section>
 
       {/* Customer Testimonials */}
       <section className="py-8 sm:py-12 lg:py-16 bg-white">
@@ -471,42 +502,42 @@ export default function Home() {
       </section>
 
       {/* Newsletter CTA */}
-     <section className="relative py-10 sm:py-12 lg:py-16 bg-gradient-to-br from-forest via-green-800 to-forest-700 text-white overflow-hidden">
-  {/* Decorative Background Circles */}
-  <div className="absolute top-[-2rem] left-[-1rem] w-40 sm:w-48 lg:w-56 h-40 sm:h-48 lg:h-56 bg-green-900/30 blur-2xl rounded-full z-0"></div>
-  <div className="absolute bottom-[-1rem] right-[-2rem] w-48 sm:w-60 lg:w-72 h-48 sm:h-60 lg:h-72 bg-green-950/30 blur-2xl rounded-full z-0"></div>
-  <div className="absolute bottom-8 left-1/4 sm:left-1/3 w-16 sm:w-20 lg:w-24 h-16 sm:h-20 lg:h-24 bg-green-800/30 blur-xl rounded-full z-0"></div>
+      <section className="relative py-10 sm:py-12 lg:py-16 bg-gradient-to-br from-forest via-green-800 to-forest-700 text-white overflow-hidden">
+        {/* Decorative Background Circles */}
+        <div className="absolute top-[-2rem] left-[-1rem] w-40 sm:w-48 lg:w-56 h-40 sm:h-48 lg:h-56 bg-green-900/30 blur-2xl rounded-full z-0"></div>
+        <div className="absolute bottom-[-1rem] right-[-2rem] w-48 sm:w-60 lg:w-72 h-48 sm:h-60 lg:h-72 bg-green-950/30 blur-2xl rounded-full z-0"></div>
+        <div className="absolute bottom-8 left-1/4 sm:left-1/3 w-16 sm:w-20 lg:w-24 h-16 sm:h-20 lg:h-24 bg-green-800/30 blur-xl rounded-full z-0"></div>
 
-  {/* Content */}
-  <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
-    <div className="flex flex-col lg:flex-row items-center gap-6 sm:gap-8 lg:gap-12">
-      <div className="text-center lg:text-left max-w-lg lg:max-w-2xl">
-        <h2 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight tracking-tight mb-4 sm:mb-6">
-          Stay Connected with Our
-          <span className="block text-ochre">Eco-Journey</span>
-        </h2>
-        <p className="text-base sm:text-lg lg:text-xl text-white/80 mb-6 sm:mb-8 lg:mb-10 font-light leading-relaxed">
-          Get exclusive updates on new products, sustainability tips, and special
-          offers crafted for mindful gifting and corporate impact.
-        </p>
-      </div>
-      {/* Input & Button */}
-      <form className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full max-w-md lg:max-w-xl">
-        <input
-          type="email"
-          placeholder="Enter your email"
-          className="flex-1 w-full px-4 sm:px-5 py-2 sm:py-3 rounded-lg text-slate-800 placeholder-slate-400 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-green-800 transition"
-        />
-        <Button
-          type="submit"
-          className="bg-ochre hover:bg-ochre-600 text-white px-6 sm:px-8 py-2 sm:py-3 rounded-lg font-semibold tracking-wide shadow-md transition hover:scale-105"
-        >
-          Subscribe
-        </Button>
-      </form>
-    </div>
-  </div>
-</section>
+        {/* Content */}
+        <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col lg:flex-row items-center gap-6 sm:gap-8 lg:gap-12">
+            <div className="text-center lg:text-left max-w-lg lg:max-w-2xl">
+              <h2 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight tracking-tight mb-4 sm:mb-6">
+                Stay Connected with Our
+                <span className="block text-ochre">Eco-Journey</span>
+              </h2>
+              <p className="text-base sm:text-lg lg:text-xl text-white/80 mb-6 sm:mb-8 lg:mb-10 font-light leading-relaxed">
+                Get exclusive updates on new products, sustainability tips, and special
+                offers crafted for mindful gifting and corporate impact.
+              </p>
+            </div>
+            {/* Input & Button */}
+            <form className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full max-w-md lg:max-w-xl">
+              <input
+                type="email"
+                placeholder="Enter your email"
+                className="flex-1 w-full px-4 sm:px-5 py-2 sm:py-3 rounded-lg text-slate-800 placeholder-slate-400 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-green-800 transition"
+              />
+              <Button
+                type="submit"
+                className="bg-ochre hover:bg-ochre-600 text-white px-6 sm:px-8 py-2 sm:py-3 rounded-lg font-semibold tracking-wide shadow-md transition hover:scale-105"
+              >
+                Subscribe
+              </Button>
+            </form>
+          </div>
+        </div>
+      </section>
 
     </div>
   );
