@@ -22,6 +22,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useDebounce } from "use-debounce";
+import toast from "react-hot-toast";
 
 // Constants for API endpoints
 const API_ENDPOINTS = {
@@ -82,12 +83,18 @@ export default function LoginPage() {
 
       const data = await res.json();
 
-      if (res.ok) {
-        localStorage.setItem("user-token", data.token);
-        window.location.href = "/profile";
-      } else {
-        setErrors((prev) => ({ ...prev, general: data.error || "Login failed." }));
-      }
+     if (res.ok) {
+       localStorage.setItem("user-token", data.token);
+       toast.success(`Welcome!`, { duration: 3000 });
+       setTimeout(() => {
+         window.location.href = "/";
+       }, 1500); // wait 1.5s before redirect
+     } else {
+       setErrors((prev) => ({
+         ...prev,
+         general: data.error || "Login failed.",
+       }));
+     }
     } catch (err) {
       console.error("Login error:", err);
       setErrors((prev) => ({ ...prev, general: "Something went wrong. Please try again." }));
