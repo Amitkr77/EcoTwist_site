@@ -93,7 +93,7 @@ const InvoiceSchema = new Schema({
     default: 'unpaid',
   },
 }, {
-  timestamps: true, // createdAt, updatedAt
+  timestamps: true, 
 });
 
 export default mongoose.models.Invoice || mongoose.model('Invoice', InvoiceSchema);

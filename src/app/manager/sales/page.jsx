@@ -36,6 +36,7 @@ import {
   Percent,
   Bell,
 } from "lucide-react";
+import { CiLogout } from "react-icons/ci";
 import {
   LineChart,
   Line,
@@ -328,13 +329,47 @@ const SalesManagerDashboard = () => {
     }
   };
 
+  const handleLogout = async (managerType) => {
+    try {
+      const res = await fetch("/api/managers/logout", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ role: managerType }),
+      });
+
+      if (res.ok) {
+        window.location.href = "/manager/login";
+      } else {
+        console.error("Logout failed");
+      }
+    } catch (err) {
+      console.error("Error during logout", err);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
       <div className="hide-scrollbar w-72 bg-white border-r border-gray-200 flex flex-col h-screen overflow-y-auto">
-        <div className="p-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Sales Manager</h2>
-          <p className="text-sm text-gray-500">Dashboard</p>
+        <div className="p-4 flex gap-7 border-b border-gray-200">
+          <div className="space-x-5">
+            <h2 className="text-lg font-semibold text-gray-900">
+              Sales Manager
+            </h2>
+            <p className="text-sm text-gray-500">Dashboard</p>
+          </div>
+          <div className="py-2">
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => handleLogout("sales")}
+            >
+              <CiLogout className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
 
         <nav className="flex-1 overflow-y-auto p-4 space-y-2">

@@ -76,6 +76,15 @@ const OrderSchema = new Schema({
     type: Date,
     default: () => new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
   },
-}, { timestamps: true });
+}, {
+  timestamps: true, toJSON: { virtuals: true },
+  toObject: { virtuals: true }
+},);
+OrderSchema.virtual('invoice', {
+  ref: 'Invoice',
+  localField: '_id',
+  foreignField: 'orderId',
+  justOne: true,
+});
 
 export default mongoose.models.Order || mongoose.model('Order', OrderSchema);

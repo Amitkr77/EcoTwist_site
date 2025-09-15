@@ -53,11 +53,13 @@ export default async function handler(req, res) {
         }
 
         if (req.method === 'GET') {
-            // Fetch the user's cart
-            const cart = await Cart.findOne({ userId: user.userId });
-            if (!cart || cart.items.length === 0) {
-                return res.status(404).json({ message: 'Cart is empty' });
+            // Fetch the user's cart, or default to an empty cart structure if none exists
+            let cart = await Cart.findOne({ userId: user.userId });
+            if (!cart) {
+                // If no cart document exists, create an empty one (optional but ensures consistency for future ops)
+                cart = await new Cart({ userId: user.userId, items: [] }).save();
             }
+            // Always return 200 with the cart (items will be [] if empty)
             return res.status(200).json({ cart });
         }
 
@@ -68,8 +70,6 @@ export default async function handler(req, res) {
                 { $set: { items: [] } },
                 { new: true }
             );
-
-
 
             if (!cart) {
                 return res.status(404).json({ message: 'Cart not found' });

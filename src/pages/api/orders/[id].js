@@ -1,5 +1,6 @@
 import dbConnect from "@/lib/mongodb";
 import Order from "@/models/Order"
+import Invoice from "@/models/Invoice";
 import mongoose from "mongoose";
 export default async function handler(req, res) {
     await dbConnect();
@@ -19,7 +20,10 @@ export default async function handler(req, res) {
                 searchQuery = { orderId: id };
             }
             // Retrieve the item by ID
-            const order = await Order.findOne(searchQuery);
+            const order = await Order.findOne(searchQuery).populate({
+                path: 'invoice',
+                options: { strictPopulate: false },
+            });
 
             if (!order) {
                 return res.status(404).json({ message: 'Order not found' });
@@ -45,7 +49,7 @@ export default async function handler(req, res) {
                 products,
                 deliveryAddress,
                 paymentMethod,
-            }, { new: true }); 
+            }, { new: true });
 
             if (!updatedOrder) {
                 return res.status(404).json({ message: 'Order not found' });
@@ -54,7 +58,7 @@ export default async function handler(req, res) {
             return res.status(200).json({ message: 'Order updated successfully', order: updatedOrder });
 
         } else if (req.method === 'DELETE') {
-            
+
             // Delete the item by ID
             const deletedOrder = await Order.findByIdAndDelete(id);
 
