@@ -1,7 +1,7 @@
 import React from "react";
 import { CiMail } from "react-icons/ci";
 import { FaXTwitter } from "react-icons/fa6";
-import { FaFacebook, FaInstagram, FaLinkedin, FaYoutube, FaPinterest } from "react-icons/fa";
+import { FaFacebook, FaInstagram, FaLinkedin, FaYoutube, FaPinterest, FaMapMarkedAlt } from "react-icons/fa";
 
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -13,7 +13,7 @@ export default function Footer() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12 relative z-10">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-6 sm:gap-8 lg:gap-12 md:place-items-start items-start place-items-center">
           {/* Company Info */}
-          <div className="col-span-2 space-y-2  flex flex-col items-center md:items-start">
+          <div className="col-span-2 space-y-2 flex flex-col items-center md:items-start">
             <div className="flex items-center space-x-3 sm:space-x-4 justify-center md:justify-start">
               <div>
                 <img
@@ -120,7 +120,6 @@ export default function Footer() {
                 </Button>
               </a>
 
-
               <a
                 href="https://www.youtube.com/@ecotwiststores"
                 target="_blank"
@@ -144,11 +143,9 @@ export default function Footer() {
             </h3>
             <ul className="space-y-2 sm:space-y-3">
               {[
-                // { name: "Shop", path: "/shop" },
                 { name: "About Us", path: "/about" },
                 { name: "Blog", path: "/blog" },
                 { name: "Contact", path: "/contact" },
-                // { name: "Wishlist", path: "/wishlist" },
               ].map((item) => (
                 <li key={item.name}>
                   <Link
@@ -161,31 +158,6 @@ export default function Footer() {
               ))}
             </ul>
           </div>
-
-          {/* Categories - Hidden on smaller screens
-          <div className="space-y-4 sm:space-y-6 hidden md:block">
-            <h3 className="font-heading font-semibold text-lg sm:text-xl mb-3 sm:mb-4 text-slate-600">
-              Categories
-            </h3>
-            <ul className="space-y-2 sm:space-y-3">
-              {[
-                "Bamboo Products",
-                "Jute Items",
-                "Recycled Plastic",
-                "Upcycled Textiles",
-                "Corporate Gifts",
-              ].map((item) => (
-                <li key={item}>
-                  <Link
-                    href="/shop"
-                    className="text-slate-600 hover:text-teal-500 transition-all duration-300 text-xs sm:text-sm hover:translate-x-2 transform block"
-                  >
-                    {item}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div> */}
 
           {/* Support */}
           <div className="space-y-4 sm:space-y-6 ">
@@ -210,20 +182,43 @@ export default function Footer() {
               ))}
             </ul>
           </div>
+
+          {/* Address */}
+          <div className="space-y-4 sm:space-y-6">
+            <h3 className="font-heading font-semibold text-lg sm:text-xl mb-3 sm:mb-4 text-slate-600">
+              Address
+            </h3>
+            <ul className="space-y-2 sm:space-y-3 text-xs sm:text-sm text-slate-600">
+              
+              <li>
+                <a
+                  href="https://maps.google.com/?q=B-Hub+Maurya+Lok+Patna,+Bihar,+India+800001"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-teal-500 transition-colors"
+                >
+                  
+                  B-Hub, Maurya Lok, Patna , Bihar – 800001
+                </a>
+              </li>
+              
+             
+            </ul>
+          </div>
         </div>
 
         {/* Copyright */}
         <div className="mt-6 sm:mt-8 lg:mt-12 pt-6 sm:pt-8 border-t border-slate-700 text-center">
-           <p>
-        © 2025{" "}
-        <Link
-          href="/"
-          className="font-semibold text-teal-600 hover:text-teal-800 transition-colors duration-300"
-        >
-          EcoTwist
-        </Link>{" "}
-        | All rights reserved. | Made with 💚 for our green planet
-      </p>
+          <p>
+            © 2025{" "}
+            <Link
+              href="/"
+              className="font-semibold text-teal-600 hover:text-teal-800 transition-colors duration-300"
+            >
+              EcoTwist
+            </Link>{" "}
+            | All rights reserved. | Made with 💚 for our green planet
+          </p>
         </div>
       </div>
     </footer>

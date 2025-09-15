@@ -115,7 +115,7 @@ export default function page() {
         </div>
       </section>
 
-      <section className="relative bg-[#f0f5f1] py-28 px-6 font-body">
+      <section className="relative bg-[#f0f5f1] py-14 px-6 font-body">
         <div className="max-w-5xl mx-auto text-center">
           <h2 className="text-4xl md:text-5xl font-heading text-[#1B4332] leading-tight mb-6">
             Our Environmental Impact
@@ -127,9 +127,9 @@ export default function page() {
           </p>
         </div>
 
-        <div className="mt-20 space-y-16 max-w-4xl mx-auto">
+        <div className="mt-8 space-y-8 max-w-4xl mx-auto">
           {/* Item 1 */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
+          <div className="flex flex-col mb-2 sm:flex-row items-start sm:items-center gap-6">
             <div className="text-4xl text-[#2E7D32]">🌿</div>
             <div>
               <h3 className="text-xl md:text-2xl font-heading text-gray-900 mb-2">

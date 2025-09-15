@@ -356,11 +356,11 @@ export default function Home() {
         <div className="absolute top-32 sm:top-40 lg:top-64 right-4 sm:right-16 lg:right-[28rem] w-32 sm:w-48 lg:w-64 h-32 sm:h-48 lg:h-64 bg-[url('/leaf-green.png')] bg-cover bg-center opacity-30 z-10 hidden sm:block" />
 
         {/* Content */}
-        <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-20">
+        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-8 lg:px-24">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-20 items-center">
             {/* Image + Stat */}
             <div className="relative group">
-              <div className="overflow-hidden rounded-2xl sm:rounded-3xl shadow-xl">
+              <div className="overflow-hidden rounded-2xl sm:rounded-3xl shadow-xl max-w-3xl mx-auto">
                 <Image
                   src="/product_image.png"
                   alt="Eco-friendly artisan crafting"
@@ -369,7 +369,7 @@ export default function Home() {
                   className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105"
                   placeholder="blur"
                   blurDataURL="/product_image.png"
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 800px"
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 1100px"
                 />
               </div>
               <div className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 bg-white border border-slate-200 px-4 sm:px-6 py-2 sm:py-4 rounded-xl sm:rounded-2xl shadow-lg backdrop-blur-sm bg-opacity-90 animate-fade-in-up">
@@ -402,7 +402,7 @@ export default function Home() {
                   className="bg-forest hover:bg-green-700/10 text-black px-6 sm:px-8 py-2 sm:py-3 rounded-full text-sm sm:text-base font-semibold shadow-md transition-all cursor-pointer inline-flex items-center gap-2"
                 >
                   <Link href="/about">
-                    Learn More About Us
+                    Learn More
                     <ArrowRight className="w-4 sm:w-5 h-4 sm:h-5" />
                   </Link>
                 </Button>
@@ -471,35 +471,35 @@ export default function Home() {
       </section>
 
       {/* Newsletter CTA */}
-     <section className="relative py-10 sm:py-12 lg:py-16 bg-gradient-to-br from-forest via-green-800 to-forest-700 text-white overflow-hidden">
+    <section className="relative py-6 sm:py-8 lg:py-10 bg-gradient-to-br from-forest via-green-800 to-forest-700 text-white overflow-hidden">
   {/* Decorative Background Circles */}
-  <div className="absolute top-[-2rem] left-[-1rem] w-40 sm:w-48 lg:w-56 h-40 sm:h-48 lg:h-56 bg-green-900/30 blur-2xl rounded-full z-0"></div>
-  <div className="absolute bottom-[-1rem] right-[-2rem] w-48 sm:w-60 lg:w-72 h-48 sm:h-60 lg:h-72 bg-green-950/30 blur-2xl rounded-full z-0"></div>
-  <div className="absolute bottom-8 left-1/4 sm:left-1/3 w-16 sm:w-20 lg:w-24 h-16 sm:h-20 lg:h-24 bg-green-800/30 blur-xl rounded-full z-0"></div>
+  <div className="absolute top-[-1.5rem] left-[-0.5rem] w-32 sm:w-40 lg:w-48 h-32 sm:h-40 lg:h-48 bg-green-900/30 blur-2xl rounded-full z-0"></div>
+  <div className="absolute bottom-[-0.5rem] right-[-1rem] w-40 sm:w-52 lg:w-64 h-40 sm:h-52 lg:h-64 bg-green-950/30 blur-2xl rounded-full z-0"></div>
+  <div className="absolute bottom-6 left-1/3 sm:left-1/3 w-12 sm:w-16 lg:w-20 h-12 sm:h-16 lg:h-20 bg-green-800/30 blur-xl rounded-full z-0"></div>
 
   {/* Content */}
   <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
-    <div className="flex flex-col lg:flex-row items-center gap-6 sm:gap-8 lg:gap-12">
+    <div className="flex flex-col lg:flex-row items-center gap-4 sm:gap-6 lg:gap-8">
       <div className="text-center lg:text-left max-w-lg lg:max-w-2xl">
-        <h2 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight tracking-tight mb-4 sm:mb-6">
+        <h2 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-bold leading-snug tracking-tight mb-3 sm:mb-4">
           Stay Connected with Our
           <span className="block text-ochre">Eco-Journey</span>
         </h2>
-        <p className="text-base sm:text-lg lg:text-xl text-white/80 mb-6 sm:mb-8 lg:mb-10 font-light leading-relaxed">
+        <p className="text-sm sm:text-base lg:text-lg text-white/80 mb-5 sm:mb-6 font-light leading-relaxed">
           Get exclusive updates on new products, sustainability tips, and special
           offers crafted for mindful gifting and corporate impact.
         </p>
       </div>
       {/* Input & Button */}
-      <form className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full max-w-md lg:max-w-xl">
+      <form className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 w-full max-w-sm lg:max-w-md">
         <input
           type="email"
           placeholder="Enter your email"
-          className="flex-1 w-full px-4 sm:px-5 py-2 sm:py-3 rounded-lg text-slate-800 placeholder-slate-400 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-green-800 transition"
+          className="flex-1 w-full px-3 sm:px-4 py-2 rounded-lg text-slate-800 placeholder-slate-400 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-green-800 transition"
         />
         <Button
           type="submit"
-          className="bg-ochre hover:bg-ochre-600 text-white px-6 sm:px-8 py-2 sm:py-3 rounded-lg font-semibold tracking-wide shadow-md transition hover:scale-105"
+          className="bg-ochre hover:bg-ochre-600 text-white px-5 sm:px-6 py-2 rounded-lg font-medium tracking-wide shadow-md transition hover:scale-105"
         >
           Subscribe
         </Button>
@@ -507,6 +507,7 @@ export default function Home() {
     </div>
   </div>
 </section>
+
 
     </div>
   );
