@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/card";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
+import toast from "react-hot-toast";
 
 export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -123,6 +124,7 @@ export default function SignupPage() {
       });
       const data = await res.json();
       if (res.ok) {
+        toast.success("You are now green planet member 💚", { duration: 3000 });
         // Automatically log in after OTP verification
         const loginRes = await fetch("/api/user/auth/login", {
           method: "POST",
@@ -134,8 +136,8 @@ export default function SignupPage() {
         });
         const loginData = await loginRes.json();
         if (loginRes.ok) {
-          localStorage.setItem("token", loginData.token);
-          window.location.href = "/dashboard";
+          localStorage.setItem("user-token", loginData.token);
+          window.location.href = "/";
         } else {
           setError(loginData.error || "Login failed after verification.");
         }
