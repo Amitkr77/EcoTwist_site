@@ -84,7 +84,7 @@ export default function LoginPage() {
 
       if (res.ok) {
         localStorage.setItem("user-token", data.token);
-        window.location.href = "/profile";
+        window.location.href = "/";
       } else {
         setErrors((prev) => ({ ...prev, general: data.error || "Login failed." }));
       }

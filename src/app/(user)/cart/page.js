@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSelector, useDispatch } from "react-redux";
 import { useEffect, useState, useCallback } from "react";
+import { jwtDecode } from "jwt-decode";
 import {
   fetchCart,
   updateCart,
@@ -10,6 +11,7 @@ import {
   clearCart,
   resetError,
 } from "@/store/slices/cartSlice";
+import { fetchProducts } from "@/store/slices/productSlices";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,39 +21,52 @@ import {
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
-  AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
+  AlertDialogFooter
 } from "@/components/ui/alert-dialog";
 import { Loader2, Trash2, ShoppingBag, ArrowLeft, Tag, CheckCircle, ChevronDown, ChevronUp } from "lucide-react";
 import Image from "next/image";
 import { toast } from "sonner";
 import debounce from "lodash/debounce";
-import { fetchProducts } from "@/store/slices/productSlices";
 
 export default function CartPage() {
   const dispatch = useDispatch();
-  const { items, totalPrice, totalQuantity, status, error } = useSelector((state) => state.cart || {});
-  const { byId: productsById, allIds, status: productStatus } = useSelector((state) => state.products || {});
+  const { items = [], totalPrice = 0, totalQuantity = 0, status, error } = useSelector((state) => state.cart || {});
+  const { byId: productsById = {}, allIds = [], status: productStatus } = useSelector((state) => state.products || {});
   const [promoCode, setPromoCode] = useState("");
   const [discount, setDiscount] = useState(0);
   const [isClearing, setIsClearing] = useState(false);
   const [showSummary, setShowSummary] = useState(true);
 
-  // Fetch cart and products
+  // Fetch cart and products only once on mount
   useEffect(() => {
-    const userId = localStorage.getItem("user-id");
-    if (userId && status === "idle") {
+    const token = localStorage.getItem("user-token");
+    let userId = null;
+
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        userId = decoded?.userId || decoded?.id || decoded?.sub;
+        if (userId) {
+          localStorage.setItem("user-id", userId);
+        }
+      } catch (error) {
+        console.error("Invalid token", error);
+      }
+    }
+
+    // Fetch cart and products
+    if (userId) {
       dispatch(fetchCart());
     }
-    if (productStatus === "idle") {
-      dispatch(fetchProducts());
-    }
+    dispatch(fetchProducts());
+
     return () => {
       dispatch(resetError());
     };
-  }, [dispatch, status, productStatus]);
+  }, [dispatch]); // Only dispatch as dependency to run once on mount
 
   // Handle errors
   useEffect(() => {
@@ -109,7 +124,7 @@ export default function CartPage() {
   };
 
   // Calculate final total
-  const shipping = discount > 0 && promoCode.toLowerCase() === "freeship" ? 0 : 50; // Mock shipping cost
+  const shipping = discount > 0 && promoCode.toLowerCase() === "freeship" ? 0 : 50;
   const finalTotal = (totalPrice - discount + shipping).toFixed(2);
 
   // Handle clear cart
@@ -122,7 +137,7 @@ export default function CartPage() {
       .finally(() => setIsClearing(false));
   };
 
-  // Suggested products from productSlice
+  // Suggested products
   const suggestedProducts = allIds
     .filter((id) => !items.some((item) => item.productId === id))
     .slice(0, 3)
@@ -178,7 +193,6 @@ export default function CartPage() {
           >
             Continue Shopping
           </Link>
-          {/* Suggested Products */}
           {suggestedProducts.length > 0 && (
             <div className="mt-8">
               <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">You Might Like</h3>
@@ -246,7 +260,6 @@ export default function CartPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Cart Items List */}
         <div className="lg:col-span-2 space-y-4">
           <AnimatePresence>
             {items.map((item, index) => (
@@ -258,7 +271,6 @@ export default function CartPage() {
                 transition={{ duration: 0.3, delay: index * 0.05 }}
                 className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border border-gray-200 dark:border-gray-700"
               >
-                {/* Product Image and Details */}
                 <div className="flex items-start gap-4 w-full md:w-auto">
                   {item.images && item.images[0] ? (
                     <Image
@@ -295,8 +307,6 @@ export default function CartPage() {
                     </p>
                   </div>
                 </div>
-
-                {/* Quantity and Actions */}
                 <div className="flex items-center justify-between w-full md:w-auto gap-4">
                   <div className="flex items-center gap-2">
                     <Button
@@ -368,8 +378,6 @@ export default function CartPage() {
               </motion.div>
             ))}
           </AnimatePresence>
-
-          {/* Clear Cart Button */}
           {items.length > 0 && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
@@ -407,8 +415,6 @@ export default function CartPage() {
             </AlertDialog>
           )}
         </div>
-
-        {/* Order Summary Sidebar */}
         <div className="lg:col-span-1 bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 sticky top-24 h-fit border border-gray-200 dark:border-gray-700">
           <button
             onClick={() => setShowSummary(!showSummary)}
@@ -451,8 +457,6 @@ export default function CartPage() {
                     <span>₹{finalTotal}</span>
                   </div>
                 </div>
-
-                {/* Promo Code */}
                 <div className="mt-6">
                   <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
                     <Tag className="w-4 h-4 inline mr-2" />
@@ -476,7 +480,6 @@ export default function CartPage() {
                     </Button>
                   </div>
                 </div>
-
                 <Link href="/checkout">
                   <Button
                     className="w-full mt-6 bg-green-600 dark:bg-green-500 hover:bg-green-700 dark:hover:bg-green-600 flex items-center justify-center text-white"
@@ -486,8 +489,6 @@ export default function CartPage() {
                     Proceed to Checkout
                   </Button>
                 </Link>
-
-                {/* Cart Tips */}
                 <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/50 rounded-lg text-sm text-gray-700 dark:text-gray-300">
                   <h4 className="font-semibold mb-2">Cart Tips</h4>
                   <ul className="list-disc pl-4 space-y-1">
@@ -501,8 +502,6 @@ export default function CartPage() {
           </AnimatePresence>
         </div>
       </div>
-
-      {/* Mobile Bottom Bar */}
       <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 p-4 shadow-lg lg:hidden flex justify-between items-center border-t border-gray-200 dark:border-gray-700">
         <div>
           <span className="font-bold text-gray-900 dark:text-gray-100">Total: ₹{finalTotal}</span>
@@ -520,8 +519,6 @@ export default function CartPage() {
           </Button>
         </Link>
       </div>
-
-      {/* Suggested Products */}
       {suggestedProducts.length > 0 && (
         <div className="mt-8 max-w-4xl mx-auto">
           <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">You Might Also Like</h3>
