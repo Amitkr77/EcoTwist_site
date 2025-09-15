@@ -67,7 +67,6 @@ export default async function handler(req, res) {
       delete userObj.refreshToken;
       delete userObj.__v;
 
-      console.log("user ka data", userObj);
 
       return res.status(200).json({
         message: "User profile fetched successfully",
