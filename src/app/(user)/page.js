@@ -387,11 +387,11 @@ export default function Home() {
         <div className="absolute top-32 sm:top-40 lg:top-64 right-4 sm:right-16 lg:right-[28rem] w-32 sm:w-48 lg:w-64 h-32 sm:h-48 lg:h-64 bg-[url('/leaf-green.png')] bg-cover bg-center opacity-30 z-10 hidden sm:block" />
 
         {/* Content */}
-        <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-20">
+        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-8 lg:px-24">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-20 items-center">
             {/* Image + Stat */}
             <div className="relative group">
-              <div className="overflow-hidden rounded-2xl sm:rounded-3xl shadow-xl">
+              <div className="overflow-hidden rounded-2xl sm:rounded-3xl shadow-xl max-w-3xl mx-auto">
                 <Image
                   src="/product_image.png"
                   alt="Eco-friendly artisan crafting"
@@ -400,7 +400,7 @@ export default function Home() {
                   className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105"
                   placeholder="blur"
                   blurDataURL="/product_image.png"
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 800px"
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 1100px"
                 />
               </div>
               <div className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 bg-white border border-slate-200 px-4 sm:px-6 py-2 sm:py-4 rounded-xl sm:rounded-2xl shadow-lg backdrop-blur-sm bg-opacity-90 animate-fade-in-up">
@@ -433,7 +433,7 @@ export default function Home() {
                   className="bg-forest hover:bg-green-700/10 text-black px-6 sm:px-8 py-2 sm:py-3 rounded-full text-sm sm:text-base font-semibold shadow-md transition-all cursor-pointer inline-flex items-center gap-2"
                 >
                   <Link href="/about">
-                    Learn More About Us
+                    Learn More
                     <ArrowRight className="w-4 sm:w-5 h-4 sm:h-5" />
                   </Link>
                 </Button>

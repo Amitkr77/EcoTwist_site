@@ -24,41 +24,52 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import {
-  Loader2,
-  Trash2,
-  ShoppingBag,
-  ArrowLeft,
-  Tag,
-  CheckCircle,
-} from "lucide-react";
+import { Loader2, Trash2, ShoppingBag, ArrowLeft, Tag, CheckCircle, ChevronDown, ChevronUp } from "lucide-react";
 import Image from "next/image";
-import { toast } from "react-toastify"; // Ensure react-toastify is installed: npm install react-toastify
-import { ChevronDownIcon, ChevronUpIcon } from "lucide-react"; // For collapsible sections
+import { toast } from "sonner";
+import debounce from "lodash/debounce";
+import { fetchProducts } from "@/store/slices/productSlices";
 
-function CartPage() {
-  const cart = useSelector((state) => state.cart);
+export default function CartPage() {
   const dispatch = useDispatch();
+  const { items, totalPrice, totalQuantity, status, error } = useSelector((state) => state.cart || {});
+  const { byId: productsById, allIds, status: productStatus } = useSelector((state) => state.products || {});
   const [promoCode, setPromoCode] = useState("");
   const [discount, setDiscount] = useState(0);
   const [isClearing, setIsClearing] = useState(false);
-  const [showSummary, setShowSummary] = useState(true); // For collapsible mobile summary
+  const [showSummary, setShowSummary] = useState(true);
 
+  // Fetch cart and products
   useEffect(() => {
-    dispatch(fetchCart());
+    const userId = localStorage.getItem("user-id");
+    if (userId && status === "idle") {
+      dispatch(fetchCart());
+    }
+    if (productStatus === "idle") {
+      dispatch(fetchProducts());
+    }
     return () => {
-      dispatch(resetError()); // Clear errors on unmount
+      dispatch(resetError());
     };
-  }, [dispatch]);
+  }, [dispatch, status, productStatus]);
+
+  // Handle errors
+  useEffect(() => {
+    if (status === "failed" && error) {
+      toast.error(error);
+      console.error("Cart error:", error);
+    }
+  }, [status, error]);
 
   // Debounced update for quantity
   const debouncedUpdateCart = useCallback(
     debounce((item, newQuantity) => {
       if (newQuantity >= 0) {
         if (newQuantity === 0) {
-          dispatch(
-            removeFromCart({ productId: item.productId, variantSku: item.variantSku })
-          ).then(() => toast.info(`${item.name} removed from cart`));
+          dispatch(removeFromCart({ productId: item.productId, variantSku: item.variantSku }))
+            .unwrap()
+            .then(() => toast.info(`${item.name} removed from cart`))
+            .catch((err) => toast.error(err || "Failed to remove from cart"));
         } else {
           dispatch(
             updateCart({
@@ -66,20 +77,15 @@ function CartPage() {
               variantSku: item.variantSku,
               quantity: newQuantity,
             })
-          ).then(() => toast.success(`Updated quantity for ${item.name}`));
+          )
+            .unwrap()
+            .then(() => toast.success(`Updated quantity for ${item.name}`))
+            .catch((err) => toast.error(err || "Failed to update cart"));
         }
       }
     }, 500),
     [dispatch]
   );
-
-  function debounce(func, delay) {
-    let timer;
-    return (...args) => {
-      clearTimeout(timer);
-      timer = setTimeout(() => func(...args), delay);
-    };
-  }
 
   // Apply promo code (mock logic)
   const handleApplyPromo = () => {
@@ -90,7 +96,7 @@ function CartPage() {
     const code = promoCode.toLowerCase();
     if (validCodes[code]) {
       const promo = validCodes[code];
-      setDiscount(promo.discount ? cart.totalPrice * (promo.discount / 100) : 0);
+      setDiscount(promo.discount ? totalPrice * (promo.discount / 100) : 0);
       toast.success(
         promo.freeShipping
           ? "Free shipping applied!"
@@ -103,8 +109,8 @@ function CartPage() {
   };
 
   // Calculate final total
-  const shipping = 0.0; // Mock shipping cost
-  const finalTotal = (cart.totalPrice - discount + shipping).toFixed(2);
+  const shipping = discount > 0 && promoCode.toLowerCase() === "freeship" ? 0 : 50; // Mock shipping cost
+  const finalTotal = (totalPrice - discount + shipping).toFixed(2);
 
   // Handle clear cart
   const handleClearCart = () => {
@@ -112,141 +118,130 @@ function CartPage() {
     dispatch(clearCart())
       .unwrap()
       .then(() => toast.success("Cart cleared successfully"))
-      .catch(() => toast.error("Failed to clear cart"))
+      .catch((err) => toast.error(err || "Failed to clear cart"))
       .finally(() => setIsClearing(false));
   };
 
-  // Suggested products (mock data)
-  const suggestedProducts = [
-    {
-      id: "689cd18b13218b9091c2c1fa",
-      name: "Solstice Stainless Steel Tumbler",
-      price: 1,
-      image: "/products/tumbler/tumbler_1.png"
-    },
-    {
-      id: "689cd324ca6d7017b035cbb8",
-      name: "EcoHaul Organic Cotton Tote Bag",
-      price: 19.99,
-      image: "/products/tote/tote_1.png"
-    },
-    {
-      id: "689cd324ca6d7017b035cbba",
-      name: "EcoScribe Biodegradable Pen",
-      price: 1,
-      image: "/products/pen/pen_1.png"
-    },
-    // {
-    //   id: "68becec163000a40753bb997",
-    //   name: "ZeroWaste Stainless Steel Lunch Box",
-    //   price: 1,
-    //   image: "https://plus.unsplash.com/premium_photo-1661438553846-cdd78379e11b?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fGx1bmNoJTIwYm94fGVufDB8fDB8fHww"
-    // }
-  ];
-
+  // Suggested products from productSlice
+  const suggestedProducts = allIds
+    .filter((id) => !items.some((item) => item.productId === id))
+    .slice(0, 3)
+    .map((id) => productsById[id])
+    .filter((product) => product && product.images?.length > 0);
 
   // Loading state
-  if (cart.status === "loading") {
+  if (status === "loading" || productStatus === "loading") {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 flex justify-center items-center h-64">
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900 flex justify-center items-center pt-20">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto" />
-          <span className="ml-2 text-gray-600">Loading your cart...</span>
+          <Loader2 className="w-8 h-8 animate-spin text-green-600 dark:text-green-400 mx-auto" />
+          <span className="mt-2 text-gray-600 dark:text-gray-400">Loading your cart...</span>
         </div>
       </div>
     );
   }
 
   // Error state
-  // if (cart.status === "failed") {
-  //   return (
-  //     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-6 text-center">
-  //       <div className="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-md">
-  //         <h2 className="text-2xl font-bold text-red-600 mb-4">
-  //           Error Loading Cart
-  //         </h2>
-  //         <p className="text-gray-600 mb-6">{cart.error}</p>
-  //         <Button
-  //           onClick={() => dispatch(fetchCart())}
-  //           className="bg-blue-600 hover:bg-blue-700 text-white"
-  //         >
-  //           Retry
-  //         </Button>
-  //       </div>
-  //     </div>
-  //   );
-  // }
+  if (status === "failed") {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-red-50 to-pink-100 dark:from-red-900 dark:to-pink-900 pt-20 text-center">
+        <div className="max-w-2xl mx-auto bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
+          <h2 className="text-2xl font-bold text-red-600 dark:text-red-400 mb-4">
+            Error Loading Cart
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">{error}</p>
+          <Button
+            onClick={() => dispatch(fetchCart())}
+            className="bg-red-600 dark:bg-red-500 hover:bg-red-700 dark:hover:bg-red-600 text-white"
+            aria-label="Retry loading cart"
+          >
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   // Empty cart with suggestions
-  if (cart.items.length === 0) {
+  if (items.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-6 text-center">
-        <div className="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md">
-          <ShoppingBag className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-          <h2 className="text-2xl font-bold mb-4">Your Cart is Empty</h2>
-          <p className="text-gray-600 mb-6">
-            Start adding some items to your cart!
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900 pt-20 p-4 md:p-6 text-center">
+        <div className="max-w-4xl mx-auto bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
+          <ShoppingBag className="w-16 h-16 mx-auto text-gray-400 dark:text-gray-300 mb-4" />
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Your Cart is Empty</h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
+            Start adding some eco-friendly items to your cart!
           </p>
           <Link
-            href="/"
-            className="inline-block bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700"
+            href="/products"
+            className="inline-block bg-green-600 dark:bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-700 dark:hover:bg-green-600"
           >
             Continue Shopping
           </Link>
           {/* Suggested Products */}
-          <div className="mt-8">
-            <h3 className="text-xl font-semibold mb-4">You Might Like</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {suggestedProducts.map((product) => (
-                <motion.div
-                  key={product.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-gray-50 p-4 rounded-lg shadow-sm"
-                >
-                  <Image
-                    src={product.image}
-                    alt={product.name}
-                    width={150}
-                    height={150}
-                    className="object-cover rounded-md mx-auto"
-                  />
-                  <h4 className="text-sm font-medium mt-2">{product.name}</h4>
-                  <p className="text-blue-600 font-semibold">₹{product.price.toFixed(2)}</p>
-                  <Button
-                    variant="outline"
-                    className="mt-2 w-full"
-                    onClick={() =>
-                      dispatch(
-                        addToCart({
-                          productId: product.id,
-                          name: product.name,
-                          price: product.price,
-                          images: [product.image],
-                          quantity: 1,
-                        })
-                      ).then(() => toast.success(`${product.name} added to cart`))
-                    }
-                  >
-                    Add to Cart
-                  </Button>
-                </motion.div>
-              ))}
+          {suggestedProducts.length > 0 && (
+            <div className="mt-8">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">You Might Like</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                <AnimatePresence>
+                  {suggestedProducts.map((product) => (
+                    <motion.div
+                      key={product._id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600"
+                    >
+                      <Image
+                        src={product.images?.find((img) => img.isPrimary)?.url || product.images?.[0]?.url || "/product_image.png"}
+                        alt={product.name}
+                        width={150}
+                        height={150}
+                        className="object-cover rounded-md mx-auto"
+                      />
+                      <h4 className="text-sm font-medium mt-2 text-gray-900 dark:text-gray-100">{product.name}</h4>
+                      <p className="text-green-600 dark:text-green-400 font-semibold">
+                        ₹{Math.min(...(product.variants?.map((v) => v.price || 0) || [0])).toFixed(2)}
+                      </p>
+                      <Button
+                        variant="outline"
+                        className="mt-2 w-full border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600"
+                        onClick={() =>
+                          dispatch(
+                            addToCart({
+                              userId: localStorage.getItem("user-id"),
+                              productId: product._id,
+                              variantSku: product.variants?.[0]?.sku,
+                              quantity: 1,
+                            })
+                          )
+                            .unwrap()
+                            .then(() => toast.success(`${product.name} added to cart`))
+                            .catch((err) => toast.error(err || "Failed to add to cart"))
+                        }
+                        aria-label={`Add ${product.name} to cart`}
+                      >
+                        Add to Cart
+                      </Button>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen mt-20 p-4 md:p-6 ">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900 pt-20 p-4 md:p-6">
       <div className="flex items-center mb-6">
-        <Link href="/" className="mr-4 text-blue-600 hover:text-blue-800">
-          <ArrowLeft className="w-6 h-6" />
+        <Link href="/products" className="mr-4 text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300">
+          <ArrowLeft className="w-6 h-6" aria-label="Back to products" />
         </Link>
-        <h2 className="text-2xl md:text-3xl font-medium">
-          Shopping Cart ({cart.totalQuantity} items)
+        <h2 className="text-2xl md:text-3xl font-medium text-gray-900 dark:text-gray-100">
+          Shopping Cart ({totalQuantity} items)
         </h2>
       </div>
 
@@ -254,14 +249,14 @@ function CartPage() {
         {/* Cart Items List */}
         <div className="lg:col-span-2 space-y-4">
           <AnimatePresence>
-            {cart.items.map((item) => (
+            {items.map((item, index) => (
               <motion.div
                 key={`${item.productId}-${item.variantSku}`}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, x: -100 }}
-                transition={{ duration: 0.3 }}
-                className="bg-white rounded-lg shadow-md p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border border-gray-200"
+                transition={{ duration: 0.3, delay: index * 0.05 }}
+                className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border border-gray-200 dark:border-gray-700"
               >
                 {/* Product Image and Details */}
                 <div className="flex items-start gap-4 w-full md:w-auto">
@@ -274,28 +269,28 @@ function CartPage() {
                       className="object-cover rounded-md"
                     />
                   ) : (
-                    <div className="w-20 h-20 bg-gray-200 rounded-md flex items-center justify-center">
-                      <ShoppingBag className="w-8 h-8 text-gray-400" />
+                    <div className="w-20 h-20 bg-gray-200 dark:bg-gray-700 rounded-md flex items-center justify-center">
+                      <ShoppingBag className="w-8 h-8 text-gray-400 dark:text-gray-300" />
                     </div>
                   )}
                   <div>
                     <Link
-                      href={`/product-info/${item.productId}`}
-                      className="text-lg font-semibold hover:text-blue-600"
+                      href={`/products/${item.productId}`}
+                      className="text-lg font-semibold text-gray-900 dark:text-gray-100 hover:text-green-600 dark:hover:text-green-400"
                     >
                       {item.name}
                     </Link>
                     {item.variantName && (
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
                         Variant: {item.variantName}
                       </p>
                     )}
                     {item.description && (
-                      <p className="text-sm text-gray-600 mt-1">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                         {item.description.substring(0, 100)}...
                       </p>
                     )}
-                    <p className="text-blue-600 font-medium">
+                    <p className="text-green-600 dark:text-green-400 font-medium">
                       ₹{item.price.toFixed(2)}
                     </p>
                   </div>
@@ -309,27 +304,30 @@ function CartPage() {
                       size="sm"
                       onClick={() => debouncedUpdateCart(item, item.quantity - 1)}
                       disabled={item.quantity <= 1}
+                      className="border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300"
+                      aria-label={`Decrease quantity of ${item.name}`}
                     >
                       -
                     </Button>
                     <Input
                       type="number"
                       value={item.quantity}
-                      onChange={(e) =>
-                        debouncedUpdateCart(item, parseInt(e.target.value) || 1)
-                      }
-                      className="w-16 text-center"
+                      onChange={(e) => debouncedUpdateCart(item, parseInt(e.target.value) || 1)}
+                      className="w-16 text-center border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300"
                       min={0}
+                      aria-label={`Quantity of ${item.name}`}
                     />
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => debouncedUpdateCart(item, item.quantity + 1)}
+                      className="border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300"
+                      aria-label={`Increase quantity of ${item.name}`}
                     >
                       +
                     </Button>
                   </div>
-                  <p className="font-medium">
+                  <p className="font-medium text-gray-900 dark:text-gray-100">
                     ₹{(item.price * item.quantity).toFixed(2)}
                   </p>
                   <AlertDialog>
@@ -337,30 +335,29 @@ function CartPage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="text-red-600 hover:text-red-800"
+                        className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
+                        aria-label={`Remove ${item.name} from cart`}
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </AlertDialogTrigger>
-                    <AlertDialogContent>
+                    <AlertDialogContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                       <AlertDialogHeader>
-                        <AlertDialogTitle>Remove Item?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Are you sure you want to remove {item.name} from your
-                          cart?
+                        <AlertDialogTitle className="text-gray-900 dark:text-gray-100">Remove Item?</AlertDialogTitle>
+                        <AlertDialogDescription className="text-gray-600 dark:text-gray-400">
+                          Are you sure you want to remove {item.name} from your cart?
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel className="text-gray-600 dark:text-gray-300">Cancel</AlertDialogCancel>
                         <AlertDialogAction
                           onClick={() =>
-                            dispatch(
-                              removeFromCart({
-                                productId: item.productId,
-                                variantSku: item.variantSku,
-                              })
-                            ).then(() => toast.info(`${item.name} removed from cart`))
+                            dispatch(removeFromCart({ productId: item.productId, variantSku: item.variantSku }))
+                              .unwrap()
+                              .then(() => toast.info(`${item.name} removed from cart`))
+                              .catch((err) => toast.error(err || "Failed to remove from cart"))
                           }
+                          className="bg-red-600 dark:bg-red-500 text-white hover:bg-red-700 dark:hover:bg-red-600"
                         >
                           Remove
                         </AlertDialogAction>
@@ -373,13 +370,14 @@ function CartPage() {
           </AnimatePresence>
 
           {/* Clear Cart Button */}
-          {cart.items.length > 0 && (
+          {items.length > 0 && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button
                   variant="destructive"
-                  className="mt-4"
+                  className="mt-4 bg-red-600 dark:bg-red-500 hover:bg-red-700 dark:hover:bg-red-600"
                   disabled={isClearing}
+                  aria-label="Clear cart"
                 >
                   {isClearing ? (
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -389,16 +387,19 @@ function CartPage() {
                   Clear Cart
                 </Button>
               </AlertDialogTrigger>
-              <AlertDialogContent>
+              <AlertDialogContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Clear Cart?</AlertDialogTitle>
-                  <AlertDialogDescription>
+                  <AlertDialogTitle className="text-gray-900 dark:text-gray-100">Clear Cart?</AlertDialogTitle>
+                  <AlertDialogDescription className="text-gray-600 dark:text-gray-400">
                     Are you sure you want to remove all items from your cart?
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleClearCart}>
+                  <AlertDialogCancel className="text-gray-600 dark:text-gray-300">Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleClearCart}
+                    className="bg-red-600 dark:bg-red-500 text-white hover:bg-red-700 dark:hover:bg-red-600"
+                  >
                     Clear
                   </AlertDialogAction>
                 </AlertDialogFooter>
@@ -408,97 +409,112 @@ function CartPage() {
         </div>
 
         {/* Order Summary Sidebar */}
-        <div className="lg:col-span-1 bg-white rounded-lg shadow-md p-6 sticky top-4 h-fit">
+        <div className="lg:col-span-1 bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 sticky top-24 h-fit border border-gray-200 dark:border-gray-700">
           <button
             onClick={() => setShowSummary(!showSummary)}
             className="lg:hidden w-full flex justify-between items-center mb-4"
+            aria-label={showSummary ? "Hide order summary" : "Show order summary"}
           >
-            <h3 className="text-xl font-bold">Order Summary</h3>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">Order Summary</h3>
             {showSummary ? (
-              <ChevronUpIcon className="w-5 h-5" />
+              <ChevronUp className="w-5 h-5 text-gray-600 dark:text-gray-300" />
             ) : (
-              <ChevronDownIcon className="w-5 h-5" />
+              <ChevronDown className="w-5 h-5 text-gray-600 dark:text-gray-300" />
             )}
           </button>
-          {showSummary && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="space-y-4"
-            >
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span>Subtotal ({cart.totalQuantity} items)</span>
-                  <span>₹{cart.totalPrice.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Shipping Estimate</span>
-                  <span>₹{shipping.toFixed(2)}</span>
-                </div>
-                {discount > 0 && (
-                  <div className="flex justify-between text-green-600">
-                    <span>Discount</span>
-                    <span>-₹{discount.toFixed(2)}</span>
+          <AnimatePresence>
+            {showSummary && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="space-y-4"
+              >
+                <div className="space-y-2">
+                  <div className="flex justify-between text-gray-700 dark:text-gray-300">
+                    <span>Subtotal ({totalQuantity} items)</span>
+                    <span>₹{totalPrice.toFixed(2)}</span>
                   </div>
-                )}
-                <hr className="my-2" />
-                <div className="flex justify-between font-bold">
-                  <span>Total</span>
-                  <span>₹{finalTotal}</span>
+                  <div className="flex justify-between text-gray-700 dark:text-gray-300">
+                    <span>Shipping Estimate</span>
+                    <span>₹{shipping.toFixed(2)}</span>
+                  </div>
+                  {discount > 0 && (
+                    <div className="flex justify-between text-green-600 dark:text-green-400">
+                      <span>Discount</span>
+                      <span>-₹{discount.toFixed(2)}</span>
+                    </div>
+                  )}
+                  <hr className="my-2 border-gray-200 dark:border-gray-600" />
+                  <div className="flex justify-between font-bold text-gray-900 dark:text-gray-100">
+                    <span>Total</span>
+                    <span>₹{finalTotal}</span>
+                  </div>
                 </div>
-              </div>
 
-              {/* Promo Code */}
-              <div className="mt-6">
-                <label className="block text-sm font-medium mb-2">
-                  <Tag className="w-4 h-4 inline mr-2" />
-                  Promo Code
-                </label>
-                <div className="flex gap-2">
-                  <Input
-                    value={promoCode}
-                    onChange={(e) => setPromoCode(e.target.value)}
-                    placeholder="Enter code (e.g., SAVE10)"
-                    className="flex-1"
-                  />
-                  <Button onClick={handleApplyPromo} variant="outline">
-                    Apply
+                {/* Promo Code */}
+                <div className="mt-6">
+                  <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+                    <Tag className="w-4 h-4 inline mr-2" />
+                    Promo Code
+                  </label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={promoCode}
+                      onChange={(e) => setPromoCode(e.target.value)}
+                      placeholder="Enter code (e.g., SAVE10)"
+                      className="flex-1 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300"
+                      aria-label="Promo code"
+                    />
+                    <Button
+                      onClick={handleApplyPromo}
+                      variant="outline"
+                      className="border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300"
+                      aria-label="Apply promo code"
+                    >
+                      Apply
+                    </Button>
+                  </div>
+                </div>
+
+                <Link href="/checkout">
+                  <Button
+                    className="w-full mt-6 bg-green-600 dark:bg-green-500 hover:bg-green-700 dark:hover:bg-green-600 flex items-center justify-center text-white"
+                    aria-label="Proceed to checkout"
+                  >
+                    <CheckCircle className="w-5 h-5 mr-2" />
+                    Proceed to Checkout
                   </Button>
+                </Link>
+
+                {/* Cart Tips */}
+                <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/50 rounded-lg text-sm text-gray-700 dark:text-gray-300">
+                  <h4 className="font-semibold mb-2">Cart Tips</h4>
+                  <ul className="list-disc pl-4 space-y-1">
+                    <li>Use promo code &quot;SAVE10&quot; for 10% off.</li>
+                    <li>Free shipping with code &quot;FREESHIP&quot;.</li>
+                    <li>Checkout within 30 minutes to reserve items.</li>
+                  </ul>
                 </div>
-              </div>
-
-              <Link href="/checkout">
-                <Button className="w-full mt-6 bg-green-600 hover:bg-green-700 flex items-center justify-center">
-                  <CheckCircle className="w-5 h-5 mr-2" />
-                  Proceed to Checkout
-                </Button>
-              </Link>
-
-              {/* Cart Tips */}
-              <div className="mt-4 p-4 bg-blue-50 rounded-lg text-sm">
-                <h4 className="font-semibold mb-2">Cart Tips</h4>
-                <ul className="list-disc pl-4 space-y-1">
-                  <li>Use promo code "SAVE10" for 10% off.</li>
-                  <li>Free shipping with code "FREESHIP".</li>
-                  <li>Checkout within 30 minutes to reserve items.</li>
-                </ul>
-              </div>
-            </motion.div>
-          )}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
       {/* Mobile Bottom Bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white p-4 shadow-lg lg:hidden flex justify-between items-center border-t">
+      <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 p-4 shadow-lg lg:hidden flex justify-between items-center border-t border-gray-200 dark:border-gray-700">
         <div>
-          <span className="font-bold">Total: ₹{finalTotal}</span>
+          <span className="font-bold text-gray-900 dark:text-gray-100">Total: ₹{finalTotal}</span>
           {discount > 0 && (
-            <span className="text-green-600 ml-2">(-₹{discount.toFixed(2)})</span>
+            <span className="text-green-600 dark:text-green-400 ml-2">(-₹{discount.toFixed(2)})</span>
           )}
         </div>
-        <Link href="/new-checkout">
-          <Button className="bg-green-600 hover:bg-green-700 flex items-center">
+        <Link href="/checkout">
+          <Button
+            className="bg-green-600 dark:bg-green-500 hover:bg-green-700 dark:hover:bg-green-600 flex items-center text-white"
+            aria-label="Checkout"
+          >
             <CheckCircle className="w-5 h-5 mr-2" />
             Checkout
           </Button>
@@ -506,48 +522,56 @@ function CartPage() {
       </div>
 
       {/* Suggested Products */}
-      <div className="mt-8">
-        <h3 className="text-xl font-semibold mb-4">You Might Also Like</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          {suggestedProducts.map((product) => (
-            <motion.div
-              key={product.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-gray-50 p-4 rounded-lg shadow-sm"
-            >
-              <Image
-                src={product.image}
-                alt={product.name}
-                width={150}
-                height={150}
-                className="object-cover rounded-md mx-auto"
-              />
-              <h4 className="text-sm font-medium mt-2">{product.name}</h4>
-              <p className="text-blue-600 font-semibold">₹{product.price.toFixed(2)}</p>
-              <Button
-                variant="outline"
-                className="mt-2 w-full"
-                onClick={() =>
-                  dispatch(
-                    addToCart({
-                      productId: product.id,
-                      name: product.name,
-                      price: product.price,
-                      images: [product.image],
-                      quantity: 1,
-                    })
-                  ).then(() => toast.success(`${product.name} added to cart`))
-                }
-              >
-                Add to Cart
-              </Button>
-            </motion.div>
-          ))}
+      {suggestedProducts.length > 0 && (
+        <div className="mt-8 max-w-4xl mx-auto">
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">You Might Also Like</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <AnimatePresence>
+              {suggestedProducts.map((product) => (
+                <motion.div
+                  key={product._id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600"
+                >
+                  <Image
+                    src={product.images?.find((img) => img.isPrimary)?.url || product.images?.[0]?.url || "/product_image.png"}
+                    alt={product.name}
+                    width={150}
+                    height={150}
+                    className="object-cover rounded-md mx-auto"
+                  />
+                  <h4 className="text-sm font-medium mt-2 text-gray-900 dark:text-gray-100">{product.name}</h4>
+                  <p className="text-green-600 dark:text-green-400 font-semibold">
+                    ₹{Math.min(...(product.variants?.map((v) => v.price || 0) || [0])).toFixed(2)}
+                  </p>
+                  <Button
+                    variant="outline"
+                    className="mt-2 w-full border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600"
+                    onClick={() =>
+                      dispatch(
+                        addToCart({
+                          userId: localStorage.getItem("user-id"),
+                          productId: product._id,
+                          variantSku: product.variants?.[0]?.sku,
+                          quantity: 1,
+                        })
+                      )
+                        .unwrap()
+                        .then(() => toast.success(`${product.name} added to cart`))
+                        .catch((err) => toast.error(err || "Failed to add to cart"))
+                    }
+                    aria-label={`Add ${product.name} to cart`}
+                  >
+                    Add to Cart
+                  </Button>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
-
-export default CartPage;
