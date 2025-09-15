@@ -74,10 +74,10 @@ export default async function handler(req, res) {
 
     res.setHeader(
       "Set-Cookie",
-      cookie.serialize("token", token, {
+      cookie.serialize("user-token", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        maxAge: 60 * 60, // 1 hour
+        maxAge: 60 * 60 * 24, // 1 day
         path: "/",
         sameSite: "lax",
       })
@@ -89,6 +89,7 @@ export default async function handler(req, res) {
       refreshToken,
       user: {
         id: user._id,
+        name: user.firstName,
         email: user.email,
         role: user.role,
       },

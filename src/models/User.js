@@ -128,6 +128,12 @@ userSchema.virtual('address', {
   foreignField: 'userId',
 });
 
+userSchema.virtual("orders", {
+  ref: "Order",
+  localField: "_id",
+  foreignField: "userId",
+});
+
 
 // // Middleware
 userSchema.pre('save', async function (next) {

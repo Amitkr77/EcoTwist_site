@@ -171,7 +171,7 @@ export default function Header() {
                 <DropdownMenuContent align="end" className="w-44">
                   <DropdownMenuItem asChild>
                     <Link href="/profile" className="w-full">
-                      Dashboard
+                      Profile
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
