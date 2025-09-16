@@ -198,7 +198,7 @@ export default function Footer() {
                   className="hover:text-teal-500 transition-colors"
                 >
                   
-                  B-Hub, Maurya Lok, Patna , Bihar – 800001
+                  B-Hub, Maurya Lok complex, Patna, Bihar, India – 800001
                 </a>
               </li>
               
