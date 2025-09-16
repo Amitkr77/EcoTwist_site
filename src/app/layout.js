@@ -6,7 +6,6 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import GoogleAnalytics from "@/components/GoogleAnalytics"
 import ReduxProvider from "@/store/provider";
 import { store } from "@/store/store";
-import { ToastContainer } from "react-toastify";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
