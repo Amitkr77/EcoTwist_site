@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
-import { jwtDecode } from "jwt-decode";
 import {
   User,
   Package,
@@ -37,7 +36,6 @@ import Wishlist from "@/components/profile/Wishlist";
 import Orders from "@/components/profile/Orders";
 import Navbar from "@/components/profile/Navbar";
 import {
-  fetchUserProfile,
   updateAccountInfo,
   addAddress,
   deleteAddress,
@@ -70,28 +68,7 @@ const Profile = () => {
   });
 
   useEffect(() => {
-    const token = localStorage.getItem("user-token");
-    if (token) {
-      try {
-        const decoded = jwtDecode(token);
-        const userId = decoded?.userId || decoded?.id || decoded?.sub;
-        if (userId) {
-          dispatch(fetchUserProfile(userId));
-        } else {
-          toast.error("Invalid user token. Please log in again.");
-          router.push("/login");
-        }
-      } catch (err) {
-        toast.error("Invalid token. Please log in again.");
-        router.push("/login");
-      }
-    } else {
-      toast.error("Please log in to view your profile.");
-      router.push("/login");
-    }
-  }, [dispatch, router]);
-
-  useEffect(() => {
+    // Sync local state with store profile when it loads
     if (profile) {
       setAccountInfo({
         fullName: profile.fullName || "",
@@ -118,7 +95,7 @@ const Profile = () => {
     router.push("/login");
   };
 
-  const totalSpent = orders?.reduce((sum, order) => sum + order.totalAmount, 0) ;
+  const totalSpent = orders?.reduce((sum, order) => sum + order.totalAmount, 0) || 0;
   const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
   const getStatusColor = (status) =>
@@ -214,9 +191,9 @@ const Profile = () => {
 
   const data = {
     name: profile?.fullName || "User",
-    location: profile?.addresses?.[0] ? 
-      `${profile.addresses[0].city}, ${profile.addresses[0].country}` : 
-      "No address",
+    location: profile?.addresses?.[0] 
+      ? `${profile.addresses[0].city}, ${profile.addresses[0].country}` 
+      : "No address",
     email: profile?.email || "N/A",
     wishlist: profile?.wishlist?.length || 0,
     totalSpent: totalSpent?.toFixed(2),
@@ -231,7 +208,7 @@ const Profile = () => {
     );
   }
 
-  if (!profile || Object.keys(profile).length === 0) {
+  if (status === "failed" || !profile || Object.keys(profile).length === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p className="text-red-500">Failed to load profile. Please log in again.</p>

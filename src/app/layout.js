@@ -6,6 +6,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import GoogleAnalytics from "@/components/GoogleAnalytics"
 import ReduxProvider from "@/store/provider";
 import { store } from "@/store/store";
+import { Toaster } from "react-hot-toast";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,9 +33,7 @@ export default function RootLayout({ children }) {
           <AuthProvider>
                   <GoogleAnalytics />
                   {children}
-              {/* <ToastContainer position="top-right" autoClose={3000}>
-              </ToastContainer> */}
-            
+             <Toaster position="top-right" reverseOrder={false} />
           </AuthProvider>
         </ReduxProvider>
       </body>

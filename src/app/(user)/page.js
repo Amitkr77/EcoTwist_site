@@ -99,6 +99,7 @@ export default function Home() {
         "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80",
     },
   ];
+  
   return (
     <div className="min-h-screen">
       <section className="relative z-10 text-gray-800 py-20 sm:py-12 lg:py-15 overflow-hidden flex flex-col lg:flex-row items-center bg-gradient-to-br from-white via-teal-50 to-white">
