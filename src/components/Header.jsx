@@ -1,8 +1,7 @@
-
 "use client";
 
-import { useState, useEffect, useCallback ,useRef} from "react";
-import { Menu, Search, ShoppingCart, X, User, LogIn } from "lucide-react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { Menu, Search, ShoppingCart, User, LogIn, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
@@ -15,38 +14,35 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { fetchCart } from "@/store/slices/cartSlice";
+import {
+  fetchCart,
+  clearCart,
+} from "@/store/slices/cartSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-hot-toast";
 
-// Static navigation items
-const navItems = [
-  { name: "Home", path: "/" },
-  { name: "Products", path: "/products" },
-  { name: "About", path: "/about" },
-  { name: "Blog", path: "/blog" },
-  { name: "Contact", path: "/contact" },
-];
-
-// Simple throttle function
-const throttle = (func, limit) => {
-  let lastFunc;
-  let lastRan;
-  return (...args) => {
-    if (!lastRan) {
-      func(...args);
-      lastRan = Date.now();
-    } else {
-      clearTimeout(lastFunc);
-      lastFunc = setTimeout(() => {
-        if (Date.now() - lastRan >= limit) {
-          func(...args);
-          lastRan = Date.now();
-        }
-      }, limit - (Date.now() - lastRan));
+// Optional: Add throttle helper
+function throttle(func, limit) {
+  let inThrottle;
+  return function () {
+    const args = arguments;
+    const context = this;
+    if (!inThrottle) {
+      func.apply(context, args);
+      inThrottle = true;
+      setTimeout(() => (inThrottle = false), limit);
     }
   };
-};
+}
+
+// Dummy nav items
+const navItems = [
+  { name: "Home", path: "/" },
+  { name: "Shop", path: "/products" },
+  { name: "Contact", path: "/contact" },
+  { name: "Blog", path: "/blog" },
+  { name: "About", path: "/about" },
+];
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -56,32 +52,44 @@ export default function Header() {
   const dispatch = useDispatch();
   const router = useRouter();
   const pathname = usePathname();
-  const { cart, status: cartStatus, error: cartError } = useSelector((state) => state.cart);
   const lastScrollY = useRef(0);
+
+  const cartStatus = useSelector((state) => state.cart.status);
+  const cartError = useSelector((state) => state.cart.error);
+  const totalCartItems = useSelector(
+    (state) =>
+      state.cart?.items?.reduce((total, item) => total + item.quantity, 0) || 0
+  );
 
   // Check authentication on mount
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const token = localStorage.getItem("user-token");
-      setIsAuthenticated(!!token);
-    }
+    const token = localStorage.getItem("user-token");
+    setIsAuthenticated(!!token);
   }, []);
 
-  // Fetch cart data
+  // Fetch cart
   useEffect(() => {
-    if (cartStatus === "idle") {
+    if (isAuthenticated && cartStatus === "idle") {
       dispatch(fetchCart());
+    } else {
+      const localCart = JSON.parse(localStorage.getItem("guest-cart") || "{}");
+      if (localCart.cart?.items) {
+        dispatch({
+          type: "cart/fetchCart/fulfilled",
+          payload: localCart.cart,
+        });
+      }
     }
-  }, [dispatch, cartStatus]);
+  }, [dispatch, isAuthenticated, cartStatus]);
 
-  // Handle cart fetch errors
+  // Handle cart error
   useEffect(() => {
-    if (cartError) {
+    if (cartStatus === "failed" && cartError) {
       toast.error("Failed to load cart data. Please try again.");
     }
-  }, [cartError]);
+  }, [cartStatus, cartError]);
 
-  // Handle scroll for header visibility and shadow
+  // Handle scroll
   useEffect(() => {
     const handleScroll = throttle(() => {
       const currentScrollY = window.scrollY;
@@ -96,14 +104,14 @@ export default function Header() {
 
   const handleLogout = () => {
     localStorage.removeItem("user-token");
+    localStorage.removeItem("guest-cart");
     setIsAuthenticated(false);
     toast.success("Logged out successfully!");
     router.push("/login");
+    dispatch(clearCart());
   };
 
   const isActive = useCallback((path) => pathname === path, [pathname]);
-
-  const totalCartItems =  cart?.totalQuantity || 0;
 
   return (
     <header
@@ -112,7 +120,7 @@ export default function Header() {
       } ${scrolled ? "shadow-lg" : "shadow-sm"} fixed top-0 left-0 right-0 z-50`}
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center ">
+        <div className="flex justify-between items-center">
           {/* Logo */}
           <Link href="/" aria-label="Homepage" className="flex items-center">
             <img
@@ -124,7 +132,7 @@ export default function Header() {
             />
           </Link>
 
-          {/* Desktop Nav */}
+          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-6 lg:space-x-8 uppercase tracking-wide text-sm font-semibold text-gray-700">
             {navItems.map((item) => (
               <Link
@@ -145,7 +153,7 @@ export default function Header() {
             ))}
           </nav>
 
-          {/* Actions */}
+          {/* Right Side Icons */}
           <div className="flex items-center gap-2 sm:gap-3 lg:gap-4">
             <Sidebar />
 
@@ -184,7 +192,7 @@ export default function Header() {
               <Link href="/login">
                 <Button
                   variant="ghost"
-                  className="p-2 rounded-md hover:bg-gray-100 hidden lg:block"
+                  className="p-2 rounded-md hover:bg-gray-100"
                   aria-label="Sign in"
                 >
                   <User className="h-4 sm:h-5 w-4 sm:w-5 text-gray-600" />
@@ -192,82 +200,25 @@ export default function Header() {
               </Link>
             )}
 
-            <div className="border bg-gray-300 h-8 sm:h-10" />
-
-            {/* Cart */}
-            <Link href="/cart">
-              <Button
-                variant="outline"
-                className="relative text-xs sm:text-sm"
-                aria-label={`Cart with ${totalCartItems} items`}
-              >
-                <ShoppingCart className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                Cart
-                {totalCartItems > 0 && (
-                  <Badge className="absolute -top-2 -right-2 w-4 h-4 sm:w-5 sm:h-5 p-0 text-xs bg-green-500">
-                    {totalCartItems}
-                  </Badge>
-                )}
-              </Button>
-            </Link>
-
-            {/* Mobile Menu Toggle */}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="md:hidden p-2"
-              onClick={() => setIsMenuOpen((prev) => !prev)}
-              aria-label={isMenuOpen ? "Close menu" : "Open menu"}
-              aria-expanded={isMenuOpen}
-              aria-controls="mobile-menu"
-            >
-              {isMenuOpen ? (
-                <X className="h-5 sm:h-6 w-5 sm:w-6 text-gray-600" />
-              ) : (
-                <Menu className="h-5 sm:h-6 w-5 sm:w-6 text-gray-600" />
-              )}
-            </Button>
-          </div>
-        </div>
-
-        {/* Mobile Nav */}
-        <nav
-          id="mobile-menu"
-          className={`md:hidden bg-blue-400/20 transition-all duration-300 overflow-hidden ${
-            isMenuOpen ? "max-h-screen py-6" : "max-h-0 py-0"
-          }`}
-        >
-          <div className="flex flex-col gap-4 px-4 sm:px-6">
-            {navItems.map((item) => (
-              <Link
-                key={item.path}
-                href={item.path}
-                className={`text-base sm:text-lg font-medium py-2 rounded-md transition-colors ${
-                  isActive(item.path)
-                    ? "bg-forest/10 text-forest"
-                    : "text-gray-700 hover:text-forest hover:bg-gray-100"
-                }`}
-                onClick={() => setIsMenuOpen(false)}
-                aria-current={isActive(item.path) ? "page" : undefined}
-              >
-                {item.name}
-              </Link>
-            ))}
-            {!isAuthenticated && (
-              <Link href="/login">
+            {/* Cart Icon */}
+            <div className="relative text-xs sm:text-sm">
+              <Link href="/cart">
                 <Button
-                  variant="ghost"
-                  size="sm"
-                  className="justify-start py-2 px-3 hover:bg-gray-100"
-                  onClick={() => setIsMenuOpen(false)}
+                  variant="outline"
+                  className="relative text-xs sm:text-sm"
+                  aria-label={`Cart with ${totalCartItems} items`}
                 >
-                  <LogIn className="h-4 sm:h-5 w-4 sm:w-5 text-gray-600 mr-2" />
-                  Sign In
+                  <ShoppingCart className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                  {totalCartItems > 0 && (
+                    <Badge className="absolute -top-2 -right-2 w-4 h-4 sm:w-5 sm:h-5 p-0 text-xs bg-green-500">
+                      {totalCartItems}
+                    </Badge>
+                  )}
                 </Button>
               </Link>
-            )}
+            </div>
           </div>
-        </nav>
+        </div>
       </div>
     </header>
   );

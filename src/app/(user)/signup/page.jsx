@@ -22,7 +22,7 @@ export default function SignupPage() {
     email: "",
     password: "",
   });
-  const [step, setStep] = useState("register"); // "register" or "otp"
+  const [step, setStep] = useState("register"); 
   const [otp, setOtp] = useState("");
   const [userId, setUserId] = useState(null);
   const [error, setError] = useState("");

@@ -226,7 +226,7 @@ export default function ProductsPage() {
   }
 
   return (
-    <main className="pt-20 pb-16 bg-gradient-to-br from-green-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900 min-h-screen">
+    <main className="pt-16  bg-gradient-to-br from-green-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900 min-h-screen">
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-r from-green-600 to-emerald-700 dark:from-green-800 dark:to-emerald-900 text-white py-20">
         <div className="absolute inset-0 bg-black/20"></div>
@@ -291,7 +291,7 @@ export default function ProductsPage() {
         />
       </section>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Desktop Sidebar */}
         <div className="hidden lg:block">
           <div className="flex gap-8">
@@ -785,45 +785,44 @@ export default function ProductsPage() {
             </motion.div>
           )}
         </AnimatePresence>
-
-        <section className="bg-gradient-to-r from-green-800 to-emerald-900 dark:from-green-900 dark:to-emerald-950 text-white py-16 mt-20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-3xl font-bold mb-6">Why Choose Sustainable?</h2>
-            <p className="text-lg mb-8 max-w-2xl mx-auto leading-relaxed">
-              Every product here is crafted with the earth in mind. From
-              biodegradable materials to refillable designs, we're reducing
-              waste one purchase at a time.
-            </p>
-            <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-              <motion.div whileHover={{ scale: 1.05 }} className="text-center">
-                <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl">🌿</span>
-                </div>
-                <h3 className="font-semibold mb-2">Eco-Materials</h3>
-                <p className="text-sm opacity-90">
-                  100% biodegradable where possible.
-                </p>
-              </motion.div>
-              <motion.div whileHover={{ scale: 1.05 }} className="text-center">
-                <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl">♻️</span>
-                </div>
-                <h3 className="font-semibold mb-2">Refillable</h3>
-                <p className="text-sm opacity-90">
-                  Minimize waste with reusable options.
-                </p>
-              </motion.div>
-              <motion.div whileHover={{ scale: 1.05 }} className="text-center">
-                <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl">⭐</span>
-                </div>
-                <h3 className="font-semibold mb-2">Ethical Brands</h3>
-                <p className="text-sm opacity-90">Support brands that care.</p>
-              </motion.div>
-            </div>
-          </div>
-        </section>
       </div>
+      <section className="bg-gradient-to-r from-green-800 to-emerald-900 dark:from-green-900 dark:to-emerald-950 text-white py-16 mt-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl font-bold mb-6">Why Choose Sustainable?</h2>
+          <p className="text-lg mb-8 max-w-2xl mx-auto leading-relaxed">
+            Every product here is crafted with the earth in mind. From
+            biodegradable materials to refillable designs, we're reducing waste
+            one purchase at a time.
+          </p>
+          <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+            <motion.div whileHover={{ scale: 1.05 }} className="text-center">
+              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl">🌿</span>
+              </div>
+              <h3 className="font-semibold mb-2">Eco-Materials</h3>
+              <p className="text-sm opacity-90">
+                100% biodegradable where possible.
+              </p>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.05 }} className="text-center">
+              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl">♻️</span>
+              </div>
+              <h3 className="font-semibold mb-2">Refillable</h3>
+              <p className="text-sm opacity-90">
+                Minimize waste with reusable options.
+              </p>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.05 }} className="text-center">
+              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl">⭐</span>
+              </div>
+              <h3 className="font-semibold mb-2">Ethical Brands</h3>
+              <p className="text-sm opacity-90">Support brands that care.</p>
+            </motion.div>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }

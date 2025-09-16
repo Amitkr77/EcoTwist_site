@@ -88,7 +88,7 @@ export default function LoginPage() {
        toast.success(`Welcome!`, { duration: 3000 });
        setTimeout(() => {
          window.location.href = "/";
-       }, 1500); // wait 1.5s before redirect
+       }, 1500);
      } else {
        setErrors((prev) => ({
          ...prev,
