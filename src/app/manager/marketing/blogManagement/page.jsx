@@ -30,7 +30,8 @@ const page = () => {
   const [tagInput, setTagInput] = useState("");
   const [previewPost, setPreviewPost] = useState(null);
   const [showHeaderPreview, setShowHeaderPreview] = useState(false);
-  const { toast } = useToast();
+  
+
 
   useEffect(() => {
     loadPosts();
@@ -222,33 +223,30 @@ const handleEdit = (post) => {
                 placeholder="Enter excerpt"
               />
 
-              
               <Label>Header Image</Label>
-              <Input type="file" accept="image/*" onChange={handleImageUpload} />
+              <Input
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+              />
               <Button
                 onClick={() => setShowHeaderPreview((p) => !p)}
                 variant="outline"
                 size="icon"
               >
-                {showHeaderPreview ? <ImageOff className="w-4 h-4" /> : <ImageIcon className="w-4 h-4" />}
+                {showHeaderPreview ? (
+                  <ImageOff className="w-4 h-4" />
+                ) : (
+                  <ImageIcon className="w-4 h-4" />
+                )}
               </Button>
               {showHeaderPreview && currentPost.headerImage && (
-              <img
-               src={currentPost.headerImage}
-               alt="Header Preview"
-               className="w-full h-32 object-cover mt-2 rounded border"
-              />
-            )}
-
-
-            {showHeaderPreview && currentPost.headerImage && (
-              <img
-               src={currentPost.headerImage}
-               alt="Header preview"
-               className="w-full h-32 object-cover rounded border mt-2"
-              />
-            )}
-
+                <img
+                  src={currentPost.headerImage}
+                  alt="Header Preview"
+                  className="w-full h-32 object-cover mt-2 rounded border"
+                />
+              )}
 
               <Label>Content *</Label>
               <Textarea
@@ -268,15 +266,15 @@ const handleEdit = (post) => {
                 onChange={(e) => handleTagsChange(e.target.value)}
               />
               <div className="flex flex-wrap gap-1 mt-1">
-                {Array.isArray(currentPost.tags) && currentPost.tags.map((tag, i) => (
-                  <Badge key={i} variant="secondary">
-                    {tag}
-                  </Badge>
-                   ))}
-
+                {Array.isArray(currentPost.tags) &&
+                  currentPost.tags.map((tag, i) => (
+                    <Badge key={i} variant="secondary">
+                      {tag}
+                    </Badge>
+                  ))}
               </div>
 
-               <Label>Author</Label>
+              <Label>Author</Label>
               <Input
                 value={currentPost.author}
                 onChange={(e) =>
@@ -446,12 +444,21 @@ const handleEdit = (post) => {
                 <DialogHeader>
                   <DialogTitle>{previewPost.title}</DialogTitle>
                 </DialogHeader>
-                {previewPost.headerImage && <img src={previewPost.headerImage} className="rounded w-full h-64 object-cover" />}
-                <div className="prose prose-sm max-w-none whitespace-pre-wrap mt-4">{previewPost.content}</div>
+                {previewPost.headerImage && (
+                  <img
+                    src={previewPost.headerImage}
+                    className="rounded w-full h-64 object-cover"
+                  />
+                )}
+                <div className="prose prose-sm max-w-none whitespace-pre-wrap mt-4">
+                  {previewPost.content}
+                </div>
                 <div className="flex flex-wrap gap-1 mt-4">
-                    {previewPost?.tags?.map((tag, i) => (
-                      <Badge key={i} variant="outline">{tag}</Badge>
-                    ))}
+                  {previewPost?.tags?.map((tag, i) => (
+                    <Badge key={i} variant="outline">
+                      {tag}
+                    </Badge>
+                  ))}
                 </div>
               </>
             )}
