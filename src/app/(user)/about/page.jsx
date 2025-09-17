@@ -217,7 +217,7 @@ export default function page() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-[#2E7D32] text-white text-center">
+      <section className="py-20 bg-white text-black text-center">
         <div className="container mx-auto px-6 md:px-12">
           <h2 className="font-heading text-3xl lg:text-4xl font-bold mb-4">
             Let’s Redefine Gifting
@@ -229,7 +229,7 @@ export default function page() {
           <Link href="/contact">
             <Button
               variant="outline"
-              className="border-white text-white bg-white/10 px-6 py-3"
+              className="border-black text-black bg-white/10 px-6 py-3"
             >
               Get In Touch
             </Button>
