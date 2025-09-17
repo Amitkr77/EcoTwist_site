@@ -609,7 +609,7 @@ const ContentMarketing = () => {
               />
 
               {/* Header Image */}
-              <Label>Header Image</Label>
+              <Label>Header Image (Max 1Mb)</Label>
               <Input
                 type="file"
                 accept="image/*"
