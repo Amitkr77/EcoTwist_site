@@ -5,7 +5,6 @@ import React, { useState } from "react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 
-
 export default function CTA() {
   const [newsletterEmail, setNewsletterEmail] = useState("");
 
@@ -42,9 +41,12 @@ export default function CTA() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.8 }}
-        className="relative py-20 text-center bg-gradient-to-r from-green-700 via-green-600 to-green-800 text-white rounded-t-3xl -mx-6 lg:-mx-0 lg:rounded-none lg:rounded-b-3xl"
+        className="relative py-20 text-center bg-gradient-to-br from-forest via-green-800 to-forest-700 text-white rounded-t-3xl -mx-6 lg:-mx-0 lg:rounded-none lg:rounded-b-3xl"
       >
-        <div className="absolute inset-0 opacity-5 bg-[url('/leaves-pattern.png')] bg-cover bg-center"></div>
+        {/* Decorative Background Circles */}
+        <div className="absolute top-[-2rem] left-[-1rem] w-40 sm:w-48 lg:w-56 h-40 sm:h-48 lg:h-56 bg-green-900/30 blur-2xl rounded-full z-0"></div>
+        <div className="absolute bottom-[-1rem] right-[-2rem] w-48 sm:w-60 lg:w-72 h-48 sm:h-60 lg:h-72 bg-green-950/30 blur-2xl rounded-full z-0"></div>
+        <div className="absolute bottom-8 left-1/4 sm:left-1/3 w-16 sm:w-20 lg:w-24 h-16 sm:h-20 lg:h-24 bg-green-800/30 blur-xl rounded-full z-0"></div>{" "}
         <div className="relative z-10 max-w-2xl mx-auto px-6">
           <motion.div
             initial={{ scale: 0.9 }}

@@ -330,57 +330,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Customer Testimonials */}
-      <section className="py-8 sm:py-12 lg:py-8 bg-white">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8 sm:mb-10 lg:mb-12">
-            <h2 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-800 mb-3 sm:mb-4">
-              What Our Customers Say
-            </h2>
-            <p className="text-base sm:text-lg lg:text-xl text-slate-600 max-w-md sm:max-w-lg lg:max-w-2xl mx-auto">
-              Join thousands of satisfied customers who trust us for their
-              corporate gifting needs.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 px-0 sm:px-4 lg:px-10">
-            {testimonials.map((testimonial, index) => (
-              <Card key={index} className="glass-card">
-                <CardContent className="p-4 sm:p-6">
-                  <div className="flex items-center mb-3 sm:mb-4">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className="h-3 sm:h-4 w-3 sm:w-4 text-green-400 fill-current"
-                      />
-                    ))}
-                  </div>
-                  <p className="text-sm sm:text-base text-slate-600 mb-3 sm:mb-4 italic">
-                    &quot;{testimonial.comment}&quot;
-                  </p>
-                  <div className="flex items-center">
-                    <Image
-                      src={testimonial.image}
-                      alt={testimonial.name}
-                      width={40}
-                      height={40}
-                      className="w-10 h-10 sm:w-12 sm:h-12 rounded-full mr-2 sm:mr-3 object-cover"
-                    />
-                    <div>
-                      <p className="font-semibold text-sm sm:text-base text-slate-800">
-                        {testimonial.name}
-                      </p>
-                      <p className="text-xs sm:text-sm text-slate-600">
-                        {testimonial.company}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
+     
 
       {/* Brand Story Section */}
       <section className="py-8 sm:py-12 lg:py-16 relative bg-white overflow-hidden">
@@ -502,44 +452,58 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Newsletter CTA */}
-      <section className="relative py-10 sm:py-12 lg:py-16 bg-gradient-to-br from-forest via-green-800 to-forest-700 text-white overflow-hidden">
-        {/* Decorative Background Circles */}
-        <div className="absolute top-[-2rem] left-[-1rem] w-40 sm:w-48 lg:w-56 h-40 sm:h-48 lg:h-56 bg-green-900/30 blur-2xl rounded-full z-0"></div>
-        <div className="absolute bottom-[-1rem] right-[-2rem] w-48 sm:w-60 lg:w-72 h-48 sm:h-60 lg:h-72 bg-green-950/30 blur-2xl rounded-full z-0"></div>
-        <div className="absolute bottom-8 left-1/4 sm:left-1/3 w-16 sm:w-20 lg:w-24 h-16 sm:h-20 lg:h-24 bg-green-800/30 blur-xl rounded-full z-0"></div>
+       {/* Customer Testimonials */}
+      <section className="py-8 sm:py-12 lg:py-16 bg-white">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8 sm:mb-10 lg:mb-12">
+            <h2 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-800 mb-3 sm:mb-4">
+              What Our Customers Say
+            </h2>
+            <p className="text-base sm:text-lg lg:text-xl text-slate-600 max-w-md sm:max-w-lg lg:max-w-2xl mx-auto">
+              Join thousands of satisfied customers who trust us for their
+              corporate gifting needs.
+            </p>
+          </div>
 
-        {/* Content */}
-        <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col lg:flex-row items-center gap-6 sm:gap-8 lg:gap-12">
-            <div className="text-center lg:text-left max-w-lg lg:max-w-2xl">
-              <h2 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight tracking-tight mb-4 sm:mb-6">
-                Stay Connected with Our
-                <span className="block text-ochre">Eco-Journey</span>
-              </h2>
-              <p className="text-base sm:text-lg lg:text-xl text-white/80 mb-6 sm:mb-8 lg:mb-10 font-light leading-relaxed">
-                Get exclusive updates on new products, sustainability tips, and special
-                offers crafted for mindful gifting and corporate impact.
-              </p>
-            </div>
-            {/* Input & Button */}
-            <form className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full max-w-md lg:max-w-xl">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="flex-1 w-full px-4 sm:px-5 py-2 sm:py-3 rounded-lg text-slate-800 placeholder-slate-400 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-green-800 transition"
-              />
-              <Button
-                type="submit"
-                className="bg-ochre hover:bg-ochre-600 text-white px-6 sm:px-8 py-2 sm:py-3 rounded-lg font-semibold tracking-wide shadow-md transition hover:scale-105"
-              >
-                Subscribe
-              </Button>
-            </form>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 px-0 sm:px-4 lg:px-10">
+            {testimonials.map((testimonial, index) => (
+              <Card key={index} className="glass-card">
+                <CardContent className="p-4 sm:p-6">
+                  <div className="flex items-center mb-3 sm:mb-4">
+                    {[...Array(testimonial.rating)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className="h-3 sm:h-4 w-3 sm:w-4 text-green-400 fill-current"
+                      />
+                    ))}
+                  </div>
+                  <p className="text-sm sm:text-base text-slate-600 mb-3 sm:mb-4 italic">
+                    &quot;{testimonial.comment}&quot;
+                  </p>
+                  <div className="flex items-center">
+                    <Image
+                      src={testimonial.image}
+                      alt={testimonial.name}
+                      width={40}
+                      height={40}
+                      className="w-10 h-10 sm:w-12 sm:h-12 rounded-full mr-2 sm:mr-3 object-cover"
+                    />
+                    <div>
+                      <p className="font-semibold text-sm sm:text-base text-slate-800">
+                        {testimonial.name}
+                      </p>
+                      <p className="text-xs sm:text-sm text-slate-600">
+                        {testimonial.company}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
       </section>
-
+    
     </div>
   );
 }
