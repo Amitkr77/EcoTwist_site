@@ -1,5 +1,4 @@
-
-"use client"
+"use client";
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -7,7 +6,15 @@ import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchUserProfile } from "@/store/slices/userSlice";
-import { Star, Truck, Shield, Recycle, Award, MoveRight, ArrowRight } from "lucide-react";
+import {
+  Star,
+  Truck,
+  Shield,
+  Recycle,
+  Award,
+  MoveRight,
+  ArrowRight,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 import {
@@ -19,15 +26,19 @@ import {
 } from "@/components/ui/carousel";
 
 export default function Home() {
-  const [products, setProducts] = useState([])
+  const [products, setProducts] = useState([]);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(null);
-  const { status: userStatus, error: userError, profile } = useSelector((state) => state.user);
+  const {
+    status: userStatus,
+    error: userError,
+    profile,
+  } = useSelector((state) => state.user);
 
   useEffect(() => {
     const fetchProducts = async () => {
       setIsLoading(true);
-      setError(null)
+      setError(null);
       try {
         const res = await fetch("/api/products");
         if (!res.ok) throw new Error("Failed to fetch products");
@@ -38,9 +49,9 @@ export default function Home() {
       } finally {
         setIsLoading(false);
       }
-    }
+    };
     fetchProducts();
-  }, [])
+  }, []);
 
   const dispatch = useDispatch();
   useEffect(() => {
@@ -70,7 +81,6 @@ export default function Home() {
     }
   }, [dispatch]);
 
-
   const testimonials = [
     {
       name: "Sarah Johnson",
@@ -99,15 +109,24 @@ export default function Home() {
         "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80",
     },
   ];
-  
+
   return (
     <div className="min-h-screen">
       <section className="relative z-10 text-gray-800 py-20 sm:py-12 lg:py-15 overflow-hidden flex flex-col lg:flex-row items-center bg-gradient-to-br from-white via-teal-50 to-white">
-
         {/* Decorative SVG Line */}
         <div className="absolute inset-0 opacity-10 pointer-events-none">
-          <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <path d="M0,80 Q50,100 100,80" fill="none" stroke="#2E7D32" strokeWidth="0.3" strokeDasharray="3" />
+          <svg
+            className="w-full h-full"
+            viewBox="0 0 100 100"
+            preserveAspectRatio="none"
+          >
+            <path
+              d="M0,80 Q50,100 100,80"
+              fill="none"
+              stroke="#2E7D32"
+              strokeWidth="0.3"
+              strokeDasharray="3"
+            />
           </svg>
         </div>
 
@@ -129,7 +148,6 @@ export default function Home() {
         {/* Content Block */}
         <div className="relative z-10 w-full lg:w-1/2 px-4 sm:px-6 lg:px-12 flex items-center justify-center">
           <div className="w-full max-w-3xl bg-white/95 p-6 sm:p-8 lg:p-12 rounded-xl border border-teal-100 shadow-md transition-transform duration-300 hover:shadow-lg lg:-rotate-1 lg:hover:rotate-0">
-
             {/* Badge */}
             <span className="inline-block bg-teal-100 px-3 py-1 rounded-full text-xs uppercase tracking-wide font-semibold text-teal-800">
               🌿 Eco Elite Gifting
@@ -137,12 +155,14 @@ export default function Home() {
 
             {/* Heading */}
             <h1 className="mt-6 font-sans text-3xl sm:text-4xl lg:text-6xl xl:text-7xl font-bold leading-tight tracking-tight text-gray-800 group hover:text-teal-600 transition-colors duration-300">
-              Upcycle to <span className="group-hover:text-teal-500">Eco-Luxury</span>
+              Upcycle to{" "}
+              <span className="group-hover:text-teal-500">Eco-Luxury</span>
             </h1>
 
             {/* Subheading */}
             <p className="mt-4 sm:mt-6 text-base sm:text-lg lg:text-xl text-gray-600 font-light leading-tight max-w-xl">
-              Transform your brand with exclusive, upcycled gifts. Sustainable, chic, and ready to impress—act today!
+              Transform your brand with exclusive, upcycled gifts. Sustainable,
+              chic, and ready to impress—act today!
             </p>
 
             {/* Buttons */}
@@ -160,11 +180,8 @@ export default function Home() {
                 <Link href="/about">Our Story</Link>
               </Button>
             </div>
-
           </div>
         </div>
-
-
       </section>
 
       {/* Features Section */}
@@ -185,13 +202,15 @@ export default function Home() {
               {
                 icon: Recycle,
                 title: "100% Sustainable",
-                description: "All products made from upcycled and biodegradable materials",
+                description:
+                  "All products made from upcycled and biodegradable materials",
                 gradient: "from-green-700 via-emerald-500 to-lime-400",
               },
               {
                 icon: Award,
                 title: "Crafted Assurance",
-                description: "Handcrafted by skilled artisans with attention to detail",
+                description:
+                  "Handcrafted by skilled artisans with attention to detail",
                 gradient: "from-indigo-600 via-purple-500 to-yellow-400",
               },
               {
@@ -212,7 +231,9 @@ export default function Home() {
                 className="glass-card text-center group hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 rounded-xl border border-slate-100 bg-white/70 backdrop-blur-md"
               >
                 <CardContent className="p-4 sm:p-6 lg:p-8">
-                  <div className={`h-12 w-12 sm:h-14 sm:w-14 mx-auto mb-3 sm:mb-4 rounded-full flex items-center justify-center bg-gradient-to-r ${feature.gradient}`}>
+                  <div
+                    className={`h-12 w-12 sm:h-14 sm:w-14 mx-auto mb-3 sm:mb-4 rounded-full flex items-center justify-center bg-gradient-to-r ${feature.gradient}`}
+                  >
                     <feature.icon className="h-5 w-5 sm:h-6 sm:w-6 text-white group-hover:scale-110 transition-transform duration-300" />
                   </div>
                   <h3 className="font-heading font-semibold text-base sm:text-lg text-slate-800 mb-2 group-hover:text-slate-900">
@@ -233,31 +254,50 @@ export default function Home() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8 sm:mb-10 lg:mb-12">
             <h2 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4">
-              Our <span className="bg-gradient-to-r from-emerald-400 via-green-300 to-lime-200 text-transparent bg-clip-text">
+              Our{" "}
+              <span className="bg-gradient-to-r from-emerald-400 via-green-300 to-lime-200 text-transparent bg-clip-text">
                 Environmental
-              </span> Impact
+              </span>{" "}
+              Impact
             </h2>
             <p className="text-base sm:text-lg lg:text-xl text-forest-100 max-w-md sm:max-w-lg lg:max-w-2xl mx-auto">
-              Together, we&apos;re making a real difference for our planet&apos;s future.
+              Together, we&apos;re making a real difference for our
+              planet&apos;s future.
             </p>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
             <div className="text-center animate-fade-in">
-              <div className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-2 text-[#228B22]">50K+</div>
-              <div className="text-sm sm:text-base lg:text-lg text-forest-100">Trees Saved</div>
+              <div className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-2 text-[#228B22]">
+                50K+
+              </div>
+              <div className="text-sm sm:text-base lg:text-lg text-forest-100">
+                Trees Saved
+              </div>
             </div>
             <div className="text-center animate-fade-in">
-              <div className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-2 text-[#8B4513]">25K+</div>
-              <div className="text-sm sm:text-base lg:text-lg text-forest-100">Waste Upcycled (kg)</div>
+              <div className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-2 text-[#8B4513]">
+                25K+
+              </div>
+              <div className="text-sm sm:text-base lg:text-lg text-forest-100">
+                Waste Upcycled (kg)
+              </div>
             </div>
             <div className="text-center animate-fade-in">
-              <div className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-2 text-[#6A5ACD]">100+</div>
-              <div className="text-sm sm:text-base lg:text-lg text-forest-100">Artisan Partners</div>
+              <div className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-2 text-[#6A5ACD]">
+                100+
+              </div>
+              <div className="text-sm sm:text-base lg:text-lg text-forest-100">
+                Artisan Partners
+              </div>
             </div>
             <div className="text-center animate-fade-in">
-              <div className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-2 text-[#008080]">5K+</div>
-              <div className="text-sm sm:text-base lg:text-lg text-forest-100">Happy Customers</div>
+              <div className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-2 text-[#008080]">
+                5K+
+              </div>
+              <div className="text-sm sm:text-base lg:text-lg text-forest-100">
+                Happy Customers
+              </div>
             </div>
           </div>
         </div>
@@ -291,42 +331,54 @@ export default function Home() {
           </div>
 
           {/* Product Carousel */}
-          <Carousel className="w-full">
-            <CarouselContent>
-              {products.map((product) => (
-                <CarouselItem
-                  key={product._id}
-                  className="basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4"
-                >
-                  <Card className="border border-gray-200 shadow-sm">
-                    <CardContent className="p-4">
-                      <div className="relative w-full h-48 rounded-md overflow-hidden">
-                        <Image
-                          src={product.images?.[0]?.url || "/product_image.png"}
-                          alt={product.name}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                      <h3 className="mt-2 text-lg font-semibold text-slate-900">
-                        {product.name}
-                      </h3>
-                      <p className="text-slate-600 text-sm">₹{product.price}</p>
-                      <Button
-                        asChild
-                        variant="outline"
-                        className="mt-2 w-full border-gray-400 text-gray-700 text-sm"
-                      >
-                        <Link href={`/product-info/${product._id}`}>View Product</Link>
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            <CarouselPrevious className="left-[-2rem]" />
-            <CarouselNext className="right-[-2rem]" />
-          </Carousel>
+          <div className="relative w-full">
+            <Carousel className="w-full">
+              <CarouselContent>
+                {products.map((product) => (
+                  <CarouselItem
+                    key={product._id}
+                    className="basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4"
+                  >
+                    <Card className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                      <CardContent className="p-4">
+                        <div className="relative w-full h-48 sm:h-56 md:h-60 lg:h-64 rounded-md overflow-hidden">
+                          <Image
+                            src={
+                              product.images?.[0]?.url || "/product_image.png"
+                            }
+                            alt={product.name}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                        <h3 className="mt-3 text-base sm:text-lg font-semibold text-slate-900 truncate">
+                          {product.name}
+                        </h3>
+                        <p className="text-slate-600 text-sm sm:text-base">
+                          ₹{product.price}
+                        </p>
+                        <Button
+                          asChild
+                          variant="outline"
+                          className="mt-3 w-full border-gray-400 text-gray-700 text-sm sm:text-base"
+                        >
+                          <Link href={`/product-info/${product._id}`}>
+                            View Product
+                          </Link>
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+
+              {/* Centered navigation (responsive spacing) */}
+              <div className="absolute -top-8 sm:-top-10 left-1/2 -translate-x-1/2 hidden md:flex gap-3 sm:gap-4">
+                <CarouselPrevious className="h-8 w-8 sm:h-10 sm:w-10" />
+                <CarouselNext className="h-8 w-8 sm:h-10 sm:w-10" />
+              </div>
+            </Carousel>
+          </div>
         </div>
       </section>
 
@@ -349,7 +401,7 @@ export default function Home() {
                 <CardContent className="p-4 sm:p-6">
                   <div className="flex items-center mb-3 sm:mb-4">
                     {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star 
+                      <Star
                         key={i}
                         className="h-3 sm:h-4 w-3 sm:w-4 text-green-400 fill-current"
                       />
@@ -405,8 +457,12 @@ export default function Home() {
                 />
               </div>
               <div className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 bg-white border border-slate-200 px-4 sm:px-6 py-2 sm:py-4 rounded-xl sm:rounded-2xl shadow-lg backdrop-blur-sm bg-opacity-90 animate-fade-in-up">
-                <div className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-forest mb-1">100%</div>
-                <p className="text-xs sm:text-sm text-slate-600 font-medium">Sustainable Materials</p>
+                <div className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-forest mb-1">
+                  100%
+                </div>
+                <p className="text-xs sm:text-sm text-slate-600 font-medium">
+                  Sustainable Materials
+                </p>
               </div>
             </div>
 
@@ -422,11 +478,16 @@ export default function Home() {
                 </h2>
 
                 <p className="text-base sm:text-lg text-slate-600 leading-relaxed mb-6 sm:mb-8 lg:mb-10">
-                  At <strong>EcoTwist</strong>, sustainability isn&apos;t a trend — it’s a mindset. We craft beautiful, intentional gifts from discarded and biodegradable materials, telling stories of care, creativity, and impact.
+                  At <strong>EcoTwist</strong>, sustainability isn&apos;t a
+                  trend — it’s a mindset. We craft beautiful, intentional gifts
+                  from discarded and biodegradable materials, telling stories of
+                  care, creativity, and impact.
                 </p>
 
                 <p className="text-base sm:text-lg text-slate-600 leading-relaxed mb-8 sm:mb-10 lg:mb-16">
-                  Each product is a collaboration between our in-house designers and skilled artisans, creating livelihoods while helping brands gift meaningfully and consciously.
+                  Each product is a collaboration between our in-house designers
+                  and skilled artisans, creating livelihoods while helping
+                  brands gift meaningfully and consciously.
                 </p>
 
                 <Button
@@ -518,8 +579,8 @@ export default function Home() {
                 <span className="block text-ochre">Eco-Journey</span>
               </h2>
               <p className="text-base sm:text-lg lg:text-xl text-white/80 mb-6 sm:mb-8 lg:mb-10 font-light leading-relaxed">
-                Get exclusive updates on new products, sustainability tips, and special
-                offers crafted for mindful gifting and corporate impact.
+                Get exclusive updates on new products, sustainability tips, and
+                special offers crafted for mindful gifting and corporate impact.
               </p>
             </div>
             {/* Input & Button */}
@@ -539,7 +600,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
     </div>
   );
 }

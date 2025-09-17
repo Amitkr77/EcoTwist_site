@@ -170,6 +170,8 @@ export default function Footer() {
                 { name: "Privacy Policy", path: "/privacy-policy" },
                 { name: "Terms of service", path: "/termsOfService" },
                 { name: "FAQ", path: "/faq" },
+                { name: "Shipping Policy", path: "/shipping-Policy" },
+
               ].map((item) => (
                 <li key={item.name}>
                   <Link
@@ -198,7 +200,7 @@ export default function Footer() {
                   className="hover:text-teal-500 transition-colors"
                 >
                   
-                  B-Hub, Maurya Lok complex, Patna, Bihar, India – 800001
+                  B-Hub, Maurya Lok Complex, Patna, Bihar, India - 800001
                 </a>
               </li>
               
