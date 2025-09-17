@@ -104,6 +104,13 @@ const testimonials = [
       "Partnering with EcoTwist was seamless. Their commitment to sustainability is inspiring.",
     rating: 5,
   },
+  {
+    name: "Anita Desai",
+    role: "Sustainability Advocate",
+    content:
+      "Partnering with EcoTwist was seamless. Their commitment to sustainability is inspiring.",
+    rating: 5,
+  },
 ];
 
 const faqs = [
@@ -547,7 +554,7 @@ export default function ContactPage() {
         </Card>
 
         {/* FAQ Section */}
-        <motion.section
+        {/* <motion.section
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -577,86 +584,7 @@ export default function ContactPage() {
               </AccordionItem>
             ))}
           </Accordion>
-        </motion.section>
-
-        {/* Testimonials Carousel */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="py-16 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900 dark:to-blue-900 rounded-2xl"
-        >
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white text-center mb-8">
-            What Our Customers Say
-          </h2>
-          <Carousel className="max-w-4xl mx-auto">
-            <CarouselContent>
-              {testimonials.map((testimonial, index) => (
-                <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
-                  <Card className="bg-white dark:bg-gray-800 border-none shadow-md h-full">
-                    <CardContent className="p-6 flex flex-col justify-between h-full">
-                      <div className="flex mb-4">
-                        {[...Array(testimonial.rating)].map((_, i) => (
-                          <Star
-                            key={i}
-                            className="h-5 w-5 text-yellow-400 fill-current"
-                          />
-                        ))}
-                      </div>
-                      <p className="text-gray-600 dark:text-gray-300 mb-4">
-                        {testimonial.content}
-                      </p>
-                      <div>
-                        <p className="font-semibold text-gray-900 dark:text-white">
-                          {testimonial.name}
-                        </p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                          {testimonial.role}
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            <CarouselPrevious className="bg-green-600 hover:bg-green-700 text-white" />
-            <CarouselNext className="bg-green-600 hover:bg-green-700 text-white" />
-          </Carousel>
-        </motion.section>
-
-        {/* Newsletter Signup */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="py-16 text-center"
-        >
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-            Join Our Eco-Community
-          </h2>
-          <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-xl mx-auto">
-            Subscribe to receive tips on sustainable living, product updates,
-            and exclusive offers.
-          </p>
-          <form
-            onSubmit={handleNewsletterSubmit}
-            className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto"
-          >
-            <Input
-              type="email"
-              placeholder="Enter your email"
-              value={newsletterEmail}
-              onChange={(e) => setNewsletterEmail(e.target.value)}
-              required
-              className="border-gray-200 dark:border-gray-700 focus:ring-green-500"
-            />
-            <Button className="bg-green-600 hover:bg-green-700 text-white">
-              Subscribe
-            </Button>
-          </form>
-        </motion.section>
+        </motion.section> */}
 
         {/* Live Chat Dialog */}
         <Dialog open={isChatOpen} onOpenChange={setIsChatOpen}>
@@ -691,6 +619,92 @@ export default function ContactPage() {
         </Dialog>
       </div>
 
+      {/* Testimonials Carousel */}
+      <motion.section
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6 }}
+        className="py-16 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900 dark:to-blue-900 rounded-2xl"
+      >
+        <Carousel className="relative max-w-7xl mx-auto ">
+          <div className="pl-2">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+              What Our Customers Say
+            </h2>
+            <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300 ">
+              Hear directly from our customers about their experiences with us.
+              We’re proud to showcase their stories.
+            </p>
+          </div>
+          <div className="absolute top-5 right-20">
+            <CarouselPrevious className="bg-green-600 hover:bg-green-700 text-white" />
+            <CarouselNext className="bg-green-600 hover:bg-green-700 text-white" />
+          </div>
+          <CarouselContent className=" p-4">
+            {testimonials.map((testimonial, index) => (
+              <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3 ">
+                <Card className="bg-white dark:bg-gray-800 border-none shadow-md h-full">
+                  <CardContent className="p-6 flex flex-col justify-between h-full">
+                    <div className="flex mb-4">
+                      {[...Array(testimonial.rating)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className="h-5 w-5 text-yellow-400 fill-current"
+                        />
+                      ))}
+                    </div>
+                    <p className="text-gray-600 dark:text-gray-300 mb-4">
+                      {testimonial.content}
+                    </p>
+                    <div>
+                      <p className="font-semibold text-gray-900 dark:text-white">
+                        {testimonial.name}
+                      </p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {testimonial.role}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+        </Carousel>
+      </motion.section>
+
+      {/* Newsletter Signup */}
+      {/* <motion.section
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6 }}
+        className="py-16 text-center"
+      >
+        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+          Join Our Eco-Community
+        </h2>
+        <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-xl mx-auto">
+          Subscribe to receive tips on sustainable living, product updates, and
+          exclusive offers.
+        </p>
+        <form
+          onSubmit={handleNewsletterSubmit}
+          className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto"
+        >
+          <Input
+            type="email"
+            placeholder="Enter your email"
+            value={newsletterEmail}
+            onChange={(e) => setNewsletterEmail(e.target.value)}
+            required
+            className="border-gray-200 dark:border-gray-700 focus:ring-green-500"
+          />
+          <Button className="bg-green-600 hover:bg-green-700 text-white">
+            Subscribe
+          </Button>
+        </form>
+      </motion.section> */}
     </div>
   );
 }

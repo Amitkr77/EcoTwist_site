@@ -6,7 +6,7 @@ export default async function handler(req, res) {
 
   if (req.method === "POST" || req.method === "PUT") {
     try {
-      const { _id, title, slug, excerpt, content, headerImage, tags, status, author, readTime } = req.body;
+      const { _id, title, slug, excerpt, content, headerImage, tags, status, author, readTime, category } = req.body;
 
       if (!_id) {
         // Create new post
@@ -20,6 +20,7 @@ export default async function handler(req, res) {
           status,
           author,
           readTime,
+          category
         });
         await newPost.save();
         return res.status(201).json(newPost);
@@ -37,6 +38,7 @@ export default async function handler(req, res) {
             status,
             author,
             readTime,
+            category
           },
           { new: true }
         );
