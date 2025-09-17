@@ -26,40 +26,63 @@ export default async function handler(req, res) {
       return res.status(200).json({ success: true, data: product });
     }
 
-    if (req.method === 'PUT') {
-
+    if (req.method === "PUT") {
       try {
-        await runMiddleware(req, res, authenticate);
-        await runMiddleware(req, res, authorizeManagers(Roles.SALES_MANAGER));
-      } catch (error) {
-        if (!res.headersSent) {
-          return res.status(403).json({ success: false, message: "Access denied" });
+        const existing = await Product.findById(id);
+        if (!existing) {
+          return res
+            .status(404)
+            .json({ success: false, message: "Product not found" });
         }
-        return;
-      }
 
-      const updated = await Product.findByIdAndUpdate(id, req.body, { new: true, runValidators: true });
-      if (!updated) return res.status(404).json({ success: false, message: 'Product not found' });
-      return res.status(200).json({ success: true, data: updated });
+        // Optionally check for SKU duplication manually here
+        const incomingSKUs = req.body.variants.map((v) => v.sku);
+        const duplicates = await Product.find({
+          _id: { $ne: id }, // Exclude current product
+          "variants.sku": { $in: incomingSKUs },
+        });
+
+        if (duplicates.length > 0) {
+          return res.status(400).json({
+            success: false,
+            message: "One or more SKUs already exist in other products.",
+            duplicates: duplicates.map((p) => p._id),
+          });
+        }
+
+        // Assign updated fields
+        Object.assign(existing, req.body);
+        await existing.save();
+
+        return res.status(200).json({ success: true, data: existing });
+      } catch (error) {
+        console.error(error);
+        return res
+          .status(500)
+          .json({ success: false, message: "Server error", error });
+      }
     }
 
-    if (req.method === 'DELETE') {
-      try {
-        await runMiddleware(req, res, authenticate);
-        await runMiddleware(req, res, authorizeManagers(Roles.SALES_MANAGER));
-      } catch (error) {
-        if (!res.headersSent) {
-          return res.status(403).json({ success: false, message: "Access denied" });
-        }
-        return; 
-      }
+     if (req.method === "DELETE") {
+       try {
+         const deleted = await Product.findByIdAndDelete(id);
+         if (!deleted)
+           return res
+             .status(404)
+             .json({ success: false, message: "Product not found" });
 
-      const deleted = await Product.findByIdAndDelete(id);
-      if (!deleted) return res.status(404).json({ success: false, message: 'Product not found' });
-      return res.status(200).json({ success: true, message: 'Product deleted' });
-    }
+         return res
+           .status(200)
+           .json({ success: true, message: "Product deleted" });
+       } catch (error) {
+         return res.status(500).json({ success: false, error: error.message });
+       }
+     } else {
+       return res
+         .status(405)
+         .json({ success: false, message: `Method ${req.method} not allowed` });
+     }
 
-    return res.status(405).json({ success: false, message: `Method ${req.method} not allowed` });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ success: false, error: err.message });
