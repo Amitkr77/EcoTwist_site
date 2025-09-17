@@ -476,7 +476,7 @@ export default function AddProductForm() {
           >
             <div>
               <Label className="mb-2" htmlFor={`images.${index}.file`}>
-                Upload Image <span className="text-red-500">*</span>
+                Upload Image (Max 1Mb) <span className="text-red-500">*</span>
               </Label>
               <Input
                 id={`images.${index}.file`}
