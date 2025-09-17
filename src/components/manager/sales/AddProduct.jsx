@@ -129,15 +129,15 @@ export default function AddProductForm() {
       formData.append("file", file);
 
       try {
-        const token = localStorage.getItem("sale-manager-token");
+        // const token = localStorage.getItem("sale-manager-token");
 
         const response = await fetch(
           "/api/products/image-upload",
           {
             method: "POST",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+            // headers: {
+            //   Authorization: `Bearer ${token}`,
+            // },
             body: formData,
           }
         );
