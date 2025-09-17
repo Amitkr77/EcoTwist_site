@@ -7,9 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useParams } from "next/navigation";
 
 export default function AddProductForm() {
   const [isLoading, setIsLoading] = useState(false);
+  const [isEditMode, setIsEditMode]= useState(false);
   const {
     register,
     control,
@@ -39,6 +41,48 @@ export default function AddProductForm() {
       status: false,
     },
   });
+  const params = useParams();
+  const productId = params?.id;
+    useEffect(() => {
+      if (!productId) return;
+
+      setIsEditMode(true);
+
+     const fetchProduct = async () => {
+       try {
+         const res = await fetch(`/api/products/${productId}`);
+         const json = await res.json();
+         if (json.success) {
+           const product = json.data;
+           // Format incoming product data to match form default structure
+           const formatted = {
+             ...product,
+             benefits: product.benefits?.map((value) => ({ value })) || [],
+             categories: product.categories?.map((value) => ({ value })) || [],
+             tags: product.tags?.map((value) => ({ value })) || [],
+             images: product.images || [],
+             options:
+               product.options?.map((opt) => ({
+                 name: opt.name,
+                 values: opt.values.map((value) => ({ value })),
+               })) || [],
+             variants: product.variants || [],
+             faqs:
+               product.faqs?.map((faq) => ({
+                 question: faq.question,
+                 answer: faq.answer,
+               })) || [],
+             seo: product.seo || { metaTitle: "", metaDescription: "" },
+           };
+           reset(formatted); // 🟢 Pre-fill form
+         }
+       } catch (err) {
+         console.error("Failed to fetch product:", err);
+       }
+     };
+
+      fetchProduct();
+    }, [productId, reset]);
 
   // Field arrays for top-level fields
   const {
@@ -218,11 +262,14 @@ export default function AddProductForm() {
         return;
       }
 
-      const response = await fetch("/api/products", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formattedData),
-      });
+      const response = await fetch(
+        isEditMode ? `/api/products/${productId}` : "/api/products",
+        {
+          method: isEditMode ? "PUT" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formattedData),
+        }
+      );
 
       if (response.ok) {
         alert("Product added successfully!");
