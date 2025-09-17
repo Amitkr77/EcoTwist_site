@@ -132,7 +132,7 @@ export default function AddProductForm() {
         const token = localStorage.getItem("sale-manager-token");
 
         const response = await fetch(
-          "http://localhost:3000/api/products/image-upload",
+          "/api/products/image-upload",
           {
             method: "POST",
             headers: {
