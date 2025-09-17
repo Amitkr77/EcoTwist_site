@@ -73,33 +73,33 @@ export default function Home() {
 
   const testimonials = [
     {
-      name: "Sarah Johnson",
+      name: "Priya sharma",
       company: "TechCorp Inc.",
       rating: 5,
       comment:
-        "Amazing quality and truly sustainable. Our clients love the eco-friendly gifts!",
+        "EcoTwist's sustainable products and responsive support made our event a hit. Highly recommend!",
       image:
         "https://images.unsplash.com/photo-1494790108755-2616b612b0bd?auto=format&fit=crop&w=100&q=80",
     },
     {
-      name: "Michael Chen",
+      name: "Rahul verma",
       company: "GreenStart",
       rating: 5,
       comment:
-        "Perfect for our company values. The craftsmanship is exceptional.",
+        "The custom branding options were fantastic. Quick response and eco-friendly packaging!",
       image:
         "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=100&q=80",
     },
     {
-      name: "Emily Davis",
+      name: "Anita Desai",
       company: "EcoFlow Solutions",
       rating: 5,
-      comment: "Best corporate gifting partner we've found. Highly recommend!",
+      comment: "Partnering with EcoTwist was seamless. Their commitment to sustainability is inspiring.",
       image:
         "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80",
     },
   ];
-  
+
   return (
     <div className="min-h-screen">
       <section className="relative z-10 text-gray-800 py-20 sm:py-12 lg:py-15 overflow-hidden flex flex-col lg:flex-row items-center bg-gradient-to-br from-white via-teal-50 to-white">
@@ -349,7 +349,7 @@ export default function Home() {
                 <CardContent className="p-4 sm:p-6">
                   <div className="flex items-center mb-3 sm:mb-4">
                     {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star 
+                      <Star
                         key={i}
                         className="h-3 sm:h-4 w-3 sm:w-4 text-green-400 fill-current"
                       />
