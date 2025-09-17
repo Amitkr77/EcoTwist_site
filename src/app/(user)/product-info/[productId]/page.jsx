@@ -9,30 +9,62 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Share2, Heart, LoaderCircle, ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 import { Skeleton } from "@/components/ui/skeleton";
 import WriteReviewDialog from "@/components/WriteReviewDialog";
 import Head from "next/head";
 import { addToCart, updateCart } from "@/store/slices/cartSlice";
-import { addToWishlist, removeFromWishlist, fetchUserProfile } from "@/store/slices/userSlice";
+import {
+  addToWishlist,
+  removeFromWishlist,
+  fetchUserProfile,
+} from "@/store/slices/userSlice";
 import Link from "next/link";
 import { fetchProducts } from "@/store/slices/productSlices";
-
 
 export default function ProductPage() {
   const dispatch = useDispatch();
   const router = useRouter();
   const { productId } = useParams();
-  const { byId: productsById, allIds, status: productStatus, error: productError } = useSelector((state) => state.products || {});
-  const { profile, wishlist, status: userStatus, error: userError } = useSelector((state) => state.user || {});
-  const { status: cartStatus, error: cartError } = useSelector((state) => state.cart || {});
+  const {
+    byId: productsById,
+    allIds,
+    status: productStatus,
+    error: productError,
+  } = useSelector((state) => state.products || {});
+  const {
+    profile,
+    wishlist,
+    status: userStatus,
+    error: userError,
+  } = useSelector((state) => state.user || {});
+  const { status: cartStatus, error: cartError } = useSelector(
+    (state) => state.cart || {}
+  );
   const [selectedColor, setSelectedColor] = useState("");
   const [selectedCapacity, setSelectedCapacity] = useState("");
   const [selectedImage, setSelectedImage] = useState("");
@@ -55,12 +87,17 @@ export default function ProductPage() {
   // Initialize variant selections
   useEffect(() => {
     if (product && product.images?.length > 0) {
-      setSelectedColor(product.options?.find((opt) => opt.name === "Color")?.values[0] || "");
+      setSelectedColor(
+        product.options?.find((opt) => opt.name === "Color")?.values[0] || ""
+      );
       setSelectedCapacity(
-        product.options?.find((opt) => opt.name === "Capacity" || opt.name === "Size")?.values[0] || ""
+        product.options?.find(
+          (opt) => opt.name === "Capacity" || opt.name === "Size"
+        )?.values[0] || ""
       );
       setSelectedImage(
-        product.images.find((img) => img.isPrimary)?.url || product.images[0].url
+        product.images.find((img) => img.isPrimary)?.url ||
+          product.images[0].url
       );
     }
   }, [product]);
@@ -86,20 +123,35 @@ export default function ProductPage() {
       toast.error(cartError);
       console.error("Cart error:", cartError);
     }
-  }, [productStatus, productError, userStatus, userError, cartStatus, cartError]);
+  }, [
+    productStatus,
+    productError,
+    userStatus,
+    userError,
+    cartStatus,
+    cartError,
+  ]);
 
   // Get related products
   const relatedProducts = useMemo(() => {
     if (productStatus !== "succeeded" || !allIds || !product) return [];
     return allIds
-      .filter((id) => id !== productId && productsById[id]?.categories?.some((cat) => product.categories?.includes(cat)))
+      .filter(
+        (id) =>
+          id !== productId &&
+          productsById[id]?.categories?.some((cat) =>
+            product.categories?.includes(cat)
+          )
+      )
       .slice(0, 4)
       .map((id) => productsById[id]);
   }, [allIds, productsById, product, productId]);
 
   const getSelectedVariant = () => {
     if (!product?.variants) return null;
-    const isCapacityProduct = product.options?.some((opt) => opt.name === "Capacity");
+    const isCapacityProduct = product.options?.some(
+      (opt) => opt.name === "Capacity"
+    );
     return (
       product.variants.find((variant) => {
         const matchesColor = variant.optionValues?.Color === selectedColor;
@@ -116,7 +168,11 @@ export default function ProductPage() {
   const handleAddToCart = () => {
     const userId = localStorage.getItem("user-id");
     if (!userId) {
-      if (window.confirm("You need to be logged in to add items to the cart. Do you want to login now?")) {
+      if (
+        window.confirm(
+          "You need to be logged in to add items to the cart. Do you want to login now?"
+        )
+      ) {
         router.push("/login");
       }
       return;
@@ -125,7 +181,14 @@ export default function ProductPage() {
       toast.error("Please select a variant");
       return;
     }
-    dispatch(addToCart({ userId, productId, variantSku: selectedVariant.sku, quantity }))
+    dispatch(
+      addToCart({
+        userId,
+        productId,
+        variantSku: selectedVariant.sku,
+        quantity,
+      })
+    )
       .unwrap()
       .then(() => toast.success(`${product.name} added to cart`))
       .catch((err) => toast.error(err || "Failed to add to cart"));
@@ -134,7 +197,11 @@ export default function ProductPage() {
   const handleWishlistToggle = () => {
     const userId = localStorage.getItem("user-id");
     if (!userId) {
-      if (window.confirm("You need to be logged in to manage your wishlist. Do you want to login now?")) {
+      if (
+        window.confirm(
+          "You need to be logged in to manage your wishlist. Do you want to login now?"
+        )
+      ) {
         router.push("/login");
       }
       return;
@@ -164,7 +231,10 @@ export default function ProductPage() {
       setQuantity(1);
       return;
     }
-    const newQuantity = Math.min(parsedValue, selectedVariant?.inventory?.quantity || 1);
+    const newQuantity = Math.min(
+      parsedValue,
+      selectedVariant?.inventory?.quantity || 1
+    );
     setQuantity(newQuantity);
   };
 
@@ -173,7 +243,9 @@ export default function ProductPage() {
     toast.success("Product link copied to clipboard!");
   };
 
-  const sizeOrCapacityOption = product?.options?.find((opt) => opt.name === "Capacity" || opt.name === "Size");
+  const sizeOrCapacityOption = product?.options?.find(
+    (opt) => opt.name === "Capacity" || opt.name === "Size"
+  );
 
   if (productStatus === "loading" || userStatus === "loading") {
     return (
@@ -181,7 +253,9 @@ export default function ProductPage() {
         <div className="p-10 space-y-6">
           <div className="flex items-center space-x-2">
             <LoaderCircle className="h-5 w-5 animate-spin text-green-600 dark:text-green-400" />
-            <p className="text-sm text-gray-600 dark:text-gray-400">Fetching product...</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Fetching product...
+            </p>
           </div>
           <Skeleton className="h-6 w-1/3" />
           <Skeleton className="h-64 w-full" />
@@ -199,7 +273,9 @@ export default function ProductPage() {
           <h2 className="text-2xl font-bold text-red-600 dark:text-red-400 mb-4">
             Oops! Something went wrong.
           </h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-4">{productError || "Product not found"}</p>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
+            {productError || "Product not found"}
+          </p>
           <Button
             onClick={() => dispatch(fetchProducts())}
             className="bg-red-600 dark:bg-red-500 text-white hover:bg-red-700 dark:hover:bg-red-600"
@@ -272,11 +348,18 @@ export default function ProductPage() {
                   whileHover={{ scale: 1.05 }}
                   onClick={() => setSelectedImage(img.url)}
                   className={`relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-md overflow-hidden border-2 flex-shrink-0 ${
-                    selectedImage === img.url ? "border-green-500 dark:border-green-400" : "border-gray-200 dark:border-gray-700"
+                    selectedImage === img.url
+                      ? "border-green-500 dark:border-green-400"
+                      : "border-gray-200 dark:border-gray-700"
                   } shadow-sm`}
                   aria-label={`Select image ${img.alt}`}
                 >
-                  <Image src={img.url} alt={img.alt} fill className="object-cover" />
+                  <Image
+                    src={img.url}
+                    alt={img.alt}
+                    fill
+                    className="object-cover"
+                  />
                 </motion.button>
               ))}
             </div>
@@ -288,7 +371,8 @@ export default function ProductPage() {
               <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
                 <div className="flex justify-between items-center gap-2 sm:gap-4">
                   <p className="text-xl sm:text-2xl font-semibold text-gray-700 dark:text-gray-200">
-                    ₹{selectedVariant?.price || 0} {selectedVariant?.currency || "INR"}
+                    ₹{selectedVariant?.price || 0}{" "}
+                    {selectedVariant?.currency || "INR"}
                   </p>
                   <Button
                     variant="outline"
@@ -311,18 +395,27 @@ export default function ProductPage() {
                       onValueChange={setSelectedColor}
                       className="flex gap-3 sm:gap-4 mt-2 flex-wrap"
                     >
-                      {product.options.find((opt) => opt.name === "Color")?.values.map((color) => (
-                        <motion.div
-                          key={color}
-                          whileHover={{ scale: 1.05 }}
-                          className="flex items-center space-x-2"
-                        >
-                          <RadioGroupItem value={color} id={color} className="text-gray-600 dark:text-gray-300" />
-                          <Label htmlFor={color} className="text-gray-700 dark:text-gray-300 text-sm sm:text-base">
-                            {color}
-                          </Label>
-                        </motion.div>
-                      ))}
+                      {product.options
+                        .find((opt) => opt.name === "Color")
+                        ?.values.map((color) => (
+                          <motion.div
+                            key={color}
+                            whileHover={{ scale: 1.05 }}
+                            className="flex items-center space-x-2"
+                          >
+                            <RadioGroupItem
+                              value={color}
+                              id={color}
+                              className="text-gray-600 dark:text-gray-300"
+                            />
+                            <Label
+                              htmlFor={color}
+                              className="text-gray-700 dark:text-gray-300 text-sm sm:text-base"
+                            >
+                              {color}
+                            </Label>
+                          </motion.div>
+                        ))}
                     </RadioGroup>
                   </div>
                 )}
@@ -336,7 +429,10 @@ export default function ProductPage() {
                       {sizeOrCapacityOption.name === "Capacity" && (
                         <Dialog>
                           <DialogTrigger asChild>
-                            <Button variant="link" className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">
+                            <Button
+                              variant="link"
+                              className="text-gray-600 dark:text-gray-400 text-sm sm:text-base"
+                            >
                               View Size Guide
                             </Button>
                           </DialogTrigger>
@@ -345,10 +441,21 @@ export default function ProductPage() {
                               <DialogTitle>Size Guide</DialogTitle>
                             </DialogHeader>
                             <div className="space-y-3 sm:space-y-4 text-sm sm:text-base text-gray-700 dark:text-gray-300">
-                              <p><strong>500ml:</strong> Ideal for short trips or daily commutes.</p>
-                              <p><strong>750ml:</strong> Perfect for all-day hydration or workouts.</p>
-                              <p><strong>1L:</strong> Best for long hikes or shared use.</p>
-                              <p className="text-sm text-gray-600 dark:text-gray-400">Choose based on your hydration needs!</p>
+                              <p>
+                                <strong>500ml:</strong> Ideal for short trips or
+                                daily commutes.
+                              </p>
+                              <p>
+                                <strong>750ml:</strong> Perfect for all-day
+                                hydration or workouts.
+                              </p>
+                              <p>
+                                <strong>1L:</strong> Best for long hikes or
+                                shared use.
+                              </p>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">
+                                Choose based on your hydration needs!
+                              </p>
                             </div>
                           </DialogContent>
                         </Dialog>
@@ -365,8 +472,15 @@ export default function ProductPage() {
                           whileHover={{ scale: 1.05 }}
                           className="flex items-center space-x-2"
                         >
-                          <RadioGroupItem value={value} id={value} className="text-gray-600 dark:text-gray-300" />
-                          <Label htmlFor={value} className="text-gray-700 dark:text-gray-300 text-sm sm:text-base">
+                          <RadioGroupItem
+                            value={value}
+                            id={value}
+                            className="text-gray-600 dark:text-gray-300"
+                          />
+                          <Label
+                            htmlFor={value}
+                            className="text-gray-700 dark:text-gray-300 text-sm sm:text-base"
+                          >
                             {value}
                           </Label>
                         </motion.div>
@@ -393,7 +507,9 @@ export default function ProductPage() {
                     <Input
                       type="number"
                       value={quantity}
-                      onChange={(e) => handleQuantityChange(parseInt(e.target.value))}
+                      onChange={(e) =>
+                        handleQuantityChange(parseInt(e.target.value))
+                      }
                       className="w-16 sm:w-20 text-center border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300"
                       min="1"
                       max={selectedVariant?.inventory?.quantity || 1}
@@ -403,7 +519,9 @@ export default function ProductPage() {
                       variant="outline"
                       size="icon"
                       onClick={() => handleQuantityChange(quantity + 1)}
-                      disabled={quantity >= (selectedVariant?.inventory?.quantity || 1)}
+                      disabled={
+                        quantity >= (selectedVariant?.inventory?.quantity || 1)
+                      }
                       className="border-gray-300 dark:border-gray-600 flex-shrink-0"
                       aria-label="Increase quantity"
                     >
@@ -413,7 +531,11 @@ export default function ProductPage() {
                 </div>
 
                 <div className="flex items-center gap-3 rounded-md">
-                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="flex-1">
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="flex-1"
+                  >
                     <Button
                       onClick={handleAddToCart}
                       className="w-full bg-green-600 dark:bg-green-500 text-white hover:bg-green-700 dark:hover:bg-green-600"
@@ -425,18 +547,29 @@ export default function ProductPage() {
                       Add to Cart
                     </Button>
                   </motion.div>
-                  <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                  <motion.div
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                  >
                     <Button
                       variant="outline"
                       size="icon"
                       onClick={handleWishlistToggle}
                       className={`border-gray-300 dark:border-gray-600 transition-colors duration-200 ${
-                        isWishlisted ? "text-red-500 border-red-300 dark:border-red-400" : "text-gray-600 dark:text-gray-300"
+                        isWishlisted
+                          ? "text-red-500 border-red-300 dark:border-red-400"
+                          : "text-gray-600 dark:text-gray-300"
                       }`}
-                      aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+                      aria-label={
+                        isWishlisted
+                          ? "Remove from wishlist"
+                          : "Add to wishlist"
+                      }
                     >
                       <Heart
-                        className={`h-4 w-4 sm:h-5 sm:w-5 transition-all duration-200 ${isWishlisted ? "fill-red-500" : ""}`}
+                        className={`h-4 w-4 sm:h-5 sm:w-5 transition-all duration-200 ${
+                          isWishlisted ? "fill-red-500" : ""
+                        }`}
                       />
                     </Button>
                   </motion.div>
@@ -506,8 +639,12 @@ export default function ProductPage() {
             <TabsContent value="usage">
               <Card className="border-gray-200 dark:border-gray-700 mt-4 shadow-sm bg-white/90 dark:bg-gray-800/90">
                 <CardContent className="p-4 sm:p-6">
-                  <p className="text-gray-700 dark:text-gray-300 text-sm sm:text-base">{product.usage}</p>
-                  <p className="text-gray-700 dark:text-gray-300 mt-2 text-sm sm:text-base">{product.bestUse}</p>
+                  <p className="text-gray-700 dark:text-gray-300 text-sm sm:text-base">
+                    {product.usage}
+                  </p>
+                  <p className="text-gray-700 dark:text-gray-300 mt-2 text-sm sm:text-base">
+                    {product.bestUse}
+                  </p>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -533,7 +670,8 @@ export default function ProductPage() {
               <Card className="border-gray-200 dark:border-gray-700 mt-4 shadow-sm bg-white/90 dark:bg-gray-800/90">
                 <CardContent className="p-4 sm:p-6">
                   <p className="text-gray-700 dark:text-gray-300 text-sm sm:text-base">
-                    No reviews yet. Be the first to share your experience with the {product.name}!
+                    No reviews yet. Be the first to share your experience with
+                    the {product.name}!
                   </p>
                   <WriteReviewDialog />
                 </CardContent>
@@ -548,7 +686,7 @@ export default function ProductPage() {
             <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100 mb-3 sm:mb-4">
               You May Also Like
             </h2>
-            <Carousel className="w-full">
+            <Carousel className="w-full relative">
               <CarouselContent className="-ml-2 sm:-ml-4">
                 {relatedProducts.map((related) => (
                   <CarouselItem
@@ -559,7 +697,12 @@ export default function ProductPage() {
                       <CardContent className="p-3 sm:p-4">
                         <div className="relative w-full h-40 sm:h-48 rounded-md overflow-hidden">
                           <Image
-                            src={related.images?.find((img) => img.isPrimary)?.url || related.images?.[0]?.url || "/product_image.png"}
+                            src={
+                              related.images?.find((img) => img.isPrimary)
+                                ?.url ||
+                              related.images?.[0]?.url ||
+                              "/product_image.png"
+                            }
                             alt={related.name}
                             fill
                             className="object-cover"
@@ -569,14 +712,22 @@ export default function ProductPage() {
                           {related.name}
                         </h3>
                         <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">
-                          ₹{Math.min(...(related.variants?.map((v) => v.price || 0) || [0]))}
+                          ₹
+                          {Math.min(
+                            ...(related.variants?.map((v) => v.price || 0) || [
+                              0,
+                            ])
+                          )}
                         </p>
                         <Button
                           asChild
                           variant="outline"
                           className="mt-2 w-full border-gray-500 dark:border-gray-600 text-gray-600 dark:text-gray-300 text-sm sm:text-base"
                         >
-                          <Link href={`/products/${related._id}`} aria-label={`View ${related.name}`}>
+                          <Link
+                            href={`/products/${related._id}`}
+                            aria-label={`View ${related.name}`}
+                          >
                             View Product
                           </Link>
                         </Button>
@@ -585,8 +736,12 @@ export default function ProductPage() {
                   </CarouselItem>
                 ))}
               </CarouselContent>
-              <CarouselPrevious className="bg-gray-200 dark:bg-gray-700" />
-              <CarouselNext className="bg-gray-200 dark:bg-gray-700" />
+              {/* <CarouselPrevious className="bg-gray-200 dark:bg-gray-700" />
+              <CarouselNext className="bg-gray-200 dark:bg-gray-700" /> */}
+              <div className="absolute left-1/2 -bottom-10 flex gap-2">
+                <CarouselPrevious className="h-8 w-8 sm:h-10 sm:w-10 bg-green-800 text-white  transition-colors duration-300" />
+                <CarouselNext className="h-8 w-8 sm:h-10 sm:w-10 bg-green-800 text-white  transition-colors duration-300" />
+              </div>
             </Carousel>
           </div>
         )}

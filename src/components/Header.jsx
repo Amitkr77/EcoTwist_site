@@ -119,75 +119,39 @@ export default function Header() {
         hidden ? "-translate-y-full" : "translate-y-0"
       } ${scrolled ? "shadow-lg" : "shadow-sm"} fixed top-0 left-0 right-0 z-50`}
     >
-      <div className="container mx-auto py-0  px-4 sm:px-6 lg:px-8">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center">
           {/* Logo */}
           <Link href="/" aria-label="Homepage" className="flex items-center">
             <img
               src="/logo.png"
               alt="Logo"
-              className="h-12 sm:h-14 lg:h-22      w-auto"
+              className="h-12 sm:h-14 lg:h-16 w-auto"
               loading="lazy"
               decoding="async"
             />
           </Link>
 
-          <div className="flex items-center md:hidden">
-  <Button
-    variant="ghost"
-    className="p-2 rounded-md hover:bg-gray-100"
-    onClick={() => setIsMenuOpen(!isMenuOpen)}
-    aria-label="Toggle menu"
-  >
-    {isMenuOpen ? (
-      <X className="h-5 w-5 text-gray-700" />
-    ) : (
-      <Menu className="h-5 w-5 text-gray-700" />
-    )}
-  </Button>
-</div>
-
-{/* Desktop Navigation */}
-<nav className="hidden md:flex items-center space-x-6 lg:space-x-8 uppercase tracking-wide text-sm font-semibold text-gray-700">
-  {navItems.map((item) => (
-    <Link
-      key={item.path}
-      href={item.path}
-      className={`relative hover:text-forest transition-colors ${
-        isActive(item.path) ? "text-forest" : ""
-      }`}
-      aria-current={isActive(item.path) ? "page" : undefined}
-    >
-      {item.name}
-      <span
-        className={`absolute left-0 bottom-[-6px] h-[2px] bg-gradient-to-r from-forest to-forest-600 transition-all duration-300 ${
-          isActive(item.path) ? "w-full" : "w-0 group-hover:w-full"
-        }`}
-      />
-    </Link>
-  ))}
-</nav>
-
-
-{/* Mobile Menu */}
-{isMenuOpen && (
-  <div className="md:hidden bg-white border-t shadow-sm">
-    <nav className="flex flex-col space-y-2 py-4 px-6 text-gray-700 font-medium">
-      {navItems.map((item) => (
-        <Link
-          key={item.path}
-          href={item.path}
-          onClick={() => setIsMenuOpen(false)} // close menu when clicking a link
-          className={`hover:text-forest transition-colors ${
-            isActive(item.path) ? "text-forest" : ""
-          }`}
-        >
-          {item.name}
-        </Link>
-      ))}
-    </nav>
-  </div>
-)}
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center space-x-6 lg:space-x-8 uppercase tracking-wide text-sm font-semibold text-gray-700">
+            {navItems.map((item) => (
+              <Link
+                key={item.path}
+                href={item.path}
+                className={`relative hover:text-forest transition-colors ${
+                  isActive(item.path) ? "text-forest" : ""
+                }`}
+                aria-current={isActive(item.path) ? "page" : undefined}
+              >
+                {item.name}
+                <span
+                  className={`absolute left-0 bottom-[-6px] h-[2px] bg-gradient-to-r from-forest to-forest-600 transition-all duration-300 ${
+                    isActive(item.path) ? "w-full" : "w-0 group-hover:w-full"
+                  }`}
+                />
+              </Link>
+            ))}
+          </nav>
 
           {/* Right Side Icons */}
           <div className="flex items-center gap-2 sm:gap-3 lg:gap-4">
