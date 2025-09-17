@@ -44,6 +44,7 @@
     "express-rate-limit": "^7.5.1",
     "formidable": "^3.5.4",
     "framer-motion": "^12.23.12",
+    "html-react-parser": "^5.2.6",
     "jose": "^6.1.0",
     "jsonwebtoken": "^9.0.2",
     "jwt-decode": "^4.0.0",
