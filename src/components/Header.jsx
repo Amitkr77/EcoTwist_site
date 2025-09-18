@@ -205,10 +205,10 @@ export default function Header() {
               <Link href="/cart">
                 <Button
                   variant="outline"
-                  className="relative text-xs sm:text-sm"
+                  className="relative text-xs sm:text-sm cursor-pointer"
                   aria-label={`Cart with ${totalCartItems} items`}
                 >
-                  <ShoppingCart className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                  <ShoppingCart className="w-3 h-3 sm:w-4 sm:h-4 " /> cart
                   {totalCartItems > 0 && (
                     <Badge className="absolute -top-2 -right-2 w-4 h-4 sm:w-5 sm:h-5 p-0 text-xs bg-green-500">
                       {totalCartItems}

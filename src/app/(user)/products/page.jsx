@@ -786,7 +786,7 @@ export default function ProductsPage() {
           )}
         </AnimatePresence>
       </div>
-      <section className="bg-gradient-to-r from-green-800 to-emerald-900 dark:from-green-900 dark:to-emerald-950 text-white py-16 mt-20">
+      {/* <section className="bg-gradient-to-r from-green-800 to-emerald-900 dark:from-green-900 dark:to-emerald-950 text-white py-16 mt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold mb-6">Why Choose Sustainable?</h2>
           <p className="text-lg mb-8 max-w-2xl mx-auto leading-relaxed">
@@ -822,7 +822,7 @@ export default function ProductsPage() {
             </motion.div>
           </div>
         </div>
-      </section>
+      </section> */}
     </main>
   );
 }

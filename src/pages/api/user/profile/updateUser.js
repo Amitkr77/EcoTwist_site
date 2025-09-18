@@ -43,7 +43,6 @@ export default async function handler(req, res) {
 
         const userObj = user.toObject();
         delete userObj.password;
-        delete userObj.refreshToken;
         delete userObj.__v;
 
         return res.status(200).json({

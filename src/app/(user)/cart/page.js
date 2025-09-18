@@ -66,7 +66,7 @@ export default function CartPage() {
     return () => {
       dispatch(resetError());
     };
-  }, [dispatch]); // Only dispatch as dependency to run once on mount
+  }, [dispatch]); 
 
   // Handle errors
   useEffect(() => {
