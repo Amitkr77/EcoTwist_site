@@ -39,6 +39,8 @@ import {
   Settings,
   Lightbulb,
   Quote,
+  X,
+  XCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -79,8 +81,7 @@ export default function ProductPage() {
   const { status: cartStatus, error: cartError } = useSelector(
     (state) => state.cart || {}
   );
-  const [selectedColor, setSelectedColor] = useState("");
-  const [selectedCapacity, setSelectedCapacity] = useState("");
+  const [selectedOptions, setSelectedOptions] = useState({});
   const [selectedImage, setSelectedImage] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
@@ -106,21 +107,27 @@ export default function ProductPage() {
     }
   }, [dispatch, productStatus, userStatus]);
 
-  // Initialize variant selections
+  // Initialize variant selections and image
   useEffect(() => {
-    if (product && product.images?.length > 0) {
-      setSelectedColor(
-        product.options?.find((opt) => opt.name === "Color")?.values[0] || ""
-      );
-      setSelectedCapacity(
-        product.options?.find(
-          (opt) => opt.name === "Capacity" || opt.name === "Size"
-        )?.values[0] || ""
-      );
-      setSelectedImage(
-        product.images.find((img) => img.isPrimary)?.url ||
-          product.images[0].url
-      );
+    if (product && product.options) {
+      const initialSelections = {};
+      product.options.forEach((opt) => {
+        const vals = opt.values
+          .join(",")
+          .split(",")
+          .map((v) => v.trim())
+          .filter((v) => v);
+        if (vals.length > 0) {
+          initialSelections[opt.name] = vals[0];
+        }
+      });
+      setSelectedOptions(initialSelections);
+      if (product.images?.length > 0) {
+        setSelectedImage(
+          product.images.find((img) => img.isPrimary)?.url ||
+            product.images[0].url
+        );
+      }
     }
   }, [product]);
 
@@ -171,19 +178,17 @@ export default function ProductPage() {
 
   const getSelectedVariant = () => {
     if (!product?.variants) return null;
-    const isCapacityProduct = product.options?.some(
-      (opt) => opt.name === "Capacity"
-    );
     return (
-      product.variants.find((variant) => {
-        const matchesColor = variant.optionValues?.Color === selectedColor;
-        const matchesCapacityOrSize = isCapacityProduct
-          ? variant.optionValues?.Capacity === selectedCapacity
-          : variant.optionValues?.Size === selectedCapacity;
-        return matchesColor && matchesCapacityOrSize;
-      }) || product.variants[0]
+      product.variants.find((variant) =>
+        Object.entries(selectedOptions).every(([optName, selVal]) => {
+          const variantVal = variant.optionValues?.[optName];
+          if (!selVal || !variantVal) return true;
+          return variantVal.includes(selVal);
+        })
+      ) || product.variants[0]
     );
   };
+
   const selectedVariant = getSelectedVariant();
   const isAvailable = selectedVariant?.inventory?.quantity > 0;
 
@@ -260,14 +265,42 @@ export default function ProductPage() {
     setQuantity(newQuantity);
   };
 
+  const handleQuantityIncrement = () => {
+    const newQuantity = Math.min(
+      quantity + 1,
+      selectedVariant?.inventory?.quantity || 1
+    );
+    setQuantity(newQuantity);
+  };
+
+  const handleQuantityDecrement = () => {
+    const newQuantity = Math.max(quantity - 1, 1);
+    setQuantity(newQuantity);
+  };
+
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
     toast.success("Product link copied to clipboard!");
   };
 
-  const sizeOrCapacityOption = product?.options?.find(
-    (opt) => opt.name === "Capacity" || opt.name === "Size"
-  );
+  const getOptionIcon = (name) => {
+    switch (name) {
+      case "Size":
+        return "📐";
+      case "Capacity":
+        return "📦";
+      case "Material":
+        return "🔧";
+      default:
+        return null;
+    }
+  };
+
+  console.log(product);
+
+  const UsageList = product?.usage
+    .split("\n")
+    .filter((line) => line.trim() !== "");
 
   if (productStatus === "loading" || userStatus === "loading") {
     return (
@@ -309,9 +342,6 @@ export default function ProductPage() {
       </div>
     );
   }
-  const UsageList = product.usage
-    .split("\n")
-    .filter((line) => line.trim() !== "");
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-28 min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900">
@@ -343,13 +373,13 @@ export default function ProductPage() {
                 className="object-contain transition-transform duration-300"
               />
             </motion.div>
-            <div className="flex gap-2 sm:gap-3 justify-start mt-3 sm:mt-4 overflow-x-auto">
+            <div className="flex gap-2 sm:gap-3 justify-start mt-3 sm:mt-4 p-2 overflow-x-auto">
               {product.images?.map((img) => (
                 <motion.button
                   key={img.position}
                   whileHover={{ scale: 1.05 }}
                   onClick={() => setSelectedImage(img.url)}
-                  className={`relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-md overflow-hidden border-2 flex-shrink-0 ${
+                  className={`relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-md overflow-hidden border-2 flex-shrink-0  ${
                     selectedImage === img.url
                       ? "border-green-500 dark:border-green-400"
                       : "border-gray-200 dark:border-gray-700"
@@ -475,178 +505,233 @@ export default function ProductPage() {
                   </motion.div>
                 </motion.div>
 
-                {/* Variant Selection - Enhanced */}
-                {product.options?.find((opt) => opt.name === "Color") && (
+                {/* Variant Selection - Unified Dynamic */}
+                {product.options?.length > 0 && (
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
-                    className="space-y-3"
+                    className="space-y-6"
                   >
-                    <div className="flex items-center justify-between">
-                      <Label className="text-lg lg:text-xl font-semibold text-gray-900 dark:text-gray-100 tracking-tight">
-                        Color Options
-                      </Label>
-                      <Badge
-                        variant="outline"
-                        className="text-xs font-medium text-gray-500 dark:text-gray-400"
-                      >
-                        Essential
-                      </Badge>
-                    </div>
-                    <RadioGroup
-                      value={selectedColor}
-                      onValueChange={setSelectedColor}
-                      className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-3"
-                    >
-                      {product.options
-                        .find((opt) => opt.name === "Color")
-                        ?.values.map((color) => (
-                          <motion.div
-                            key={color}
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            className="relative"
-                          >
-                            <RadioGroupItem
-                              value={color}
-                              id={`color-${color}`}
-                              className="sr-only peer"
-                            />
-                            <Label
-                              htmlFor={`color-${color}`}
-                              className={`relative block w-full aspect-square rounded-xl border-2 transition-all duration-200 cursor-pointer ${
-                                selectedColor === color
-                                  ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 shadow-lg shadow-indigo-200/50 dark:shadow-indigo-900/20"
-                                  : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
-                              }`}
-                            >
-                              <div
-                                className="w-full h-full rounded-md"
-                                style={{
-                                  backgroundColor: color.toLowerCase(),
-                                }}
-                              />
-                              <div className="absolute inset-0 bg-white/20 dark:bg-black/20 rounded-md opacity-0 peer-checked:opacity-100 transition-opacity duration-200"></div>
-                              <span className="absolute -bottom-2 -right-2 bg-indigo-500 text-white text-xs font-bold px-2 py-1 rounded-full opacity-0 peer-checked:opacity-100 transition-all duration-200 transform translate-y-1 peer-checked:translate-y-0">
-                                ✓
-                              </span>
-                            </Label>
-                            <span className="block text-center text-xs font-medium text-gray-700 dark:text-gray-300 mt-2 capitalize">
-                              {color}
-                            </span>
-                          </motion.div>
-                        ))}
-                    </RadioGroup>
-                  </motion.div>
-                )}
+                    {product.options.map((option) => {
+                      const isColorOption =
+                        option.name.toLowerCase() === "color";
+                      const optionValues = option.values
+                        .join(",")
+                        .split(",")
+                        .map((val) => val.trim())
+                        .filter((val) => val.length > 0);
+                      const currentSelection =
+                        selectedOptions[option.name] || "";
+                      const icon = getOptionIcon(option.name);
 
-                {/* Size/Capacity Selection - Enhanced */}
-                {sizeOrCapacityOption && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                    className="space-y-4"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <Label className="text-lg lg:text-xl font-semibold text-gray-900 dark:text-gray-100 tracking-tight block">
-                          {sizeOrCapacityOption.name}
-                        </Label>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                          Select your perfect fit
-                        </p>
-                      </div>
-
-                      {sizeOrCapacityOption.name === "Capacity" && (
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <motion.div
-                              whileHover={{ scale: 1.02 }}
-                              className="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors duration-200 cursor-pointer"
-                            >
-                              📏 Size Guide
-                            </motion.div>
-                          </DialogTrigger>
-                          <DialogContent className="sm:max-w-md bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm border-gray-200/60 dark:border-gray-700/60 rounded-2xl">
-                            <DialogHeader className="space-y-3">
-                              <DialogTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">
-                                Capacity Guide
-                              </DialogTitle>
-                              <p className="text-sm text-gray-600 dark:text-gray-400">
-                                Choose the right size for your needs
-                              </p>
-                            </DialogHeader>
-                            <div className="space-y-4 text-sm lg:text-base text-gray-700 dark:text-gray-300">
-                              {[
-                                {
-                                  size: "500ml",
-                                  desc: "Ideal for short trips or daily commutes",
-                                },
-                                {
-                                  size: "750ml",
-                                  desc: "Perfect for all-day hydration or workouts",
-                                },
-                                {
-                                  size: "1L",
-                                  desc: "Best for long hikes or shared use",
-                                },
-                              ].map((item) => (
-                                <div
-                                  key={item.size}
-                                  className="flex items-start gap-3 p-3 bg-gray-50/50 dark:bg-gray-900/30 rounded-xl"
-                                >
-                                  <div className="w-2 h-2 rounded-full bg-indigo-500 mt-2 flex-shrink-0"></div>
-                                  <div>
-                                    <p className="font-semibold text-gray-900 dark:text-gray-100">
-                                      {item.size}
+                      return (
+                        <div key={option.name} className="space-y-4">
+                          <div className="flex items-center justify-between">
+                            <h3 className="text-lg lg:text-xl font-semibold text-gray-900 dark:text-gray-100 capitalize tracking-wide">
+                              {option.name}
+                            </h3>
+                            {["Size", "Capacity"].includes(option.name) && (
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <motion.div
+                                    whileHover={{ scale: 1.02 }}
+                                    className="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors duration-200 cursor-pointer flex items-center gap-1"
+                                  >
+                                    📏 {option.name} Guide
+                                  </motion.div>
+                                </DialogTrigger>
+                                <DialogContent className="sm:max-w-md bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm border-gray-200/60 dark:border-gray-700/60 rounded-2xl">
+                                  <DialogHeader className="space-y-3">
+                                    <DialogTitle className="text-xl font-bold text-gray-900 dark:text-gray-100 capitalize">
+                                      {option.name} Guide
+                                    </DialogTitle>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                                      Choose the right{" "}
+                                      {option.name.toLowerCase()} for your needs
                                     </p>
-                                    <p className="text-gray-600 dark:text-gray-400">
-                                      {item.desc}
-                                    </p>
+                                  </DialogHeader>
+                                  <div className="space-y-4 text-sm lg:text-base text-gray-700 dark:text-gray-300">
+                                    {optionValues.map((item) => {
+                                      let desc = "";
+                                      if (option.name === "Capacity") {
+                                        if (item === "500ml")
+                                          desc =
+                                            "Ideal for short trips or daily commutes";
+                                        if (item === "750ml")
+                                          desc =
+                                            "Perfect for all-day hydration or workouts";
+                                        if (item === "1L")
+                                          desc =
+                                            "Best for long hikes or shared use";
+                                      } else if (option.name === "Size") {
+                                        if (item === "A5")
+                                          desc =
+                                            "Standard size for detailed journaling and planning";
+                                        if (item === "A6")
+                                          desc =
+                                            "Compact pocket size for quick notes on the go";
+                                      }
+                                      return (
+                                        <div
+                                          key={item}
+                                          className="flex items-start gap-3 p-3 bg-gray-50/50 dark:bg-gray-900/30 rounded-xl"
+                                        >
+                                          <div className="w-2 h-2 rounded-full bg-indigo-500 mt-2 flex-shrink-0"></div>
+                                          <div>
+                                            <p className="font-semibold text-gray-900 dark:text-gray-100">
+                                              {item}
+                                            </p>
+                                            <p className="text-gray-600 dark:text-gray-400">
+                                              {desc}
+                                            </p>
+                                          </div>
+                                        </div>
+                                      );
+                                    })}
                                   </div>
-                                </div>
-                              ))}
-                            </div>
-                          </DialogContent>
-                        </Dialog>
-                      )}
-                    </div>
-
-                    <RadioGroup
-                      value={selectedCapacity}
-                      onValueChange={setSelectedCapacity}
-                      className="grid grid-cols-3 gap-3 sm:gap-4"
-                    >
-                      {sizeOrCapacityOption.values.map((value) => (
-                        <motion.div
-                          key={value}
-                          whileHover={{ scale: 1.02 }}
-                          className="relative"
-                        >
-                          <RadioGroupItem
-                            value={value}
-                            id={`capacity-${value}`}
-                            className="sr-only peer"
-                          />
-                          <Label
-                            htmlFor={`capacity-${value}`}
-                            className={`relative block w-full p-4 rounded-xl border-2 text-center transition-all duration-200 cursor-pointer group ${
-                              selectedCapacity === value
-                                ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 shadow-lg shadow-indigo-200/50"
-                                : "border-gray-200 dark:border-gray-700 hover:border-indigo-200 dark:hover:border-indigo-800"
+                                </DialogContent>
+                              </Dialog>
+                            )}
+                          </div>
+                          <Badge
+                            variant="outline"
+                            className="text-xs font-medium text-gray-500 dark:text-gray-400"
+                          >
+                            Essential
+                          </Badge>
+                          <RadioGroup
+                            value={currentSelection}
+                            onValueChange={(val) =>
+                              setSelectedOptions((prev) => ({
+                                ...prev,
+                                [option.name]: val,
+                              }))
+                            }
+                            className={`grid gap-3 ${
+                              isColorOption
+                                ? "grid-cols-5 sm:grid-cols-6 lg:grid-cols-8"
+                                : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4"
                             }`}
                           >
-                            <div className="text-2xl mb-2">📦</div>
-                            <div className="font-bold text-lg lg:text-xl text-gray-900 dark:text-gray-100 leading-tight">
-                              {value}
-                            </div>
-                            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 rounded-xl opacity-0 peer-checked:opacity-100 transition-opacity duration-300"></div>
-                          </Label>
-                        </motion.div>
-                      ))}
-                    </RadioGroup>
+                            {optionValues.map((value) => {
+                              const id = `${option.name.toLowerCase()}-${value
+                                .toLowerCase()
+                                .replace(/\s+/g, "-")}`;
+                              const isSelected = currentSelection === value;
+
+                              return (
+                                <motion.div
+                                  key={value}
+                                  whileHover={{ scale: 1.05 }}
+                                  whileTap={{ scale: 0.95 }}
+                                  transition={{
+                                    type: "spring",
+                                    stiffness: 300,
+                                  }}
+                                  className="relative group"
+                                >
+                                  <RadioGroupItem
+                                    value={value}
+                                    id={id}
+                                    className="sr-only peer"
+                                  />
+                                  <Label
+                                    htmlFor={id}
+                                    className={`relative block w-full aspect-square rounded-xl border-2 transition-all duration-200 cursor-pointer overflow-hidden ${
+                                      isSelected
+                                        ? "border-green-500 bg-indigo-50 dark:bg-indigo-900/20 shadow-lg shadow-indigo-200/50 dark:shadow-indigo-900/20 ring-2 ring-indigo-500/20"
+                                        : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-md"
+                                    }`}
+                                  >
+                                    {isColorOption ? (
+                                      // Color swatch
+                                      <>
+                                        <div
+                                          className="w-full h-full rounded-md"
+                                          style={{
+                                            backgroundColor:
+                                              value.toLowerCase(),
+                                          }}
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent dark:from-black/10 rounded-md opacity-0 peer-checked:opacity-100 transition-opacity duration-200"></div>
+                                        <span className="absolute -bottom-2 -right-2 bg-indigo-500 text-white text-xs font-bold px-2 py-1 rounded-full opacity-0 peer-checked:opacity-100 transition-all duration-200 transform translate-y-1 peer-checked:translate-y-0 scale-0 peer-checked:scale-100">
+                                          ✓
+                                        </span>
+                                        {/* Color name overlay on hover */}
+                                        {/* <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">
+                                          <span className="text-white text-xs font-medium capitalize bg-black/50 px-2 py-1 rounded">
+                                            {value}
+                                          </span>
+                                        </div> */}
+                                      </>
+                                    ) : (
+                                      // Text-based option (size, material, etc.)
+                                      <>
+                                        <div
+                                          className={`w-full h-full flex flex-col items-center justify-center p-2 transition-colors duration-200 ${
+                                            isSelected
+                                              ? "bg-gradient-to-br from-indigo-500 to-purple-600 text-white"
+                                              : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300"
+                                          }`}
+                                        >
+                                          {icon && (
+                                            <div className="text-2xl mb-1">
+                                              {icon}
+                                            </div>
+                                          )}
+                                          <span className="text-sm font-semibold leading-none capitalize text-center">
+                                            {value}
+                                          </span>
+                                        </div>
+                                        {/* Selection indicator for non-color options */}
+                                        <div
+                                          className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white dark:border-gray-800 transition-all duration-200 ${
+                                            isSelected
+                                              ? "bg-indigo-500 opacity-100"
+                                              : "bg-transparent opacity-0 group-hover:opacity-100"
+                                          }`}
+                                        >
+                                          {isSelected && (
+                                            <svg
+                                              className="w-2 h-2 text-white mt-0.5 ml-0.5"
+                                              fill="currentColor"
+                                              viewBox="0 0 8 8"
+                                            >
+                                              <path d="M2.75 6.938L6.887 2.8l-.618-.618L2.75 5.702l-1.47-1.47-.618.618z" />
+                                            </svg>
+                                          )}
+                                        </div>
+                                      </>
+                                    )}
+
+                                    {/* Selection ring animation */}
+                                    <div
+                                      className={`absolute inset-0 rounded-xl transition-all duration-300 ${
+                                        isSelected
+                                          ? "scale-110 opacity-50"
+                                          : "scale-0 opacity-0"
+                                      } bg-indigo-500 blur-sm`}
+                                    ></div>
+                                  </Label>
+
+                                  {/* Option name below */}
+                                  <span
+                                    className={`block text-center text-xs font-medium mt-2 transition-colors duration-200 ${
+                                      isSelected
+                                        ? "text-indigo-600 dark:text-indigo-400"
+                                        : "text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white"
+                                    } capitalize`}
+                                  >
+                                    {value}
+                                  </span>
+                                </motion.div>
+                              );
+                            })}
+                          </RadioGroup>
+                        </div>
+                      );
+                    })}
                   </motion.div>
                 )}
 
@@ -661,20 +746,20 @@ export default function ProductPage() {
                     <Label className="text-lg lg:text-xl font-semibold text-gray-900 dark:text-gray-100 tracking-tight">
                       Quantity
                     </Label>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                    {/* <div className="text-sm text-gray-500 dark:text-gray-400">
                       {selectedVariant?.inventory?.quantity || 0} available
-                    </div>
+                    </div> */}
                   </div>
 
-                  <div className="flex items-center gap-3">
+                  <div className="inline-flex items-center gap-3">
                     <motion.div
                       whileHover={{ scale: 1.02 }}
-                      className="group relative"
+                      className="group relative "
                     >
                       <Button
                         variant="outline"
                         size="icon"
-                        onClick={() => handleQuantityChange(quantity - 1)}
+                        onClick={handleQuantityDecrement}
                         disabled={quantity <= 1}
                         className="w-12 h-12 rounded-xl border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 shadow-sm hover:shadow-md"
                         aria-label="Decrease quantity"
@@ -684,13 +769,11 @@ export default function ProductPage() {
                       </Button>
                     </motion.div>
 
-                    <div className="flex-1">
+                    <div className="flex-1 border">
                       <Input
                         type="number"
                         value={quantity}
-                        onChange={(e) =>
-                          handleQuantityChange(parseInt(e.target.value))
-                        }
+                        onChange={(e) => handleQuantityChange(e.target.value)}
                         className="w-full max-w-[5rem] mx-auto text-center text-xl font-bold text-gray-900 dark:text-gray-100 bg-transparent border-0 shadow-none focus:ring-2 focus:ring-indigo-500/50 rounded-lg px-0 py-4"
                         min="1"
                         max={selectedVariant?.inventory?.quantity || 1}
@@ -705,7 +788,7 @@ export default function ProductPage() {
                       <Button
                         variant="outline"
                         size="icon"
-                        onClick={() => handleQuantityChange(quantity + 1)}
+                        onClick={handleQuantityIncrement}
                         disabled={
                           quantity >=
                           (selectedVariant?.inventory?.quantity || 1)
@@ -1225,7 +1308,7 @@ export default function ProductPage() {
                           className="mt-2 w-full border-gray-500 dark:border-gray-600 text-gray-600 dark:text-gray-300 text-sm sm:text-base"
                         >
                           <Link
-                            href={`/products/${related._id}`}
+                            href={`/product-info/${related._id}`}
                             aria-label={`View ${related.name}`}
                           >
                             View Product
@@ -1238,7 +1321,11 @@ export default function ProductPage() {
               </CarouselContent>
               {/* <CarouselPrevious className="bg-gray-200 dark:bg-gray-700" />
               <CarouselNext className="bg-gray-200 dark:bg-gray-700" /> */}
-              <div className="absolute left-1/2 -bottom-10 flex gap-2">
+              <div
+                className={`absolute left-1/2 -bottom-10 flex gap-2 ${
+                  relatedProducts.length < 4 ? "" : "hidden"
+                }`}
+              >
                 <CarouselPrevious className="h-8 w-8 sm:h-10 sm:w-10 bg-green-800 text-white  transition-colors duration-300" />
                 <CarouselNext className="h-8 w-8 sm:h-10 sm:w-10 bg-green-800 text-white  transition-colors duration-300" />
               </div>
