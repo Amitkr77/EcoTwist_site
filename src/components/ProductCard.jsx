@@ -102,8 +102,10 @@ function ProductCard({ product, viewMode = "grid" }) {
   }, [product._id, dispatch]);
 
   const categories = Array.isArray(product.categories)
-    ? product.categories.join(", ")
-    : product.categories || "No categories";
+    ? product.categories[0].split(" ")[1] ||
+      product.categories[0] ||
+      "No categories" // Get second word of first element, or first element if no second word
+    : product.categories || "No categories"; // Fallback if it's not an array
 
   const price = product.variants?.[0]?.price
     ? `₹${product.variants[0].price.toFixed(2)}`
@@ -123,7 +125,7 @@ function ProductCard({ product, viewMode = "grid" }) {
     >
       {/* Image Container */}
       <div
-        className={`relative overflow-hidden ${
+        className={`relative overflow-hidden bg-white ${
           viewMode === "grid" ? "aspect-[4/3]" : "w-full sm:w-48 h-48"
         }`}
       >
@@ -175,7 +177,7 @@ function ProductCard({ product, viewMode = "grid" }) {
             </div>
           </>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent z-0" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent z-0 rounded-2xl" />
         <Link href={`/product-info/${product._id}`} passHref>
           <motion.button
             className="absolute top-3 left-3 p-1 bg-white/80 rounded-full hover:bg-white transition-colors focus:ring-2 focus:ring-indigo-500 z-10 "
@@ -191,48 +193,66 @@ function ProductCard({ product, viewMode = "grid" }) {
       {/* Content Container */}
       <div
         className={`p-4 ${
-          viewMode === "list" ? "flex-1 flex flex-col justify-between" : ""
+          viewMode === "list"
+            ? "flex-1 flex flex-col justify-between "
+            : "flex flex-col "
         }`}
       >
-        {/* Product Name and Categories */}
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-2 sm:mb-3">
-          <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 line-clamp-2">
-            {product.name || "Unnamed Product"}
+        {/* Product Name and Categories - Fixed height container */}
+        <div className="flex  gap-2 mb-3 sm:mb-4 min-h-[3rem] justify-between">
+          {/* Product Name - Fixed height with consistent truncation */}
+          <h3
+            className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 leading-tight min-h-[2.25rem] sm:min-h-[2.5rem] line-clamp-2"
+            style={{
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+            }}
+          >
+            {product?.name || "Unnamed Product"}
           </h3>
-          <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full shrink-0">
-            {categories}
-          </span>
+
+          {/* Categories - Consistent positioning */}
+          <div className="flex-shrink-0">
+            <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full inline-block">
+              {categories}
+            </span>
+          </div>
         </div>
 
         {/* Description (List view only) */}
         {viewMode === "list" && (
-          <p className="text-sm text-gray-600 line-clamp-3 mb-3">
-            {product.description || "No description available"}
-          </p>
+          <div className="min-h-[3rem] mb-3">
+            <p className="text-sm text-gray-600 line-clamp-3 leading-relaxed">
+              {product.description || "No description available"}
+            </p>
+          </div>
         )}
 
-        {/* Price and Add to Cart */}
+        {/* Price and Add to Cart - Consistent bottom section */}
         <div
           className={`flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 ${
-            viewMode === "list" ? "mt-auto" : "mt-3"
+            viewMode === "list" ? "mt-auto" : ""
           }`}
         >
-          <div>
-            <span className="text-xs text-gray-500 block">Price</span>
-            <span className="text-base sm:text-lg font-semibold text-indigo-600">
+          <div className="flex-shrink-0">
+            <span className="text-xs text-gray-500 block mb-1">Price</span>
+            <span className="text-base sm:text-lg font-semibold text-indigo-600 leading-tight">
               {price}
             </span>
           </div>
+
           <motion.button
             onClick={handleAddToCart}
             disabled={loading}
-            className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white ${
+            className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white flex-1 sm:flex-none ${
               loading
                 ? "bg-gray-400 cursor-not-allowed"
                 : added
                 ? "bg-green-500"
                 : "bg-indigo-600 hover:bg-indigo-700"
-            } transition-colors focus:ring-2 focus:ring-indigo-500 w-full sm:w-auto`}
+            } transition-colors focus:ring-2 focus:ring-indigo-500 min-h-[2.5rem]`}
             whileTap={{ scale: loading ? 1 : 0.95 }}
             aria-label={loading ? "Adding to cart" : "Add to cart"}
           >
@@ -243,7 +263,9 @@ function ProductCard({ product, viewMode = "grid" }) {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
+                  className="flex items-center gap-2"
                 >
+                  <Loader2 className="w-4 h-4 animate-spin" />
                   Adding...
                 </motion.span>
               ) : added ? (
@@ -275,9 +297,9 @@ function ProductCard({ product, viewMode = "grid" }) {
       </div>
 
       {/* Decorative Element */}
-      {viewMode === "grid" && (
+      {/* {viewMode === "grid" && (
         <div className="absolute top-0 right-0 w-12 h-12 bg-indigo-100 rounded-bl-full opacity-50 group-hover:opacity-75 transition-opacity" />
-      )}
+      )} */}
     </motion.div>
   );
 }

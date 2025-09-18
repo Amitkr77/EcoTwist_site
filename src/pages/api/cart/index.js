@@ -22,6 +22,12 @@ export default async function handler(req, res) {
             const variant = product.variants.find(v => v.sku === variantSku);
             if (!variant) return res.status(404).json({ message: 'Variant not found' });
 
+            // Get primary or fallback image
+            const primaryImage =
+                product.images?.find(img => img.isPrimary)?.url ||
+                product.images?.[0]?.url ||
+                null;
+
             // Check if the item already exists in the cart
             const existingCartItem = await Cart.findOne({
                 userId: user.userId,
@@ -35,13 +41,19 @@ export default async function handler(req, res) {
                     { userId: user.userId, 'items.productId': productId, 'items.variantSku': variantSku },
                     { $inc: { 'items.$.quantity': quantity } }
                 );
-                // Fetch the updated cart and return it
                 const updatedCart = await Cart.findOne({ userId: user.userId });
                 return res.status(200).json({ message: 'Cart updated successfully', cart: updatedCart });
             }
 
             // Add new item to cart
-            const cartItem = { productId, variantSku, name: product.name, price: variant.price, quantity };
+            const cartItem = {
+                productId,
+                variantSku,
+                name: product.name,
+                price: variant.price,
+                quantity,
+                image: primaryImage
+            };
 
             const cart = await Cart.findOneAndUpdate(
                 { userId: user.userId },
@@ -51,6 +63,8 @@ export default async function handler(req, res) {
 
             return res.status(201).json({ message: 'Item added to cart', cart });
         }
+
+
 
         if (req.method === 'GET') {
             // Fetch the user's cart, or default to an empty cart structure if none exists

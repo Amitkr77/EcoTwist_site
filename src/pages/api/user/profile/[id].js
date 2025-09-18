@@ -64,7 +64,7 @@ export default async function handler(req, res) {
       // Sanitize the user object
       const userObj = userToFetch.toObject();
       delete userObj.password;
-      delete userObj.refreshToken;
+      // delete userObj.refreshToken;
       delete userObj.__v;
 
 
@@ -118,7 +118,6 @@ export default async function handler(req, res) {
       // Sanitize user object before returning
       const userObj = userToUpdate.toObject();
       delete userObj.password;
-      delete userObj.refreshToken;
       delete userObj.__v;
 
       return res.status(200).json({

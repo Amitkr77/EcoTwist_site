@@ -4,36 +4,36 @@ import dbConnect from "@/lib/mongodb";
 import cookie from 'cookie'
 
 // Simple in-memory rate limiter (not suitable for production)
-const rateLimitMap = new Map();
+// const rateLimitMap = new Map();
 
-function isRateLimited(ip) {
-  const now = Date.now();
-  const record = rateLimitMap.get(ip) || { count: 0, time: now };
+// function isRateLimited(ip) {
+//   const now = Date.now();
+//   const record = rateLimitMap.get(ip) || { count: 0, time: now };
 
-  if (now - record.time > 15 * 60 * 1000) {
-    rateLimitMap.set(ip, { count: 1, time: now });
-    return false;
-  }
+//   if (now - record.time > 15 * 60 * 1000) {
+//     rateLimitMap.set(ip, { count: 1, time: now });
+//     return false;
+//   }
 
-  if (record.count >= 5) {
-    return true;
-  }
+//   if (record.count >= 5) {
+//     return true;
+//   }
 
-  record.count += 1;
-  rateLimitMap.set(ip, record);
-  return false;
-}
+//   record.count += 1;
+//   rateLimitMap.set(ip, record);
+//   return false;
+// }
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method Not Allowed" });
   }
 
-  const ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress || "unknown";
+  // const ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress || "unknown";
 
-  if (isRateLimited(ip)) {
-    return res.status(429).json({ error: "Too many requests" });
-  }
+  // if (isRateLimited(ip)) {
+  //   return res.status(429).json({ error: "Too many requests" });
+  // }
 
   try {
     await dbConnect();
@@ -63,13 +63,6 @@ export default async function handler(req, res) {
       { expiresIn: "1d" }
     );
 
-    const refreshToken = jwt.sign(
-      { id: user._id },
-      process.env.JWT_REFRESH_SECRET,
-      { expiresIn: "7d" }
-    );
-
-    user.refreshToken = refreshToken;
     await user.save();
 
     res.setHeader(
@@ -77,7 +70,7 @@ export default async function handler(req, res) {
       cookie.serialize("user-token", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        maxAge: 60 * 60 * 24, // 1 day
+        maxAge: 60 * 60 * 24, 
         path: "/",
         sameSite: "lax",
       })
@@ -86,7 +79,6 @@ export default async function handler(req, res) {
     return res.status(200).json({
       success: true,
       token,
-      refreshToken,
       user: {
         id: user._id,
         name: user.firstName,

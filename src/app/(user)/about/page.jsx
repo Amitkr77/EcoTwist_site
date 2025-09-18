@@ -64,7 +64,7 @@ export default function page() {
           {/* Image */}
           <div className="">
             <img
-              src="/about_image.png"
+              src="/about_image1.png"
               alt="Eco-friendly products and artisans"
               className="w-full h-auto object-cover "
             />

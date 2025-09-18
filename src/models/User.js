@@ -90,10 +90,10 @@ const userSchema = new Schema({
     default: false,
     index: true,
   },
-  refreshToken: {
-    type: String,
-    select: false,
-  },
+  // refreshToken: {
+  //   type: String,
+  //   select: false,
+  // },
 }, {
   timestamps: true,
   toJSON: { virtuals: true },
