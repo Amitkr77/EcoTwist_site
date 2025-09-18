@@ -40,7 +40,6 @@ import {
   Lightbulb,
   Quote,
 } from "lucide-react";
-import { toast } from "sonner";
 import {
   Carousel,
   CarouselContent,
