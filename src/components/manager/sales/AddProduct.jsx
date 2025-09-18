@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useParams } from "next/navigation";
+import toast from "react-hot-toast";
 
 export default function AddProductForm() {
   const [isLoading, setIsLoading] = useState(false);
@@ -163,7 +164,7 @@ export default function AddProductForm() {
 
       const productName = watch("name");
       if (!productName) {
-        alert("Please enter the product name before uploading images.");
+        toast("Please enter the product name before uploading images.");
         e.target.value = "";
         return;
       }
@@ -190,12 +191,12 @@ export default function AddProductForm() {
         if (data.success && data.urls && data.urls.length > 0) {
           setValue(`images.${index}.url`, data.urls[0]);
         } else {
-          alert("Image upload failed.");
+          toast.error("Image upload failed.");
           e.target.value = "";
         }
       } catch (error) {
         console.error("Upload error:", error);
-        alert("Error uploading image.");
+        toast.error("Error uploading image.");
         e.target.value = "";
       }
     },
@@ -208,7 +209,7 @@ export default function AddProductForm() {
       // Validate unique SKUs
       const skus = data.variants.map((v) => v.sku);
       if (new Set(skus).size !== skus.length) {
-        alert("Error: Duplicate SKUs detected.");
+        toast.error("Error: Duplicate SKUs detected.");
         return;
       }
 
@@ -217,14 +218,14 @@ export default function AddProductForm() {
         JSON.stringify(v.optionValues)
       );
       if (new Set(variantCombinations).size !== variantCombinations.length) {
-        alert("Error: Duplicate variant option combinations detected.");
+        toast.error("Error: Duplicate variant option combinations detected.");
         return;
       }
 
       // Validate at least one primary image
       const hasPrimaryImage = data.images.some((img) => img.isPrimary);
       if (!hasPrimaryImage && data.images.length > 0) {
-        alert("Error: At least one image must be marked as primary.");
+        toast.error("Error: At least one image must be marked as primary.");
         return;
       }
 
@@ -254,11 +255,11 @@ export default function AddProductForm() {
 
       // Validate required arrays
       if (formattedData.benefits.length === 0) {
-        alert("Error: At least one benefit is required.");
+        toast.error("Error: At least one benefit is required.");
         return;
       }
       if (formattedData.categories.length === 0) {
-        alert("Error: At least one category is required.");
+        toast.error("Error: At least one category is required.");
         return;
       }
 
@@ -272,14 +273,14 @@ export default function AddProductForm() {
       );
 
       if (response.ok) {
-        alert("Product added successfully!");
+        toast.success("Product added successfully!");
         reset();
       } else {
         const error = await response.json();
-        alert(`Error: ${error.message}`);
+        toast.error(`Error: ${error.message}`);
       }
     } catch (error) {
-      alert("Error: Failed to add product.");
+      toast.error("Error: Failed to add product.");
       console.error(error);
     } finally {
       setIsLoading(false);
@@ -298,7 +299,9 @@ export default function AddProductForm() {
       onSubmit={handleSubmit(onSubmit)}
       className="space-y-6 p-4 max-w-4xl mx-auto mt-20"
     >
-      <h2 className="text-2xl font-bold">Add New Product</h2>
+      <h2 className="text-2xl font-bold">
+        {isEditMode ? "Edit Product" : "Add New Product"}
+      </h2>
 
       {/* Error Summary */}
       {isSubmitted && allErrors.length > 0 && (
@@ -978,8 +981,22 @@ export default function AddProductForm() {
         </div>
       </div>
 
-      <Button type="submit" disabled={isLoading} className="cursor-pointer">
-        {isLoading ? "Submitting..." : "Add Product"}
+      <Button
+        type="submit"
+        disabled={isLoading}
+        className={`cursor-pointer text-white ${
+          isEditMode
+            ? "bg-yellow-500 hover:bg-yellow-600 text-black"
+            : "bg-green-600 hover:bg-green-700"
+        }`}
+      >
+        {isLoading
+          ? isEditMode
+            ? "Updating..."
+            : "Submitting..."
+          : isEditMode
+          ? "Update Product"
+          : "Add Product"}
       </Button>
     </form>
   );

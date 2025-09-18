@@ -40,7 +40,6 @@ import {
   Lightbulb,
   Quote,
 } from "lucide-react";
-import { toast } from "sonner";
 import {
   Carousel,
   CarouselContent,
@@ -59,6 +58,8 @@ import {
 } from "@/store/slices/userSlice";
 import Link from "next/link";
 import { fetchProducts } from "@/store/slices/productSlices";
+import toast from "react-hot-toast";
+import jwt_decode from "jwt-decode"; 
 
 export default function ProductPage() {
   const dispatch = useDispatch();
@@ -187,22 +188,52 @@ export default function ProductPage() {
   const selectedVariant = getSelectedVariant();
   const isAvailable = selectedVariant?.inventory?.quantity > 0;
 
+  function getUserIdFromToken(token) {
+    try {
+      const decoded = jwt_decode(token);
+      return decoded?.userId || decoded?.sub; 
+    } catch (error) {
+      return null;
+    }
+  }
+
   const handleAddToCart = () => {
-    const userId = localStorage.getItem("user-id");
-    if (!userId) {
-      if (
-        window.confirm(
-          "You need to be logged in to add items to the cart. Do you want to login now?"
-        )
-      ) {
-        router.push("/login");
-      }
+    const userToken = localStorage.getItem("user-token");
+    if (!userToken) {
+      toast.custom((t) => (
+        <div
+          className={`max-w-sm w-full bg-white shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5 p-4 ${
+            t.visible ? "animate-enter" : "animate-leave"
+          }`}
+        >
+          <div className="flex-1 w-0">
+            <p className="text-sm font-medium text-gray-900">
+              You need to be logged in to add items to the cart.
+            </p>
+            <p className="mt-1 text-sm text-gray-500">
+              Click below to login now.
+            </p>
+          </div>
+          <div className="flex ml-4">
+            <button
+              onClick={() => {
+                toast.dismiss(t.id);
+                router.push("/login");
+              }}
+              className="text-blue-600 hover:text-blue-800 font-semibold"
+            >
+              Login
+            </button>
+          </div>
+        </div>
+      ));
       return;
     }
     if (!selectedVariant) {
       toast.error("Please select a variant");
       return;
     }
+    const userId = getUserIdFromToken(userToken);
     dispatch(
       addToCart({
         userId,
