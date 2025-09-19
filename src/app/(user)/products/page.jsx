@@ -24,6 +24,7 @@ import {
   Tag,
   Filter,
   Zap,
+  Loader2 
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -1329,7 +1330,7 @@ export default function ProductsPage() {
                           </motion.button>
 
                           {/* Hover overlay */}
-                          <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                          {/* <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div> */}
                         </motion.div>
                       ))}
                     </div>

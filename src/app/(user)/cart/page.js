@@ -10,11 +10,13 @@ import {
   removeFromCart,
   clearCart,
   resetError,
+  addToCart,
 } from "@/store/slices/cartSlice";
 import { fetchProducts } from "@/store/slices/productSlices";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,7 +28,7 @@ import {
   AlertDialogTrigger,
   AlertDialogFooter
 } from "@/components/ui/alert-dialog";
-import { Loader2, Trash2, ShoppingBag, ArrowLeft, Tag, CheckCircle, ChevronDown, ChevronUp } from "lucide-react";
+import { Loader2, Trash2, ShoppingBag, ArrowLeft, Tag, CheckCircle, ChevronDown, ChevronUp,ShoppingCart  } from "lucide-react";
 import Image from "next/image";
 import { toast } from "sonner";
 import debounce from "lodash/debounce";
@@ -66,7 +68,7 @@ export default function CartPage() {
     return () => {
       dispatch(resetError());
     };
-  }, [dispatch]); 
+  }, [dispatch]);
 
   // Handle errors
   useEffect(() => {
@@ -180,7 +182,7 @@ export default function CartPage() {
   // Empty cart with suggestions
   if (items.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900 pt-20 p-4 md:p-6 text-center">
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900 pt-20 p-4 md:p-6 text-center mt-16">
         <div className="max-w-4xl mx-auto bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
           <ShoppingBag className="w-16 h-16 mx-auto text-gray-400 dark:text-gray-300 mb-4" />
           <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Your Cart is Empty</h2>
@@ -264,7 +266,7 @@ export default function CartPage() {
           <AnimatePresence>
             {items.map((item, index) => (
               <motion.div
-                key={`${item.productId}-${item.variantSku}`}
+                key={index}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, x: -100 }}
@@ -303,7 +305,7 @@ export default function CartPage() {
                       </p>
                     )}
                     <p className="text-green-600 dark:text-green-400 font-medium">
-                      ₹{item.price.toFixed(2)}
+                      ₹{item.price?.toFixed(2)}
                     </p>
                   </div>
                 </div>
@@ -520,49 +522,201 @@ export default function CartPage() {
         </Link>
       </div>
       {suggestedProducts.length > 0 && (
-        <div className="mt-8 max-w-4xl mx-auto">
-          <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">You Might Also Like</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            <AnimatePresence>
-              {suggestedProducts.map((product) => (
+        <div className="mt-6 sm:mt-8 max-w-full mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.h3
+            className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4 sm:mb-6 text-center sm:text-left"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            You Might Also Like
+          </motion.h3>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-5">
+            <AnimatePresence mode="popLayout">
+              {suggestedProducts.map((product, index) => (
                 <motion.div
                   key={product._id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600"
+                  initial={{
+                    opacity: 0,
+                    y: 20,
+                    scale: 0.95
+                  }}
+                  animate={{
+                    opacity: 1,
+                    y: 0,
+                    scale: 1
+                  }}
+                  exit={{
+                    opacity: 0,
+                    y: -20,
+                    scale: 0.95
+                  }}
+                  transition={{
+                    duration: 0.3,
+                    delay: index * 0.05 // Staggered animation
+                  }}
+                  layout
+                  className="
+              bg-white dark:bg-gray-800 
+              rounded-xl sm:rounded-2xl 
+              overflow-hidden shadow-sm hover:shadow-md 
+              transition-all duration-300
+              border border-gray-200/50 dark:border-gray-700/50
+              hover:border-gray-300/50 dark:hover:border-gray-600/50
+              p-3 sm:p-4
+              group
+            "
                 >
-                  <Image
-                    src={product.images?.find((img) => img.isPrimary)?.url || product.images?.[0]?.url || "/product_image.png"}
-                    alt={product.name}
-                    width={150}
-                    height={150}
-                    className="object-cover rounded-md mx-auto"
-                  />
-                  <h4 className="text-sm font-medium mt-2 text-gray-900 dark:text-gray-100">{product.name}</h4>
-                  <p className="text-green-600 dark:text-green-400 font-semibold">
-                    ₹{Math.min(...(product.variants?.map((v) => v.price || 0) || [0])).toFixed(2)}
-                  </p>
-                  <Button
-                    variant="outline"
-                    className="mt-2 w-full border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600"
-                    onClick={() =>
-                      dispatch(
-                        addToCart({
-                          userId: localStorage.getItem("user-id"),
-                          productId: product._id,
-                          variantSku: product.variants?.[0]?.sku,
-                          quantity: 1,
-                        })
-                      )
-                        .unwrap()
-                        .then(() => toast.success(`${product.name} added to cart`))
-                        .catch((err) => toast.error(err || "Failed to add to cart"))
-                    }
-                    aria-label={`Add ${product.name} to cart`}
+                  {/* Image Container */}
+                  <div className="relative w-full h-32 sm:h-40 md:h-44 aspect-square sm:aspect-[4/5]">
+                    <Link
+                      href={`/product-info/${product._id}`}
+                      className="block w-full h-full relative"
+                    >
+                      <Image
+                        src={
+                          product.images?.find((img) => img.isPrimary)?.url ||
+                          product.images?.[0]?.url ||
+                          "/product_image.png"
+                        }
+                        alt={product.name || "Product"}
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                        className="
+                    object-cover w-full h-full 
+                    rounded-lg sm:rounded-xl
+                    transition-transform duration-300 group-hover:scale-105
+                  "
+                        priority={index < 3}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent rounded-lg sm:rounded-xl pointer-events-none" />
+                    </Link>
+
+                    {/* Quick View Badge */}
+                    {product.stock > 0 && (
+                      <div className="absolute top-2 left-2">
+                        <span className="
+                    bg-green-500/90 text-white text-[10px] sm:text-xs 
+                    px-1.5 py-0.5 rounded-full
+                    backdrop-blur-sm
+                  ">
+                          In Stock
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Content */}
+                  <div className="pt-3 sm:pt-4 space-y-2 sm:space-y-3">
+                    {/* Product Name */}
+                    <div className="h-12 sm:h-10 md:h-12">
+                      <h4
+                        className="
+                    text-xs sm:text-sm md:text-base font-medium 
+                    text-gray-900 dark:text-gray-100 
+                    leading-tight line-clamp-2
+                    group-hover:text-gray-800 dark:group-hover:text-gray-200
+                    transition-colors duration-200
+                  "
+                        style={{
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                          overflow: "hidden",
+                        }}
+                      >
+                        {product.name || "Unnamed Product"}
+                      </h4>
+                    </div>
+
+                    {/* Price & Rating */}
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-1">
+                        <p className="
+                    text-xs sm:text-sm font-semibold 
+                    text-green-600 dark:text-green-400
+                    leading-tight
+                  ">
+                          ₹{Math.min(...(product.variants?.map((v) => v.price || 0) || [0])).toFixed(2)}
+                        </p>
+                        {product.variants && product.variants.length > 1 && (
+                          <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">
+                            {product.variants.length} variants
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Rating - if available */}
+                      {product.rating && (
+                        <div className="flex items-center gap-1">
+                          <span className="text-xs text-yellow-500">★</span>
+                          <span className="text-xs text-gray-600 dark:text-gray-400">
+                            {product.rating.toFixed(1)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Add to Cart Button */}
+                    <motion.button
+                      onClick={() =>
+                        dispatch(
+                          addToCart({
+                            userId: localStorage.getItem("user-id"),
+                            productId: product._id,
+                            variantSku: product.variants?.[0]?.sku,
+                            quantity: 1,
+                          })
+                        )
+                          .unwrap()
+                          .then(() => {
+                            toast.success(`${product.name?.substring(0, 30)}${product.name?.length > 30 ? '...' : ''} added to cart!`);
+                          })
+                          .catch((err) => toast.error(err?.message || "Failed to add to cart"))
+                      }
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="
+                  w-full mt-2 sm:mt-3 px-3 py-2 sm:py-2.5
+                  rounded-lg text-xs sm:text-sm font-medium
+                  border-2 border-indigo-500/20 bg-indigo-50 
+                  text-indigo-700 hover:bg-indigo-100
+                  dark:border-indigo-400/30 dark:bg-indigo-900/20 
+                  dark:text-indigo-300 dark:hover:bg-indigo-900/40
+                  transition-all duration-200 flex items-center justify-center gap-2
+                  focus:ring-2 focus:ring-indigo-500/30 focus:outline-none
+                  group-hover:border-indigo-500/40 dark:group-hover:border-indigo-400/50
+                "
+                      aria-label={`Add ${product.name} to cart`}
+                    >
+                      <ShoppingCart className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                      <span className="hidden xs:inline">Add to Cart</span>
+                      <span className="xs:inline">+</span>
+                    </motion.button>
+                  </div>
+
+                  {/* Hover Overlay for Quick Actions */}
+                  <motion.div
+                    className="
+                absolute inset-0 bg-black/5 dark:bg-white/5 
+                opacity-0 group-hover:opacity-100 
+                transition-opacity duration-200
+                flex items-center justify-center pointer-events-none
+                rounded-xl sm:rounded-2xl
+              "
+                    initial={{ opacity: 0 }}
+                    whileHover={{ opacity: 0.1 }}
                   >
-                    Add to Cart
-                  </Button>
+                    <motion.div
+                      className="text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      whileHover={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.2, delay: 0.1 }}
+                    >
+                      Quick View
+                    </motion.div>
+                  </motion.div>
                 </motion.div>
               ))}
             </AnimatePresence>
