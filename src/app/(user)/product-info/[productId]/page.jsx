@@ -61,7 +61,7 @@ import {
 import Link from "next/link";
 import { fetchProducts } from "@/store/slices/productSlices";
 import toast from "react-hot-toast";
-import { jwt_decode } from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 
 export default function ProductPage() {
   const dispatch = useDispatch();
@@ -195,7 +195,7 @@ export default function ProductPage() {
 
   function getUserIdFromToken(token) {
     try {
-      const decoded = jwt_decode(token);
+      const decoded = jwtDecode(token);
       return decoded?.userId || decoded?.sub;
     } catch (error) {
       return null;
