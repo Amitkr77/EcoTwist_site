@@ -320,12 +320,7 @@ export default function CartPage() {
     }
   }, [isGuestCart, enhancedItems, items, dispatch]);
 
-   useEffect(() => {
-    return () => {
-      debouncedUpdateCart.cancel();
-    };
-  }, [debouncedUpdateCart]);
-  
+
   // Suggested products
   const suggestedProducts = useMemo(() => {
     return allIds
@@ -509,7 +504,7 @@ export default function CartPage() {
       </div>
     );
   }
- 
+
 
   return (
     <div className="mt-16 min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900 pt-20 p-4 md:p-6">
