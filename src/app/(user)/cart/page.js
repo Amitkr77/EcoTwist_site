@@ -78,11 +78,6 @@ export default function CartPage() {
   useEffect(() => {
     const isGuest = checkAuthStatus();
 
-    console.log("=== Cart Page Mount ===");
-    console.log("Is guest:", isGuest);
-    console.log("Products in store:", Object.keys(productsById).length);
-
-    // Fetch products first to ensure we have product data for enrichment
     const loadProducts = async () => {
       try {
         const result = await dispatch(fetchProducts());
@@ -90,7 +85,6 @@ export default function CartPage() {
           console.log("✅ Products loaded successfully");
           console.log("Products count:", Object.keys(productsById).length);
 
-          // Small delay to ensure products are in store
           setTimeout(() => {
             console.log("🔄 Now fetching cart...");
             dispatch(fetchCart());
@@ -108,6 +102,7 @@ export default function CartPage() {
     return () => {
       dispatch(resetError());
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch, checkAuthStatus]);
 
   // Handle errors - don't show error toast on initial load for "fetch cart" errors
@@ -138,45 +133,48 @@ export default function CartPage() {
 
   // Debounced update for quantity
   const debouncedUpdateCart = useCallback(
-    debounce((item, newQuantity) => {
-      console.log("Updating quantity:", item.name, "from", item.quantity, "to", newQuantity);
-      if (newQuantity >= 0) {
-        if (newQuantity === 0) {
-          dispatch(
-            removeFromCart({
-              productId: item.productId, // Use string productId
-              variantSku: item.variantSku,
-            })
-          )
-            .unwrap()
-            .then(() => {
-              toast.info(`${item.name} removed from cart`);
-              console.log("✅ Item removed successfully");
-            })
-            .catch((err) => {
-              toast.error(err || "Failed to remove from cart");
-              console.error("❌ Remove failed:", err);
-            });
-        } else {
-          dispatch(
-            updateCart({
-              productId: item.productId, // Use string productId
-              variantSku: item.variantSku,
-              quantity: newQuantity,
-            })
-          )
-            .unwrap()
-            .then(() => {
-              toast.success(`Updated quantity for ${item.name}`);
-              console.log("✅ Quantity updated successfully");
-            })
-            .catch((err) => {
-              toast.error(err || "Failed to update cart");
-              console.error("❌ Update failed:", err);
-            });
+    (item, newQuantity) => {
+      const updateFn = (item, newQuantity) => {
+        if (newQuantity >= 0) {
+          if (newQuantity === 0) {
+            dispatch(
+              removeFromCart({
+                productId: item.productId,
+                variantSku: item.variantSku,
+              })
+            )
+              .unwrap()
+              .then(() => {
+                toast.info(`${item.name} removed from cart`);
+                console.log("✅ Item removed successfully");
+              })
+              .catch((err) => {
+                toast.error(err || "Failed to remove from cart");
+                console.error("❌ Remove failed:", err);
+              });
+          } else {
+            dispatch(
+              updateCart({
+                productId: item.productId,
+                variantSku: item.variantSku,
+                quantity: newQuantity,
+              })
+            )
+              .unwrap()
+              .then(() => {
+                toast.success(`Updated quantity for ${item.name}`);
+                console.log("✅ Quantity updated successfully");
+              })
+              .catch((err) => {
+                toast.error(err || "Failed to update cart");
+                console.error("❌ Update failed:", err);
+              });
+          }
         }
-      }
-    }, 500),
+      };
+      const debouncedFn = debounce(updateFn, 500);
+      debouncedFn(item, newQuantity);
+    },
     [dispatch]
   );
 
@@ -287,8 +285,8 @@ export default function CartPage() {
           typeof variant?.price === "number"
             ? variant.price
             : typeof product.variants?.[0]?.price === "number"
-            ? product.variants[0].price
-            : 0,
+              ? product.variants[0].price
+              : 0,
         variantName: variant?.name || variant?.sku || "",
         stock: product.stock || 999,
         quantity: item.quantity || 1,
@@ -506,11 +504,11 @@ export default function CartPage() {
       </div>
     );
   }
-
-  console.log("=== Cart Render ===");
-  console.log("Raw items from store:", items.length, "Enhanced items:", enhancedItems.length);
-  console.log("Total price:", totalPrice, "Total quantity:", totalQuantity);
-  console.log("Is guest cart:", isGuestCart);
+  useEffect(() => {
+    return () => {
+      debouncedUpdateCart.cancel();
+    };
+  }, [debouncedUpdateCart]);
 
   return (
     <div className="mt-16 min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900 pt-20 p-4 md:p-6">
@@ -780,9 +778,8 @@ export default function CartPage() {
             >
               <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">Order Summary</h3>
               <ChevronDown
-                className={`w-5 h-5 text-gray-600 dark:text-gray-300 transition-transform ${
-                  showSummary ? "rotate-180" : ""
-                }`}
+                className={`w-5 h-5 text-gray-600 dark:text-gray-300 transition-transform ${showSummary ? "rotate-180" : ""
+                  }`}
               />
             </button>
 
@@ -876,12 +873,10 @@ export default function CartPage() {
                     </h4>
                     <ul className="space-y-1 text-gray-700 dark:text-gray-300 list-disc pl-4">
                       <li>
-                        Use <code className="bg-blue-100 dark:bg-blue-800 px-1 py-0.5 rounded text-xs">"SAVE10"</code>{" "}
-                        for 10% off
+                        Use <code className="bg-blue-100 dark:bg-blue-800 px-1 py-0.5 rounded text-xs">SAVE10</code> for 10% off
                       </li>
                       <li>
-                        Get free shipping with{" "}
-                        <code className="bg-blue-100 dark:bg-blue-800 px-1 py-0.5 rounded text-xs">"FREESHIP"</code>
+                        Get free shipping with <code className="bg-blue-100 dark:bg-blue-800 px-1 py-0.5 rounded text-xs">FREESHIP</code>
                       </li>
                       {isGuestCart && (
                         <li>
