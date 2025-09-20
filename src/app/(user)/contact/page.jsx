@@ -632,52 +632,73 @@ export default function ContactPage() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.6 }}
-        className="py-16 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900 dark:to-blue-900 rounded-2xl"
+        className="py-8 sm:py-12 md:py-16 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900 dark:to-blue-900 rounded-xl"
+        aria-label="Customer testimonials"
       >
-        <Carousel className="relative max-w-7xl mx-auto ">
-          <div className="pl-2">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+        <div className="max-w-full sm:max-w-3xl md:max-w-5xl lg:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mb-6 sm:mb-8">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2 sm:mb-3">
               What Our Customers Say
             </h2>
-            <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300 ">
+            <p className="text-sm sm:text-base md:text-lg text-gray-600 dark:text-gray-300 max-w-2xl">
               Hear directly from our customers about their experiences with us.
               We’re proud to showcase their stories.
             </p>
           </div>
-          <div className="absolute top-5 right-20 ">
-            <CarouselPrevious className="bg-green-600 hover:bg-green-700 text-white" />
-            <CarouselNext className="bg-green-600 hover:bg-green-700 text-white" />
-          </div>
-          <CarouselContent className=" p-4">
-            {testimonials.map((testimonial, index) => (
-              <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3 ">
-                <Card className="bg-white dark:bg-gray-800 border-none shadow-md h-full">
-                  <CardContent className="p-6 flex flex-col justify-between h-full">
-                    <div className="flex mb-4">
-                      {[...Array(testimonial.rating)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className="h-5 w-5 text-yellow-400 fill-current"
-                        />
-                      ))}
-                    </div>
-                    <p className="text-gray-600 dark:text-gray-300 mb-4">
-                      {testimonial.content}
-                    </p>
-                    <div>
-                      <p className="font-semibold text-gray-900 dark:text-white">
-                        {testimonial.name}
+
+          <Carousel
+            className="relative"
+            opts={{
+              align: "start",
+              loop: true,
+            }}
+            aria-roledescription="carousel"
+          >
+            <div className="absolute -top-20 right-4 sm:right-20 sm:flex  z-10 hidden gap-2 sm:gap-3">
+              <CarouselPrevious
+                className="h-8 w-8 sm:h-9 sm:w-9 bg-green-600 hover:bg-green-700 text-white rounded-full shadow-sm"
+                aria-label="Previous testimonial"
+              />
+              <CarouselNext
+                className="h-8 w-8 sm:h-9 sm:w-9 bg-green-600 hover:bg-green-700 text-white rounded-full shadow-sm"
+                aria-label="Next testimonial"
+              />
+            </div>
+            <CarouselContent className="px-2 sm:px-4 -mx-2 sm:-mx-4">
+              {testimonials.map((testimonial, index) => (
+                <CarouselItem
+                  key={index}
+                  className="basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4 px-2 sm:px-3"
+                >
+                  <Card className="bg-white dark:bg-gray-800 border-none shadow-sm hover:shadow-md transition-shadow duration-200 h-full ">
+                    <CardContent className="p-4 sm:p-6 flex flex-col justify-between  sm:items-start items-center h-full gap-4">
+                      <div className="flex mb-2 sm:mb-3">
+                        {[...Array(testimonial.rating)].map((_, i) => (
+                          <Star
+                            key={i}
+                            className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-400 fill-current"
+                            aria-hidden="true"
+                          />
+                        ))}
+                      </div>
+                      <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 line-clamp-4 text-center sm:text-left">
+                        {testimonial.content}
                       </p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        {testimonial.role}
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-        </Carousel>
+                      <div>
+                        <p className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">
+                          {testimonial.name}
+                        </p>
+                        <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                          {testimonial.role}
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+          </Carousel>
+        </div>
       </motion.section>
     </div>
   );

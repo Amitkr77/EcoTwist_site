@@ -24,11 +24,21 @@ import {
   Tag,
   Filter,
   Zap,
-  Loader2 
+  Loader2,
 } from "lucide-react";
+
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import debounce from "lodash/debounce";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetFooter,
+  SheetClose,
+} from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
 
 export default function ProductsPage() {
   const dispatch = useDispatch();
@@ -885,7 +895,7 @@ export default function ProductsPage() {
 
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-6 py-3 rounded-lg border border-white/30 hover:bg-white/30 transition-all"
+              className="sm:flex hidden  items-center gap-2 bg-white/20 backdrop-blur-sm px-6 py-3 rounded-lg border border-white/30 hover:bg-white/30 transition-all "
               aria-label="Toggle filters"
             >
               <FunnelIcon className="h-5 w-5" />
@@ -1463,17 +1473,22 @@ export default function ProductsPage() {
         {/* Mobile Layout */}
         <div className="lg:hidden">
           {/* Mobile Header */}
-          <div className="flex justify-between items-center mb-8 p-4 bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700">
-            <div className="text-sm text-gray-600 dark:text-gray-400">
+          <div className="flex gap-2 items-center justify-between mb-6 p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 sm:hidden">
+            {/* Left: Product Count */}
+            <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">
               Showing {displayedProducts.length} products
             </div>
-            <div className="flex items-center gap-3 relative">
+
+            {/* Right: Filter Tabs and Sort Controls */}
+            <div className="flex items-center gap-2">
               {/* Swipeable Filter Tabs */}
-              <div
-                className="flex overflow-hidden rounded-lg border border-gray-300 bg-white dark:bg-gray-700"
+              {/* <div
+                className="flex overflow-hidden rounded-md border border-gray-300 bg-white dark:bg-gray-700"
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
+                role="tablist"
+                aria-label="Filter tabs"
               >
                 <motion.div
                   className="flex"
@@ -1482,48 +1497,58 @@ export default function ProductsPage() {
                 >
                   <motion.button
                     onClick={() => setActiveFilterTab("category")}
-                    whileTap={{ scale: 0.98 }}
-                    className={`px-4 py-2 text-sm transition-colors ${
+                    whileTap={{ scale: 0.95 }}
+                    className={`px-3 py-1.5 text-xs font-medium transition-colors ${
                       activeFilterTab === "category"
                         ? "bg-green-600 text-white"
                         : "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
                     }`}
+                    role="tab"
+                    aria-selected={activeFilterTab === "category"}
+                    aria-label="Filter by category"
                   >
                     Category
                   </motion.button>
                   <motion.button
                     onClick={() => setActiveFilterTab("price")}
-                    whileTap={{ scale: 0.98 }}
-                    className={`px-4 py-2 text-sm transition-colors ${
+                    whileTap={{ scale: 0.95 }}
+                    className={`px-3 py-1.5 text-xs font-medium transition-colors ${
                       activeFilterTab === "price"
                         ? "bg-green-600 text-white"
                         : "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
                     }`}
+                    role="tab"
+                    aria-selected={activeFilterTab === "price"}
+                    aria-label="Filter by price"
                   >
                     Price
                   </motion.button>
                 </motion.div>
+              </div> */}
+
+              {/* Sort and Filter Controls */}
+              <div className="flex items-center gap-4">
+                <select
+                  value={sortOption}
+                  onChange={(e) => handleSortChange(e.target.value)}
+                  className="border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1.5 text-xs bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-green-500 w-20"
+                  aria-label="Sort products"
+                >
+                  <option value="relevance">Sort</option>
+                  <option value="price-low-high">Price: Low to High</option>
+                  <option value="price-high-low">Price: High to Low</option>
+                  <option value="name">Name</option>
+                  <option value="rating">Rating</option>
+                </select>
+                <motion.button
+                  onClick={() => setShowFilters(true)}
+                  whileTap={{ scale: 0.95 }}
+                  className="p-1.5 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                  aria-label="Open filters"
+                >
+                  <FunnelIcon className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+                </motion.button>
               </div>
-
-              <motion.button
-                onClick={() => setShowFilters(true)}
-                whileTap={{ scale: 0.98 }}
-                className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-              >
-                <FunnelIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
-              </motion.button>
-
-              <select
-                value={sortOption}
-                onChange={(e) => handleSortChange(e.target.value)}
-                className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-green-500"
-              >
-                <option value="relevance">Sort</option>
-                <option value="price-low-high">Price Low-High</option>
-                <option value="price-high-low">Price High-Low</option>
-                <option value="name">Name</option>
-                <option value="rating">Rating</option>
-              </select>
             </div>
           </div>
 
@@ -1707,48 +1732,36 @@ export default function ProductsPage() {
         {/* Mobile Filter Modal */}
         <AnimatePresence>
           {showFilters && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 lg:hidden"
-              onClick={() => setShowFilters(false)}
-            >
-              <motion.div
-                initial={{ x: "100%" }}
-                animate={{ x: 0 }}
-                exit={{ x: "100%" }}
-                transition={{ type: "spring", bounce: 0.3 }}
-                className="absolute right-0 top-0 h-full w-80 bg-white dark:bg-gray-800 shadow-xl overflow-y-auto"
-                onClick={(e) => e.stopPropagation()}
+            <Sheet open={showFilters} onOpenChange={setShowFilters}>
+              <SheetContent
+                side="right"
+                className="w-80 bg-white dark:bg-gray-800 p-0 overflow-y-auto lg:hidden"
+                aria-describedby="filter-sheet-description"
               >
-                {/* Header */}
-                <div className="p-6 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
-                  <div className="flex justify-between items-center">
-                    <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
+                <SheetHeader className="p-4 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
+                  <div className="flex items-center justify-between">
+                    <SheetTitle className="text-lg font-semibold text-gray-800 dark:text-gray-100">
                       Filters
-                    </h3>
-                    <motion.button
-                      whileTap={{ scale: 0.9 }}
-                      onClick={() => setShowFilters(false)}
-                      className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                    >
-                      <X className="h-6 w-6" />
-                    </motion.button>
+                    </SheetTitle>
+                    <SheetClose asChild>
+                      <motion.button
+                        whileTap={{ scale: 0.9 }}
+                        className="p-2 rounded-full text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        aria-label="Close filters"
+                      >
+                        <X className="h-5 w-5" />
+                      </motion.button>
+                    </SheetClose>
                   </div>
-
-                  {/* Active Filters Summary */}
                   {activeFilters.length > 0 && (
-                    <div className="mt-4 flex flex-wrap gap-2">
+                    <div className="mt-3 flex flex-wrap gap-2">
                       {activeFilters.slice(0, 3).map((filter) => (
                         <motion.button
                           key={filter.id}
                           initial={{ opacity: 0, scale: 0.9 }}
                           animate={{ opacity: 1, scale: 1 }}
-                          onClick={() => {
-                            removeFilter(filter.id);
-                          }}
-                          className="flex items-center gap-1 px-2 py-1 bg-red-100 text-red-700 text-xs rounded-full hover:bg-red-200"
+                          onClick={() => removeFilter(filter.id)}
+                          className="flex items-center gap-1 px-2 py-1 bg-red-100 text-red-700 text-xs rounded-full hover:bg-red-200 dark:bg-red-900 dark:text-red-300 dark:hover:bg-red-800"
                         >
                           <span className="truncate max-w-16">
                             {filter.label}
@@ -1757,19 +1770,18 @@ export default function ProductsPage() {
                         </motion.button>
                       ))}
                       {activeFilters.length > 3 && (
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
                           +{activeFilters.length - 3} more
                         </span>
                       )}
                     </div>
                   )}
-                </div>
+                </SheetHeader>
 
-                {/* Content */}
-                <div className="p-6 space-y-6">
+                <div className="p-4 space-y-5">
                   {/* Quick Presets */}
                   <section>
-                    <h4 className="font-medium mb-3 text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                    <h4 className="font-medium mb-2 text-gray-700 dark:text-gray-300 flex items-center gap-2">
                       <Zap className="h-4 w-4 text-green-600" />
                       Quick Filters
                     </h4>
@@ -1785,10 +1797,11 @@ export default function ProductsPage() {
                             setShowFilters(false);
                           }}
                           whileHover={{ scale: 1.02 }}
-                          className="flex flex-col items-center gap-1 p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-green-50 dark:hover:bg-green-900/30 transition-all duration-200"
+                          whileTap={{ scale: 0.98 }}
+                          className="flex flex-col items-center gap-1 p-2 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-green-50 dark:hover:bg-green-900/30 transition-all duration-200"
                         >
-                          <span className="text-2xl">{preset.icon}</span>
-                          <span className="text-sm text-gray-600 dark:text-gray-300 text-center">
+                          <span className="text-xl">{preset.icon}</span>
+                          <span className="text-xs text-gray-600 dark:text-gray-300 text-center">
                             {preset.label}
                           </span>
                         </motion.button>
@@ -1798,10 +1811,10 @@ export default function ProductsPage() {
 
                   {/* Categories */}
                   <section>
-                    <h4 className="font-medium mb-3 text-gray-700 dark:text-gray-300">
+                    <h4 className="font-medium mb-2 text-gray-700 dark:text-gray-300">
                       Categories
                     </h4>
-                    <div className="space-y-2 max-h-32 overflow-y-auto">
+                    <div className="space-y-1 max-h-40 overflow-y-auto">
                       {[
                         "all",
                         ...categories.slice(0, 6).map((c) => c.name),
@@ -1811,15 +1824,13 @@ export default function ProductsPage() {
                           initial={{ opacity: 0, x: -10 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: idx * 0.02 }}
-                          onClick={() => {
-                            handleCategoryChange(cat);
-                            // Don't close modal immediately for better UX
-                          }}
-                          className={`block w-full text-left py-3 px-3 rounded-lg transition-all duration-200 ${
+                          onClick={() => handleCategoryChange(cat)}
+                          className={`block w-full text-left py-2 px-3 rounded-md text-sm transition-all duration-200 ${
                             selectedCategory === cat
                               ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300 font-medium"
                               : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                           }`}
+                          aria-pressed={selectedCategory === cat}
                         >
                           <div className="flex justify-between items-center">
                             <span>
@@ -1833,7 +1844,7 @@ export default function ProductsPage() {
                       ))}
                       {categories.length > 6 && (
                         <p className="text-xs text-gray-500 dark:text-gray-400 text-center py-2">
-                          +{categories.length - 6} more categories
+                          +{categories.length - 6} more
                         </p>
                       )}
                     </div>
@@ -1841,7 +1852,7 @@ export default function ProductsPage() {
 
                   {/* Tags */}
                   <section>
-                    <h4 className="font-medium mb-3 text-gray-700 dark:text-gray-300">
+                    <h4 className="font-medium mb-2 text-gray-700 dark:text-gray-300">
                       Tags
                     </h4>
                     <div className="flex flex-wrap gap-2">
@@ -1852,17 +1863,17 @@ export default function ProductsPage() {
                             initial={{ opacity: 0, scale: 0.9 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ delay: idx * 0.02 }}
-                            onClick={() => {
-                              handleTagChange(tag);
-                            }}
+                            onClick={() => handleTagChange(tag)}
                             whileHover={{ scale: 1.05 }}
-                            className={`px-3 py-1.5 rounded-full text-sm transition-all duration-200 ${
+                            whileTap={{ scale: 0.95 }}
+                            className={`px-2 py-1 rounded-full text-xs transition-all duration-200 ${
                               selectedTag === tag
                                 ? "bg-green-200 text-green-800 dark:bg-green-700 dark:text-green-200"
                                 : "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
                             }`}
+                            aria-pressed={selectedTag === tag}
                           >
-                            <span className="truncate max-w-16">
+                            <span className="truncate max-w-20">
                               {tag === "all" ? "All Tags" : tag}
                             </span>
                             <span className="ml-1 text-xs text-gray-400">
@@ -1876,11 +1887,11 @@ export default function ProductsPage() {
 
                   {/* Price Range */}
                   <section>
-                    <h4 className="font-medium mb-3 text-gray-700 dark:text-gray-300">
+                    <h4 className="font-medium mb-2 text-gray-700 dark:text-gray-300">
                       Price Range (₹)
                     </h4>
-                    <div className="space-y-3">
-                      <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400">
                         <span>₹{priceRange.min}</span>
                         <span>₹{priceRange.max}</span>
                       </div>
@@ -1898,7 +1909,8 @@ export default function ProductsPage() {
                             ),
                           })
                         }
-                        className="w-full"
+                        className="w-full accent-green-500"
+                        aria-label="Minimum price"
                       />
                       <input
                         type="range"
@@ -1914,44 +1926,34 @@ export default function ProductsPage() {
                             ),
                           })
                         }
-                        className="w-full"
+                        className="w-full accent-green-500"
+                        aria-label="Maximum price"
                       />
                     </div>
                   </section>
+                </div>
 
-                  {/* Action Buttons */}
-                  <div className="space-y-3 pt-4 border-t border-gray-200 dark:border-gray-700">
-                    <motion.button
+                <SheetFooter className="p-4 border-t border-gray-200 dark:border-gray-700 sticky bottom-0 bg-white dark:bg-gray-800">
+                  <div className="space-y-2">
+                    <Button
                       onClick={() => {
                         clearAllFilters();
                         setShowFilters(false);
                       }}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="w-full bg-gradient-to-r from-red-500 to-red-600 text-white py-3 rounded-lg font-medium hover:from-red-600 hover:to-red-700 transition-all duration-200"
+                      className="w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded-md font-medium transition-all duration-200"
                     >
                       Clear All Filters
-                    </motion.button>
-                    <motion.button
+                    </Button>
+                    <Button
                       onClick={() => setShowFilters(false)}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white py-3 rounded-lg font-medium hover:from-green-600 hover:to-emerald-700 transition-all duration-200"
+                      className="w-full bg-green-500 hover:bg-green-600 text-white py-2 rounded-md font-medium transition-all duration-200"
                     >
                       Apply Filters ({activeFilters.length})
-                    </motion.button>
+                    </Button>
                   </div>
-                </div>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="absolute inset-0 bg-black/50"
-                onClick={() => setShowFilters(false)}
-              />
-            </motion.div>
+                </SheetFooter>
+              </SheetContent>
+            </Sheet>
           )}
         </AnimatePresence>
       </div>

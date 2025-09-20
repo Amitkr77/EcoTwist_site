@@ -26,7 +26,6 @@ import { useDebounce } from "use-debounce";
 import toast from "react-hot-toast";
 import { mergeGuestCart, fetchCart } from "@/store/slices/cartSlice";
 
-
 // Constants for API endpoints
 const API_ENDPOINTS = {
   LOGIN: "/api/user/auth/login",
@@ -40,7 +39,11 @@ export default function LoginPage() {
   const dispatch = useDispatch();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ email: "", password: "" });
-  const [errors, setErrors] = useState({ email: "", password: "", general: "" });
+  const [errors, setErrors] = useState({
+    email: "",
+    password: "",
+    general: "",
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [forgotOpen, setForgotOpen] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
@@ -80,7 +83,7 @@ export default function LoginPage() {
 
     setIsLoading(true);
     setErrors((prev) => ({ ...prev, general: "" }));
-    
+
     try {
       const res = await fetch(API_ENDPOINTS.LOGIN, {
         method: "POST",
@@ -93,7 +96,7 @@ export default function LoginPage() {
       if (res.ok) {
         // Store the token
         localStorage.setItem("user-token", data.token);
-        
+
         // Decode token to get user ID
         try {
           const decoded = jwtDecode(data.token);
@@ -105,26 +108,32 @@ export default function LoginPage() {
           console.error("Failed to decode token:", decodeError);
         }
 
-        toast.success("Welcome back! Logging you in...", { duration: 2000 });
-
         // Check if there's a guest cart to merge
         const guestCart = localStorage.getItem("guest-cart");
         if (guestCart) {
           console.log("🛒 Guest cart detected, merging with auth cart...");
-          
+
           try {
             // Merge guest cart first
             await dispatch(mergeGuestCart()).unwrap();
             console.log("✅ Guest cart merged successfully");
-            
+
             // Show success message if items were merged
             const mergedCart = localStorage.getItem("guest-cart");
-            if (!mergedCart || mergedCart === '{"cart":{"items":[]},"timestamp":0}') {
-              toast.success("Your cart has been transferred!", { duration: 3000 });
+            if (
+              !mergedCart ||
+              mergedCart === '{"cart":{"items":[]},"timestamp":0}'
+            ) {
+              toast.success("Your cart has been transferred!", {
+                duration: 3000,
+              });
             }
           } catch (mergeError) {
             console.error("❌ Failed to merge guest cart:", mergeError);
-            toast.error("Login successful, but some cart items couldn't be transferred. Please add them again.", { duration: 5000 });
+            toast.error(
+              "Login successful, but some cart items couldn't be transferred. Please add them again.",
+              { duration: 5000 }
+            );
           }
         }
 
@@ -133,6 +142,8 @@ export default function LoginPage() {
           window.location.href = "/";
         }, 1500);
 
+        toast.success("Welcome back! Logging you in...", { duration: 2000 });
+        
       } else {
         setErrors((prev) => ({
           ...prev,
@@ -141,9 +152,9 @@ export default function LoginPage() {
       }
     } catch (err) {
       console.error("Login error:", err);
-      setErrors((prev) => ({ 
-        ...prev, 
-        general: "Network error. Please check your connection and try again." 
+      setErrors((prev) => ({
+        ...prev,
+        general: "Network error. Please check your connection and try again.",
       }));
     } finally {
       setIsLoading(false);
@@ -159,7 +170,7 @@ export default function LoginPage() {
 
     setResetLoading(true);
     setResetMessage("");
-    
+
     try {
       const res = await fetch(API_ENDPOINTS.FORGOT_PASSWORD, {
         method: "POST",
@@ -167,17 +178,23 @@ export default function LoginPage() {
         body: JSON.stringify({ email: resetEmail }),
       });
       const data = await res.json();
-      
+
       if (res.ok) {
-        setResetMessage("Password reset link sent! Check your email for instructions.");
+        setResetMessage(
+          "Password reset link sent! Check your email for instructions."
+        );
         toast.success("Reset link sent! Check your inbox.");
         setResetEmail("");
       } else {
-        setResetMessage(data.error || "Failed to send reset link. Please try again.");
+        setResetMessage(
+          data.error || "Failed to send reset link. Please try again."
+        );
       }
     } catch (err) {
       console.error("Forgot password error:", err);
-      setResetMessage("Network error. Please check your connection and try again.");
+      setResetMessage(
+        "Network error. Please check your connection and try again."
+      );
     } finally {
       setResetLoading(false);
     }
@@ -211,7 +228,9 @@ export default function LoginPage() {
                 value={formData.email}
                 onChange={handleChange}
                 className={`w-full border-teal-200 focus:border-teal-400 focus:ring-teal-400 transition-colors duration-200 ${
-                  errors.email ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""
+                  errors.email
+                    ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                    : ""
                 }`}
                 aria-invalid={!!errors.email}
                 aria-describedby={errors.email ? "email-error" : undefined}
@@ -239,10 +258,14 @@ export default function LoginPage() {
                   value={formData.password}
                   onChange={handleChange}
                   className={`w-full border-teal-200 focus:border-teal-400 focus:ring-teal-400 transition-colors duration-200 pr-10 ${
-                    errors.password ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""
+                    errors.password
+                      ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                      : ""
                   }`}
                   aria-invalid={!!errors.password}
-                  aria-describedby={errors.password ? "password-error" : undefined}
+                  aria-describedby={
+                    errors.password ? "password-error" : undefined
+                  }
                   disabled={isLoading}
                 />
                 <button
@@ -285,7 +308,10 @@ export default function LoginPage() {
         <CardFooter className="flex flex-col items-center space-y-3 pt-6 border-t border-gray-200">
           <p className="text-sm text-gray-600 text-center">
             Don’t have an account?{" "}
-            <Link href="/signup" className="text-teal-600 hover:underline font-medium">
+            <Link
+              href="/signup"
+              className="text-teal-600 hover:underline font-medium"
+            >
               Sign Up
             </Link>
           </p>
@@ -308,10 +334,15 @@ export default function LoginPage() {
               Reset Password
             </DialogTitle>
             <DialogDescription className="text-gray-600">
-              Enter your email address and we'll send you a link to reset your password.
+              Enter your email address and we'll send you a link to reset your
+              password.
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleForgotPassword} className="space-y-4" noValidate>
+          <form
+            onSubmit={handleForgotPassword}
+            className="space-y-4"
+            noValidate
+          >
             <div className="space-y-2">
               <label
                 htmlFor="reset-email"
@@ -330,17 +361,22 @@ export default function LoginPage() {
                 }}
                 className="w-full border-teal-200 focus:border-teal-400 focus:ring-teal-400 transition-colors duration-200"
                 aria-invalid={!!resetMessage && resetMessage.includes("error")}
-                aria-describedby={resetMessage ? "reset-email-error" : undefined}
+                aria-describedby={
+                  resetMessage ? "reset-email-error" : undefined
+                }
                 disabled={resetLoading}
                 required
               />
             </div>
             {resetMessage && (
-              <div className={`p-3 rounded-md text-sm ${
-                resetMessage.includes("error") || resetMessage.includes("failed")
-                  ? "bg-red-50 border border-red-200 text-red-700"
-                  : "bg-green-50 border border-green-200 text-green-700"
-              }`}>
+              <div
+                className={`p-3 rounded-md text-sm ${
+                  resetMessage.includes("error") ||
+                  resetMessage.includes("failed")
+                    ? "bg-red-50 border border-red-200 text-red-700"
+                    : "bg-green-50 border border-green-200 text-green-700"
+                }`}
+              >
                 {resetMessage}
               </div>
             )}
