@@ -1,22 +1,26 @@
+// /api/cart/add.js (or wherever your cart API is)
 import Cart from "@/models/Cart";
 import authMiddleware from "@/lib/authMiddleware";
 import Product from "@/models/Product";
+import dbConnect from '@/lib/mongodb';
 
 export default async function handler(req, res) {
+    await dbConnect();
+    
     const user = await authMiddleware(req, res);
     if (!user) return res.status(401).json({ message: 'Unauthorized' });
 
     try {
         if (req.method === 'POST') {
-            const { productId, variantSku, quantity } = req.body;
+            const { productId, variantSku, quantity = 1 } = req.body;
 
             // Validate the request body
-            if (!productId || !variantSku || !quantity || quantity <= 0) {
+            if (!productId || !variantSku || quantity <= 0) {
                 return res.status(400).json({ message: 'Invalid product data' });
             }
 
             // Fetch product and variant
-            const product = await Product.findById(productId);
+            const product = await Product.findById(productId).select('name variants hsnCode images');
             if (!product) return res.status(404).json({ message: 'Product not found' });
 
             const variant = product.variants.find(v => v.sku === variantSku);
@@ -38,20 +42,36 @@ export default async function handler(req, res) {
             if (existingCartItem) {
                 // Update item quantity in the cart if it exists
                 await Cart.updateOne(
-                    { userId: user.userId, 'items.productId': productId, 'items.variantSku': variantSku },
-                    { $inc: { 'items.$.quantity': quantity } }
+                    { 
+                        userId: user.userId, 
+                        'items.productId': productId, 
+                        'items.variantSku': variantSku 
+                    },
+                    { 
+                        $set: { 
+                            'items.$.name': product.name,
+                            'items.$.price': variant.price,
+                            'items.$.hsnCode': product.hsnCode || 'N/A',
+                            'items.$.image': primaryImage
+                        },
+                        $inc: { 'items.$.quantity': quantity } 
+                    }
                 );
                 const updatedCart = await Cart.findOne({ userId: user.userId });
-                return res.status(200).json({ message: 'Cart updated successfully', cart: updatedCart });
+                return res.status(200).json({ 
+                    message: 'Cart updated successfully', 
+                    cart: updatedCart 
+                });
             }
 
-            // Add new item to cart
+            // Add new item to cart with complete data
             const cartItem = {
                 productId,
                 variantSku,
-                name: product.name,
-                price: variant.price,
+                name: product.name, // ✅ Store product name
+                price: variant.price, // ✅ Store current price
                 quantity,
+                hsnCode: product.hsnCode || 'N/A', // ✅ Store HSN code
                 image: primaryImage
             };
 
@@ -61,19 +81,23 @@ export default async function handler(req, res) {
                 { new: true, upsert: true }
             );
 
-            return res.status(201).json({ message: 'Item added to cart', cart });
+            return res.status(201).json({ 
+                message: 'Item added to cart', 
+                cart 
+            });
         }
-
-
 
         if (req.method === 'GET') {
             // Fetch the user's cart, or default to an empty cart structure if none exists
-            let cart = await Cart.findOne({ userId: user.userId });
+            let cart = await Cart.findOne({ userId: user.userId }).populate({
+                path: 'items.productId',
+                select: 'name images' // Optional: populate for display
+            });
+            
             if (!cart) {
-                // If no cart document exists, create an empty one (optional but ensures consistency for future ops)
                 cart = await new Cart({ userId: user.userId, items: [] }).save();
             }
-            // Always return 200 with the cart (items will be [] if empty)
+            
             return res.status(200).json({ cart });
         }
 
@@ -92,7 +116,6 @@ export default async function handler(req, res) {
             return res.status(200).json({ message: 'Cart cleared successfully' });
         }
 
-        // Handle unsupported HTTP methods
         return res.status(405).json({ message: 'Method Not Allowed' });
     } catch (error) {
         console.error('Error in cart handler:', error);

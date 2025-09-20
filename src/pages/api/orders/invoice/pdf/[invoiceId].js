@@ -10,6 +10,39 @@ const formatCurrency = (amount) => {
   }).format(amount);
 };
 
+// Utility function to calculate GST based on HSN code and amount
+const calculateGST = (hsnCode, taxableAmount) => {
+  // Define GST rates based on HSN codes (simplified - update as per your tax rules)
+  const gstRates = {
+    // 0% GST items
+    '0': { rate: 0, cgst: 0, sgst: 0, igst: 0 },
+    // 5% GST items
+    '5': { rate: 5, cgst: 2.5, sgst: 2.5, igst: 5 },
+    // 12% GST items
+    '12': { rate: 12, cgst: 6, sgst: 6, igst: 12 },
+    // 18% GST items
+    '18': { rate: 18, cgst: 9, sgst: 9, igst: 18 },
+    // 28% GST items
+    '28': { rate: 28, cgst: 14, sgst: 14, igst: 28 },
+    // Default to 18% if HSN code doesn't match
+    'default': { rate: 18, cgst: 9, sgst: 9, igst: 18 }
+  };
+
+  // Extract rate from HSN code (last 2 digits)
+  const rateStr = hsnCode.slice(-2);
+  const rateKey = gstRates[rateStr] ? rateStr : 'default';
+
+  const taxInfo = gstRates[rateKey];
+
+  return {
+    rate: taxInfo.rate,
+    cgst: (taxableAmount * taxInfo.cgst / 100),
+    sgst: (taxableAmount * taxInfo.sgst / 100),
+    igst: (taxableAmount * taxInfo.igst / 100),
+    taxableAmount: taxableAmount
+  };
+};
+
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -24,10 +57,15 @@ export default async function handler(req, res) {
   try {
     await dbConnect();
 
-    const invoice = await Invoice.findOne({ invoiceId });
+    const invoice = await Invoice.findOne({ invoiceId })
+      .populate('orderId', 'orderNumber') // Optional: populate order details
+      .lean(); // Use lean for better performance with HTML generation
+
     if (!invoice) {
       return res.status(404).json({ error: 'Invoice not found' });
     }
+
+    console.log('Generating PDF for invoice:', invoice.invoiceId);
 
     const htmlContent = generateInvoiceHtml(invoice);
 
@@ -41,26 +79,56 @@ export default async function handler(req, res) {
 }
 
 function generateInvoiceHtml(invoice) {
-  const itemsHtml = invoice.items.map((item, index) => {
-    const total = item.quantity * item.price;
+  // Calculate tax for each item
+  const itemsWithTax = invoice.items.map((item) => {
+    const itemTotal = item.quantity * item.price;
+    const gstInfo = calculateGST(item.hsnCode, itemTotal);
 
+    return {
+      ...item,
+      itemTotal,
+      taxableAmount: gstInfo.taxableAmount,
+      cgst: gstInfo.cgst,
+      sgst: gstInfo.sgst,
+      igst: gstInfo.igst,
+      gstRate: gstInfo.rate,
+      taxAmount: gstInfo.cgst + gstInfo.sgst + gstInfo.igst
+    };
+  });
+
+  // Calculate totals
+  const subtotal = itemsWithTax.reduce((sum, item) => sum + item.taxableAmount, 0);
+  const totalTax = itemsWithTax.reduce((sum, item) => sum + item.taxAmount, 0);
+  const totalAmount = subtotal + totalTax + (invoice.shippingFee || 0);
+
+  // Use invoice.gstDetails if available, otherwise calculate
+  const gstDetails = invoice.gstDetails || {
+    cgst: itemsWithTax.reduce((sum, item) => sum + item.cgst, 0),
+    sgst: itemsWithTax.reduce((sum, item) => sum + item.sgst, 0),
+    igst: itemsWithTax.reduce((sum, item) => sum + item.igst, 0),
+    taxRate: totalTax > 0 ? (totalTax / subtotal * 100) : 0
+  };
+
+  const itemsHtml = itemsWithTax.map((item) => {
     return `
       <tr>
-        <td>INV-${invoice.invoiceId}</td>
+        <td>${item.hsnCode}</td>
         <td>${item.name}</td>
-        <td>${formatCurrency(item.price * item.quantity)}</td>
-        <td>${formatCurrency(item.igst || 0)}</td>
-        <td>${formatCurrency(item.sgst || 0)}</td>
-        <td>${formatCurrency(item.cgst || 0)}</td>
+        <td style="text-align: right;">${formatCurrency(item.taxableAmount)}</td>
+        <td style="text-align: right;">${formatCurrency(item.igst)}</td>
+        <td style="text-align: right;">${formatCurrency(item.sgst)}</td>
+        <td style="text-align: right;">${formatCurrency(item.cgst)}</td>
         <td style="text-align: center;">${item.quantity}</td>
         <td style="text-align: right;">${formatCurrency(item.price)}</td>
-        <td style="text-align: right;">${formatCurrency(total)}</td>
+        <td style="text-align: right;">${formatCurrency(item.itemTotal)}</td>
       </tr>
     `;
   }).join('');
 
-  const issueDate = format(new Date(invoice.createdAt), 'dd MMM yyyy');
-  const dueDate = format(new Date(invoice.dueDate || invoice.createdAt), 'dd MMM yyyy');
+  const issueDate = format(new Date(invoice.issueDate || invoice.createdAt), 'dd MMM yyyy');
+  const dueDate = format(new Date(invoice.dueDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)), 'dd MMM yyyy');
+  console.log(invoice);
+
 
   return `
     <!DOCTYPE html>
@@ -71,105 +139,187 @@ function generateInvoiceHtml(invoice) {
       <style>
         @page {
           size: A4;
-          margin: 20mm;
+          margin: 15mm;
         }
 
         body {
-          font-family: 'Segoe UI', 'Helvetica Neue', sans-serif;
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
           margin: 0;
           padding: 0;
           color: #333;
           background-color: #fff;
+          font-size: 12px;
+          line-height: 1.4;
         }
 
         .container {
-          width: 90%;
-          max-width: 900px;
+          width: 100%;
+          max-width: 800px;
           margin: auto;
-          padding: 30px;
+          padding: 20px;
         }
 
         .header {
           display: flex;
           justify-content: space-between;
-          align-items: center;
-          border-bottom: 2px solid #e0e0e0;
+          align-items: flex-start;
+          border-bottom: 3px double #e0e0e0;
           padding-bottom: 20px;
+          margin-bottom: 20px;
+        }
+
+        .logo {
+          flex: 1;
         }
 
         .logo img {
-          width: 160px;
+          width: 120px;
           height: auto;
         }
 
         .company-details {
+          flex: 2;
           text-align: right;
-          font-size: 14px;
-          line-height: 1.6;
+          font-size: 11px;
+          line-height: 1.5;
+        }
+
+        .company-details h3 {
+          margin: 0 0 8px 0;
+          color: #2c5aa0;
+          font-size: 16px;
+        }
+
+        .invoice-title {
+          text-align: center;
+          margin: 20px 0;
+          font-size: 24px;
+          font-weight: bold;
+          color: #2c5aa0;
         }
 
         .invoice-metadata {
           display: flex;
           justify-content: space-between;
-          margin: 30px 0;
-          font-size: 14px;
+          margin: 20px 0;
+          font-size: 11px;
         }
 
-        .invoice-metadata h2 {
-          margin-bottom: 10px;
+        .metadata-section {
+          flex: 1;
+          margin: 0 10px;
+        }
+
+        .metadata-section h4 {
+          margin: 0 0 8px 0;
+          font-size: 12px;
+          color: #666;
+          border-bottom: 1px solid #e0e0e0;
+          padding-bottom: 2px;
         }
 
         table {
           width: 100%;
           border-collapse: collapse;
-          margin: 30px 0;
-          font-size: 14px;
+          margin: 20px 0;
+          font-size: 10px;
         }
 
         table thead {
-          background-color: #f9f9f9;
+          background-color: #f8f9fa;
+          border-bottom: 2px solid #dee2e6;
         }
 
         table th, table td {
-          border: 1px solid #e0e0e0;
-          padding: 10px;
+          border: 1px solid #dee2e6;
+          padding: 8px 6px;
           text-align: left;
+          vertical-align: top;
         }
 
         table th {
           font-weight: 600;
+          color: #495057;
+          background-color: #f8f9fa;
+          text-align: center;
         }
 
-        .totals {
+        .amount-right {
+          text-align: right !important;
+        }
+
+        .center {
+          text-align: center !important;
+        }
+
+        .totals-table {
           width: 50%;
           margin-left: auto;
-          font-size: 14px;
+          margin-top: 20px;
+          font-size: 11px;
         }
 
-        .totals div {
+        .totals-table td {
+          padding: 6px 8px;
+          border: 1px solid #dee2e6;
+        }
+
+        .total-row {
+          font-weight: bold;
+          background-color: #f8f9fa;
+          font-size: 12px;
+        }
+
+        .gst-breakdown {
+          margin-top: 10px;
+          font-size: 10px;
+        }
+
+        .gst-breakdown div {
           display: flex;
           justify-content: space-between;
-          padding: 6px 0;
-        }
-
-        .total-line {
-          font-weight: bold;
-          font-size: 16px;
-          border-top: 2px solid #444;
-          padding-top: 10px;
-          margin-top: 10px;
+          padding: 2px 0;
         }
 
         .status {
-          margin-top: 20px;
-          font-size: 14px;
+          margin: 20px 0;
+          padding: 10px;
+          border: 1px solid #dee2e6;
+          border-radius: 4px;
+          font-size: 11px;
+        }
+
+        .status.paid {
+          background-color: #d4edda;
+          border-color: #c3e6cb;
+          color: #155724;
+        }
+
+        .status.unpaid {
+          background-color: #f8d7da;
+          border-color: #f5c6cb;
+          color: #721c24;
         }
 
         .footer {
-          text-align: center;
-          font-size: 12px;
-          color: #777;
           margin-top: 40px;
+          text-align: center;
+          font-size: 10px;
+          color: #6c757d;
+          border-top: 1px solid #dee2e6;
+          padding-top: 15px;
+        }
+
+        .payment-terms {
+          margin-top: 20px;
+          font-size: 10px;
+          color: #6c757d;
+          text-align: justify;
+        }
+
+        @media print {
+          body { -webkit-print-color-adjust: exact; }
+          .container { padding: 0; }
         }
       </style>
     </head>
@@ -181,42 +331,61 @@ function generateInvoiceHtml(invoice) {
             <img src="https://ecotwist.in/logo.png" alt="EcoTwist Logo" />
           </div>
           <div class="company-details">
-            <strong>EcoTwist Innovations Pvt. Ltd.</strong><br />
-            Mauryalok Complex, Patna, Bihar 800001<br />
-            info@ecotwist.in<br />
-            +1 (123) 456-7890
+            <h3>EcoTwist Innovations Pvt. Ltd.</h3>
+            <div>Mauryalok Complex</div>
+            <div>Patna, Bihar 800001</div>
+            <div>Email: info@ecotwist.in</div>
+            <div>Phone: +91 987-654-3210</div>
+            <div>GSTIN: 10ABCDE1234F1Z5</div>
           </div>
         </div>
 
-        <!-- Invoice Info -->
+        <!-- Invoice Title -->
+        <div class="invoice-title">TAX INVOICE</div>
+
+        <!-- Invoice Metadata -->
         <div class="invoice-metadata">
-          <div>
-            <h2>Invoice #${invoice.invoiceId}</h2>
-            <p>Issue Date: ${issueDate}<br />Due Date: ${dueDate}</p>
+          <div class="metadata-section">
+            <h4>Invoice Details</h4>
+            <div><strong>Invoice #:</strong> ${invoice.invoiceId}</div>
+            <div><strong>Issue Date:</strong> ${issueDate}</div>
+            <div><strong>Due Date:</strong> ${dueDate}</div>
+            ${invoice.orderId ? `<div><strong>Order #:</strong> ${invoice.orderId.orderNumber}</div>` : ''}
           </div>
-          <div>
-            <strong>Bill To:</strong><br />
-            ${invoice.billingAddress.fullName}<br />
-            ${invoice.billingAddress.street}<br />
-            ${invoice.billingAddress.city}, ${invoice.billingAddress.state} ${invoice.billingAddress.postalCode}<br />
-            ${invoice.billingAddress.country}<br />
-            ${invoice.billingAddress.phone}
+          
+          <div class="metadata-section">
+            <h4>Bill To:</h4>
+            <div>${invoice.billingAddress.fullName}</div>
+            <div>${invoice.billingAddress.street || ''}</div>
+            <div>${invoice.billingAddress.city}, ${invoice.billingAddress.state}</div>
+            <div>${invoice.billingAddress.postalCode}, ${invoice.billingAddress.country}</div>
+            <div>Phone: ${invoice.billingAddress.phone}</div>
+          </div>
+          
+          <div class="metadata-section">
+            <h4>Ship To:</h4>
+            <div>${invoice.billingAddress.fullName}</div>
+            <div>${invoice.billingAddress.street || ''}</div>
+            <div>${invoice.billingAddress.city}, ${invoice.billingAddress.state}</div>
+            <div>${invoice.billingAddress.postalCode}, ${invoice.billingAddress.country}</div>
+            <div>Phone: ${invoice.billingAddress.phone}</div>
           </div>
         </div>
 
-        <!-- Item Table -->
+        <!-- Items Table -->
         <table>
           <thead>
             <tr>
-              <th>HSN</th>
-              <th>Product</th>
-              <th>Taxable</th>
-              <th>IGST</th>
-              <th>SGST</th>
-              <th>CGST</th>
-              <th>Qty</th>
-              <th>Unit Price</th>
-              <th>Total</th>
+              <th style="width: 8%;">HSN</th>
+              <th style="width: 30%;">Product Description</th>
+              <th style="width: 8%;">Rate (%)</th>
+              <th style="width: 10%; class="amount-right">Taxable Value</th>
+              <th style="width: 8%; class="amount-right">CGST</th>
+              <th style="width: 8%; class="amount-right">SGST</th>
+              <th style="width: 8%; class="amount-right">IGST</th>
+              <th style="width: 6%; class="center">Qty</th>
+              <th style="width: 8%; class="amount-right">Unit Price</th>
+              <th style="width: 10%; class="amount-right">Total</th>
             </tr>
           </thead>
           <tbody>
@@ -224,24 +393,54 @@ function generateInvoiceHtml(invoice) {
           </tbody>
         </table>
 
-        <!-- Totals -->
-        <div class="totals">
-          <div><span>Subtotal:</span> <span>${formatCurrency(invoice.subtotal)}</span></div>
-          <div><span>Tax:</span> <span>${formatCurrency(invoice.tax)}</span></div>
-          <div><span>Shipping:</span> <span>${formatCurrency(invoice.shippingFee)}</span></div>
-          <div class="total-line"><span>Total:</span> <span>${formatCurrency(invoice.totalAmount)}</span></div>
+        <!-- Totals Table -->
+        <table class="totals-table">
+          <tr>
+            <td style="width: 60%;">Subtotal (Taxable Value):</td>
+            <td style="width: 40%; text-align: right;">${formatCurrency(subtotal)}</td>
+          </tr>
+          <tr>
+            <td>Add: CGST @ ${gstDetails.cgst > 0 ? ((gstDetails.cgst / subtotal) * 100).toFixed(2) : '0'}%:</td>
+            <td class="amount-right">${formatCurrency(gstDetails.cgst)}</td>
+          </tr>
+          <tr>
+            <td>Add: SGST @ ${gstDetails.sgst > 0 ? ((gstDetails.sgst / subtotal) * 100).toFixed(2) : '0'}%:</td>
+            <td class="amount-right">${formatCurrency(gstDetails.sgst)}</td>
+          </tr>
+          <tr>
+            <td>Add: IGST @ ${gstDetails.igst > 0 ? ((gstDetails.igst / subtotal) * 100).toFixed(2) : '0'}%:</td>
+            <td class="amount-right">${formatCurrency(gstDetails.igst)}</td>
+          </tr>
+          ${invoice.shippingFee > 0 ? `
+          <tr>
+            <td>Add: Shipping Charges:</td>
+            <td class="amount-right">${formatCurrency(invoice.shippingFee)}</td>
+          </tr>
+          ` : ''}
+          <tr class="total-row">
+            <td><strong>Total Amount:</strong></td>
+            <td class="amount-right"><strong>${formatCurrency(totalAmount)}</strong></td>
+          </tr>
+        </table>
+
+        <!-- Payment Status -->
+        <div class="status ${invoice.paymentStatus}">
+          <strong>Payment Status:</strong> ${invoice.paymentStatus.toUpperCase()} | 
+          <strong>Method:</strong> ${invoice.paymentMethod.toUpperCase()}
         </div>
 
-        <!-- Payment Info -->
-        <div class="status">
-          <p><strong>Payment Method:</strong> ${invoice.paymentMethod.toUpperCase()}</p>
-          <p><strong>Status:</strong> ${invoice.paymentStatus.toUpperCase()}</p>
+        <!-- Payment Terms -->
+        <div class="payment-terms">
+          <h4 style="margin-top: 20px; font-size: 11px; color: #666;">Payment Terms:</h4>
+          <p>Payment is due within 30 days from invoice date. Late payments may attract interest @ 18% per annum. 
+          All disputes must be raised within 7 days of invoice date.</p>
         </div>
 
         <!-- Footer -->
         <div class="footer">
-          <p>Thank you for shopping with EcoTwist!</p>
-          <p><strong>Terms:</strong> Payment due within 30 days of invoice date.</p>
+          <p>Thank you for your business with <strong>EcoTwist Innovations Pvt. Ltd.</strong></p>
+          <p>This is a computer-generated invoice and does not require a signature.</p>
+          <p>For queries, contact us at info@ecotwist.in or +91 987-654-3210</p>
         </div>
       </div>
     </body>
