@@ -62,9 +62,10 @@ export default function CTA() {
               product updates, and exclusive eco-deals delivered straight to
               your inbox.
             </p>
+
             <form
               onSubmit={handleNewsletterSubmit}
-              className="flex flex-col sm:flex-row gap-4 max-w-lg mx-auto mt-6"
+              className="flex flex-col items-center sm:flex-row sm:items-stretch gap-4 mx-auto mt-6"
             >
               <Input
                 type="email"
@@ -72,15 +73,15 @@ export default function CTA() {
                 value={newsletterEmail}
                 onChange={(e) => setNewsletterEmail(e.target.value)}
                 required
-                className="rounded-full border-green-300/50 text-green-900 focus:ring-green-400 bg-white/90 placeholder-green-300 flex-1"
-              />
+                className="rounded-full border-green-300/50 text-green-900 focus:ring-green-400 bg-white/90 placeholder-green-300 w-64 sm:w-80 md:w-96"/>
               <Button
                 type="submit"
-                className="bg-white text-green-700 hover:bg-green-100 rounded-full px-8 py-3 font-semibold shadow-lg"
+                className=" bg-white text-green-700 hover:bg-green-100 rounded-full px-6 py-3 font-semibold shadow-lg w-40 sm:w-auto"
               >
                 Subscribe Now
               </Button>
             </form>
+
             <p className="text-xs text-green-200 mt-2">
               No spam, ever. Unsubscribe anytime. 🌍
             </p>

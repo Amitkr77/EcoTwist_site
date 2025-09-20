@@ -87,9 +87,9 @@ export default function ReturnRefundPolicy() {
         <ul className="list-disc pl-6 mb-6">
           <li>Used or Altered Products</li>
           <li>Custom or Personalized Items</li>
-          <li>Perishable Goods</li>
+          
           <li>Final Sale Items</li>
-          <li>Digital Goods (e-books, software, gift cards)</li>
+          
         </ul>
 
         <Section

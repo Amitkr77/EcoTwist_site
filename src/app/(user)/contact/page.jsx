@@ -49,6 +49,7 @@ import {
   Star,
   Leaf,
   Loader2,
+  Phone,
 } from "lucide-react";
 import {
   FaFacebookF,
@@ -141,9 +142,17 @@ const faqs = [
   },
 ];
 
+
+
+
 export default function ContactPage() {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [newsletterEmail, setNewsletterEmail] = useState("");
+
+
+   const whatsappNumber = "917091323777";
+  const whatsappLink = `https://wa.me/${whatsappNumber}`;
+  const whatsappCall = `tel:+${whatsappNumber}`;
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -450,7 +459,7 @@ export default function ContactPage() {
                       href="mailto:info@ecotwist.in"
                       className="text-gray-600 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400"
                     >
-                      info@ecotwist.in
+                      contact@ecotwist.in
                     </a>
                   </div>
                 </div>
@@ -485,7 +494,7 @@ export default function ContactPage() {
                       Phone
                     </p>
                     <p className="text-gray-600 dark:text-gray-300">
-                      +91 987-654-3210
+                      +91 709-132-3777
                     </p>
                   </div>
                 </div>
@@ -595,35 +604,52 @@ export default function ContactPage() {
 
         {/* Live Chat Dialog */}
         <Dialog open={isChatOpen} onOpenChange={setIsChatOpen}>
-          <DialogTrigger asChild>
-            <Button
-              className="fixed bottom-6 right-6 bg-green-600 hover:bg-green-700 text-white rounded-full p-4 shadow-2xl z-50"
-              aria-label="Open live chat"
-            >
-              <MessageCircle className="h-6 w-6" />
+      {/* Floating WhatsApp Button */}
+      <DialogTrigger asChild>
+        <Button
+          className="fixed bottom-6 right-6 bg-green-600 hover:bg-green-700 text-white rounded-full p-4 shadow-2xl z-50"
+          aria-label="Open WhatsApp Support"
+        >
+          <MessageCircle className="h-6 w-6" />
+        </Button>
+      </DialogTrigger>
+
+      {/* Dialog Content */}
+      <DialogContent className="bg-white dark:bg-gray-800 border-none shadow-2xl rounded-2xl">
+        <DialogHeader>
+          <DialogTitle className="text-gray-900 dark:text-white">
+            WhatsApp Support
+          </DialogTitle>
+        </DialogHeader>
+        <div className="p-6 text-center">
+          <Headphones className="h-12 w-12 text-green-600 dark:text-green-400 mx-auto mb-4" />
+          <p className="text-gray-600 dark:text-gray-300 mb-6">
+            Connect with us instantly on WhatsApp for chat or call support.
+          </p>
+
+          {/* Chat on WhatsApp */}
+          <a href={whatsappLink} target="_blank" rel="noopener noreferrer">
+            <Button className="bg-green-600 hover:bg-green-700 text-white w-full mb-3">
+              Chat on WhatsApp
             </Button>
-          </DialogTrigger>
-          <DialogContent className="bg-white dark:bg-gray-800 border-none shadow-2xl rounded-2xl">
-            <DialogHeader>
-              <DialogTitle className="text-gray-900 dark:text-white">
-                Live Chat Support
-              </DialogTitle>
-            </DialogHeader>
-            <div className="p-6 text-center">
-              <Headphones className="h-12 w-12 text-green-600 dark:text-green-400 mx-auto mb-4" />
-              <p className="text-gray-600 dark:text-gray-300 mb-6">
-                Connect with our team for real-time assistance during business
-                hours (Mon-Sat, 9 AM - 6 PM).
-              </p>
-              <Button
-                onClick={() => setIsChatOpen(false)}
-                className="bg-green-600 hover:bg-green-700 text-white"
-              >
-                Close
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+          </a>
+
+          {/* Call on WhatsApp (or normal phone call) */}
+          <a href={whatsappCall}>
+            <Button className="bg-green-500 hover:bg-green-600 text-white w-full">
+              Call Us on WhatsApp
+            </Button>
+          </a>
+
+          <Button
+            onClick={() => setIsChatOpen(false)}
+            className="mt-4 bg-gray-300 hover:bg-gray-400 text-gray-800 w-full"
+          >
+            Close
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
       </div>
 
       {/* Testimonials Carousel */}
