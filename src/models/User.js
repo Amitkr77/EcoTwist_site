@@ -119,7 +119,7 @@ userSchema.virtual('cart', {
   ref: 'Cart',
   localField: '_id',
   foreignField: 'userId',
-  justOne: true, 
+  justOne: true,
 });
 
 userSchema.virtual('address', {
@@ -128,12 +128,58 @@ userSchema.virtual('address', {
   foreignField: 'userId',
 });
 
-userSchema.virtual("orders", {
-  ref: "Order",
-  localField: "_id",
-  foreignField: "userId",
+// Virtual for orders (with proper deep population)
+userSchema.virtual('orders', {
+  ref: 'Order',
+  localField: '_id',
+  foreignField: 'userId',
+
 });
 
+// Synchronous virtual for total orders count (approximation)
+userSchema.virtual('totalOrders').get(function () {
+  // This is an approximation - for exact count, use a separate query
+  return this.orders ? this.orders.length : 0;
+});
+
+// Remove async virtuals and replace with static methods
+userSchema.statics.getTotalSpent = async function (userId) {
+  const orders = await this.model('Order').aggregate([
+    { $match: { userId: mongoose.Types.ObjectId(userId) } },
+    { $group: { _id: null, total: { $sum: '$totalAmount' } } }
+  ]);
+  return orders[0]?.total || 0;
+};
+
+userSchema.statics.getLatestOrder = async function (userId) {
+  return await this.model('Order').findOne({ userId })
+    .sort({ createdAt: -1 })
+    .populate('invoice')
+    .populate('items.productId');
+};
+
+userSchema.statics.getOrderStats = async function (userId) {
+  const pipeline = [
+    { $match: { userId: mongoose.Types.ObjectId(userId) } },
+    {
+      $group: {
+        _id: {
+          $dateToString: {
+            format: '%Y-%m',
+            date: '$createdAt'
+          }
+        },
+        count: { $sum: 1 },
+        total: { $sum: '$totalAmount' },
+        orders: { $push: '$_id' }
+      }
+    },
+    { $sort: { '_id': -1 } },
+    { $limit: 6 }
+  ];
+
+  return await this.model('Order').aggregate(pipeline);
+};
 
 // // Middleware
 userSchema.pre('save', async function (next) {

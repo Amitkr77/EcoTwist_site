@@ -1,13 +1,35 @@
+// /models/cart.js
 import mongoose from 'mongoose';
 
 const { Schema } = mongoose;
 
 const CartItemSchema = new Schema({
-    productId: { type: Schema.Types.ObjectId, ref: 'Product', required: true },
+    productId: { 
+        type: Schema.Types.ObjectId, 
+        ref: 'Product', 
+        required: true 
+    },
     variantSku: String,
-    name: String,
-    price: Number,
-    quantity: { type: Number, required: true, min: 1 },
+    name: { 
+        type: String, 
+        required: true 
+    }, // ✅ Make required
+    price: { 
+        type: Number, 
+        required: true, 
+        min: 0 
+    }, // ✅ Make required
+    quantity: { 
+        type: Number, 
+        required: true, 
+        min: 1 
+    },
+    hsnCode: { 
+        type: String, 
+        required: true, 
+        default: 'N/A' 
+    }, // ✅ Added HSN code
+    image: String, // Keep existing image field
 });
 
 const CartSchema = new Schema({

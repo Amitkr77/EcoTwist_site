@@ -1,5 +1,4 @@
 // /models/invoice.js
-
 import mongoose from 'mongoose';
 
 const { Schema } = mongoose;
@@ -15,19 +14,36 @@ const AddressSchema = new Schema({
   country: String,
 }, { _id: false });
 
-// Reuse your cart item snapshot
+// Updated CartItemSchema with HSN code and total
 const CartItemSchema = new Schema({
   productId: {
     type: Schema.Types.ObjectId,
     ref: 'Product',
     required: true,
   },
-  name: String,
-  price: Number,
+  name: {
+    type: String,
+    required: true,
+  },
+  price: {
+    type: Number,
+    required: true,
+    min: 0,
+  },
   quantity: {
     type: Number,
     required: true,
     min: 1,
+  },
+  hsnCode: {
+    type: String,
+    required: true,
+    default: 'N/A',
+  },
+  total: {
+    type: Number,
+    required: true,
+    min: 0,
   },
 }, { _id: false });
 
@@ -46,6 +62,7 @@ const InvoiceSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'Order',
     required: true,
+    unique: true, // Ensure one invoice per order
   },
   userId: {
     type: Schema.Types.ObjectId,
@@ -72,10 +89,12 @@ const InvoiceSchema = new Schema({
   tax: {
     type: Number,
     default: 0,
+    min: 0,
   },
   shippingFee: {
     type: Number,
     default: 0,
+    min: 0,
   },
   totalAmount: {
     type: Number,
@@ -92,8 +111,36 @@ const InvoiceSchema = new Schema({
     enum: ['paid', 'unpaid'],
     default: 'unpaid',
   },
+  // Optional: GST details for Indian compliance
+  gstDetails: {
+    cgst: { type: Number, default: 0, min: 0 },
+    sgst: { type: Number, default: 0, min: 0 },
+    igst: { type: Number, default: 0, min: 0 },
+    taxRate: { type: Number, default: 0 }, // e.g., 18 for 18%
+  },
 }, {
-  timestamps: true, 
+  timestamps: true,
+});
+
+// Ensure unique index on orderId
+InvoiceSchema.index({ orderId: 1 }, { unique: true });
+
+// Pre-save middleware to validate totals
+InvoiceSchema.pre('save', function (next) {
+  // Validate that totalAmount matches calculated total
+  const calculatedTotal = this.items.reduce((sum, item) => sum + item.total, 0) +
+    (this.tax || 0) + (this.shippingFee || 0);
+
+  if (Math.abs(this.totalAmount - calculatedTotal) > 0.01) {
+    return next(new Error('Total amount does not match calculated total'));
+  }
+
+  // Auto-generate invoiceId if not provided
+  if (this.isNew && !this.invoiceId) {
+    this.invoiceId = generateInvoiceId();
+  }
+
+  next();
 });
 
 export default mongoose.models.Invoice || mongoose.model('Invoice', InvoiceSchema);

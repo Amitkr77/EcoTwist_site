@@ -20,10 +20,12 @@ export default async function handler(req, res) {
                 searchQuery = { orderId: id };
             }
             // Retrieve the item by ID
-            const order = await Order.findOne(searchQuery).populate({
-                path: 'invoice',
-                options: { strictPopulate: false },
-            });
+            const order = await Order.findOne(searchQuery)
+                .populate({
+                    path: 'invoice',
+                    select: 'invoiceId issueDate billingAddress items subtotal tax shippingFee totalAmount paymentMethod paymentStatus gstDetails',
+                })
+                .lean();
 
             if (!order) {
                 return res.status(404).json({ message: 'Order not found' });

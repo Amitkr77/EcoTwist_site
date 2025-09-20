@@ -29,48 +29,85 @@ export default async function handler(req, res) {
   try {
     if (req.method === "GET") {
       // Verify JWT token
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      let decoded;
+      try {
+        decoded = jwt.verify(token, process.env.JWT_SECRET);
+      } catch (error) {
+        return res.status(401).json({ error: "Invalid or expired token" });
+      }
 
       // Fetch user details with all related data
       const userToFetch = await User.findById(id)
-        .populate("wishlist")
-        .populate("cart")
-        .populate("address")
+        .populate({
+          path: "wishlist",
+          populate: {
+            path: "items",
+            populate: { path: "productId", select: "name images price" },
+          },
+        })
+        .populate({
+          path: "cart",
+          populate: {
+            path: "items",
+            populate: { path: "productId", select: "name images price" },
+          },
+        })
+        .populate({
+          path: "address",
+          select: "street city state country postalCode isDefault",
+        })
         .populate({
           path: "orders",
-          options: { sort: { orderDate: -1 } },
+          options: {
+            sort: { createdAt: -1 },
+            limit: 10,
+          },
           populate: [
-            { path: "invoice", model: "Invoice" },
-            { path: "items.productId", model: "Product" }, // nested populate
+            {
+              path: "invoice",
+              model: "Invoice",
+              select: "invoiceNumber totalAmount status paymentStatus createdAt",
+            },
+            {
+              path: "items.productId",
+              model: "Product",
+              select: "name images hsnCode price category",
+            },
           ],
         });
-
 
       if (!userToFetch) {
         return res.status(404).json({ error: "User not found" });
       }
 
       // Check if the logged-in user is trying to access their own profile or is an admin
-      if (
-        decoded.id !== userToFetch._id.toString() &&
-        decoded.role !== "admin"
-      ) {
+      if (decoded.id !== userToFetch._id.toString() && decoded.role !== "admin") {
         return res.status(403).json({
-          error:
-            "Forbidden: You are not authorized to access this user profile",
+          error: "Forbidden: You are not authorized to access this user profile",
         });
       }
+
+      // Get additional stats using static methods
+      const [totalSpent, orderStats] = await Promise.all([
+        User.getTotalSpent(id).catch(() => 0), // Fallback to 0 if error
+        User.getOrderStats(id).catch(() => []), // Fallback to empty array if error
+      ]);
 
       // Sanitize the user object
       const userObj = userToFetch.toObject();
       delete userObj.password;
-      // delete userObj.refreshToken;
       delete userObj.__v;
-
+      delete userObj.otp;
+      delete userObj.otpExpiresAt;
 
       return res.status(200).json({
         message: "User profile fetched successfully",
-        user: userObj,
+        user: {
+          ...userObj,
+          totalSpent,
+          orderStats,
+          totalOrders: userObj.orders?.length || 0,
+        },
       });
     }
 
