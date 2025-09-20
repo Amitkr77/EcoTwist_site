@@ -136,7 +136,7 @@ export default function Home() {
         </div>
 
         {/* Image Block */}
-        <div className="relative w-full lg:w-1/2 h-64 sm:h-80 md:h-96 lg:h-[650px]">
+        <div className="relative w-full lg:w-1/2 h-64 sm:h-80 md:h-96 lg:h-[650px] mt-16">
           <div className="relative w-full h-full">
             <Image
               src="./new_hero1.png"
@@ -151,7 +151,7 @@ export default function Home() {
         </div>
 
         {/* Content Block */}
-        <div className="relative z-10 w-full lg:w-1/2 px-4 sm:px-6 lg:px-12 flex items-center justify-center">
+        <div className="relative z-10 w-full lg:w-1/2 px-4 sm:px-6 lg:px-12 flex items-center justify-center mt-16">
           <div className="w-full max-w-3xl bg-white/95 p-6 sm:p-8 lg:p-12 rounded-xl border border-teal-100 shadow-md transition-transform duration-300 hover:shadow-lg lg:-rotate-1 lg:hover:rotate-0">
             {/* Badge */}
             <span className="inline-block bg-teal-100 px-3 py-1 rounded-full text-xs uppercase tracking-wide font-semibold text-teal-800">

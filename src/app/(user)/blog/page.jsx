@@ -4,12 +4,24 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import moment from "moment";
 import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
-import { Search, Calendar, BarChart3, ChevronLeft, ChevronRight } from "lucide-react";
-import { toast } from "sonner"; // Assuming sonner for toasts; adjust if using another lib
+import {
+  Search,
+  Calendar,
+  BarChart3,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
+import { toast } from "sonner";
 
 export default function BlogListPage() {
   const [posts, setPosts] = useState([]);
@@ -64,9 +76,8 @@ export default function BlogListPage() {
   const filteredPosts = sortedPosts.filter((post) => {
     const matchesCategory =
       activeCategory === "All" || post.category === activeCategory;
-    const matchesSearch = post.title
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase()) ||
+    const matchesSearch =
+      post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       post.excerpt.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
@@ -124,25 +135,24 @@ export default function BlogListPage() {
   return (
     <main className="bg-gradient-to-br from-green-50 via-white to-green-100 min-h-screen">
       {/* Hero Section with Integrated Search and Controls */}
-      <section className="relative py-20 px-6 text-center overflow-hidden">
+      <section className="relative py-24 px-6 text-center overflow-hidden bg-gradient-to-r from-green-600 to-emerald-700 dark:from-green-800 dark:to-emerald-900 text-white">
         {/* Eco Background */}
-        <div className="absolute inset-0 bg-[url('/nature-bg.jpg')] bg-cover bg-center opacity-10"></div>
-        <div className="absolute inset-0 bg-gradient-to-b from-green-50/90 via-white/80 to-green-100/95"></div>
+        <div className="absolute inset-0 bg-black/30"></div>
 
-        <div className="relative z-10 max-w-4xl mx-auto">
+        <div className="relative z-10 max-w-5xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <Badge className="bg-green-700 text-white px-5 py-2 rounded-full mb-6 text-sm shadow-md">
+            <Badge className="bg-green-700 text-white px-6 py-3 rounded-full mb-6 text-sm font-semibold shadow-lg">
               🌿 EcoTwist Blog
             </Badge>
 
-            <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl font-bold text-green-900 mb-6 leading-tight">
+            <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
               Insights & Eco-Stories
             </h1>
-            <p className="text-lg md:text-xl text-slate-700 leading-relaxed max-w-2xl mx-auto mb-8">
+            <p className="text-lg md:text-xl text-white/80 leading-relaxed max-w-2xl mx-auto mb-8">
               Discover sustainability tips, real-world eco-impact, and conscious
               gifting ideas that make a difference 🌍.
             </p>
@@ -153,20 +163,20 @@ export default function BlogListPage() {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.6 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center items-center max-w-2xl mx-auto"
+            className="flex flex-col sm:flex-row gap-6 justify-center items-center max-w-2xl mx-auto"
           >
             <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 w-5 h-5" />
               <Input
                 type="text"
                 placeholder="Search eco-friendly posts..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-12 pr-4 py-3 rounded-full shadow-lg border-green-200 focus:ring-green-500"
+                className="pl-12 pr-4 py-3 rounded-full shadow-lg border-green-200 focus:ring-green-500 text-black placeholder:text-gray-200"
               />
             </div>
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-48 rounded-full border-green-200 focus:ring-green-500">
+              <SelectTrigger className="w-48 rounded-full border-green-200 focus:ring-green-500 bg-white text-black">
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
               <SelectContent>
@@ -197,6 +207,18 @@ export default function BlogListPage() {
               </SelectContent>
             </Select>
           </motion.div>
+
+          {/* Background animations */}
+          <motion.div
+            className="absolute top-10 left-5 w-24 h-24 bg-white/15 rounded-full"
+            animate={{ y: [0, -20, 0], rotate: 360 }}
+            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <motion.div
+            className="absolute bottom-10 right-5 w-36 h-36 bg-white/20 rounded-full"
+            animate={{ y: [0, 20, 0], rotate: -360 }}
+            transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+          />
         </div>
       </section>
 
@@ -206,7 +228,10 @@ export default function BlogListPage() {
           <nav className="flex items-center justify-between text-sm text-gray-600">
             <ol className="flex items-center space-x-2">
               <li>
-                <Link href="/" className="flex items-center gap-1 text-green-700 hover:underline">
+                <Link
+                  href="/"
+                  className="flex items-center gap-1 text-green-700 hover:underline"
+                >
                   <ChevronLeft className="w-4 h-4" />
                   Home
                 </Link>
@@ -278,8 +303,8 @@ export default function BlogListPage() {
                         {moment(post.date).format("DD MMM YYYY")}
                       </span>
                       <Link href={`/blog/${post.slug}`}>
-                        <Button 
-                          size="sm" 
+                        <Button
+                          size="sm"
                           className="bg-green-600 hover:bg-green-700 text-white rounded-full px-4 py-2 shadow-md"
                           asChild
                         >
@@ -295,7 +320,10 @@ export default function BlogListPage() {
             {/* No Posts Message */}
             {paginatedPosts.length === 0 && !loading && (
               <div className="text-center py-12 col-span-full">
-                <p className="text-gray-500 text-lg">No blogs found matching your criteria. Try adjusting your search or filters!</p>
+                <p className="text-gray-500 text-lg">
+                  No blogs found matching your criteria. Try adjusting your
+                  search or filters!
+                </p>
               </div>
             )}
 
@@ -312,17 +340,19 @@ export default function BlogListPage() {
                   <ChevronLeft className="w-4 h-4" />
                 </Button>
                 <div className="flex gap-1">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                    <Button
-                      key={page}
-                      variant={currentPage === page ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => handlePageChange(page)}
-                      className="rounded-full min-w-[40px]"
-                    >
-                      {page}
-                    </Button>
-                  ))}
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (page) => (
+                      <Button
+                        key={page}
+                        variant={currentPage === page ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => handlePageChange(page)}
+                        className="rounded-full min-w-[40px]"
+                      >
+                        {page}
+                      </Button>
+                    )
+                  )}
                 </div>
                 <Button
                   variant="outline"
@@ -343,10 +373,12 @@ export default function BlogListPage() {
               <BarChart3 className="w-5 h-5" />
               Filters
             </h3>
-            
+
             {/* Categories */}
             <div className="mb-6">
-              <h4 className="text-sm font-medium text-slate-700 mb-3">Categories</h4>
+              <h4 className="text-sm font-medium text-slate-700 mb-3">
+                Categories
+              </h4>
               <ul className="space-y-2">
                 {categories.map((cat, index) => (
                   <li key={index}>
@@ -358,7 +390,9 @@ export default function BlogListPage() {
                           : "bg-green-50 text-green-800 hover:bg-green-100 hover:shadow-sm"
                       }`}
                     >
-                      {cat} {cat !== "All" && `(${posts.filter(p => p.category === cat).length})`}
+                      {cat}{" "}
+                      {cat !== "All" &&
+                        `(${posts.filter((p) => p.category === cat).length})`}
                     </button>
                   </li>
                 ))}
@@ -367,11 +401,13 @@ export default function BlogListPage() {
 
             {/* New: Quick Links or Popular Posts Teaser */}
             <div>
-              <h4 className="text-sm font-medium text-slate-700 mb-3">Popular</h4>
+              <h4 className="text-sm font-medium text-slate-700 mb-3">
+                Popular
+              </h4>
               <ul className="space-y-2">
                 {sortedPosts.slice(0, 3).map((post) => (
                   <li key={post._id} className="text-xs">
-                    <Link 
+                    <Link
                       href={`/blog/${post.slug}`}
                       className="text-green-700 hover:underline line-clamp-2"
                     >

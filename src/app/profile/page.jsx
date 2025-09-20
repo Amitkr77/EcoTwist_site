@@ -68,10 +68,9 @@ const Profile = () => {
   });
 
   useEffect(() => {
-    // Sync local state with store profile when it loads
     if (profile) {
       setAccountInfo({
-        fullName: profile.fullName || "",
+        fullName: profile.fullName || `${profile.firstName} ${profile.lastName}`,
         email: profile.email || "",
         phone: profile.phone || "",
       });
@@ -95,7 +94,8 @@ const Profile = () => {
     router.push("/login");
   };
 
-  const totalSpent = orders?.reduce((sum, order) => sum + order.totalAmount, 0) || 0;
+  const totalSpent =
+    orders?.reduce((sum, order) => sum + order.totalAmount, 0) || 0;
   const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
   const getStatusColor = (status) =>
@@ -163,11 +163,7 @@ const Profile = () => {
   };
 
   const handleSaveAccountInfo = async () => {
-    if (
-      !accountInfo.fullName ||
-      !accountInfo.email ||
-      !accountInfo.phone
-    ) {
+    if (!accountInfo.fullName || !accountInfo.email || !accountInfo.phone) {
       toast.error("Please fill all account fields");
       return;
     }
@@ -191,13 +187,13 @@ const Profile = () => {
 
   const data = {
     name: profile?.fullName || "User",
-    location: profile?.addresses?.[0] 
-      ? `${profile.addresses[0].city}, ${profile.addresses[0].country}` 
+    location: profile?.addresses?.[0]
+      ? `${profile.addresses[0].city}, ${profile.addresses[0].country}`
       : "No address",
     email: profile?.email || "N/A",
     wishlist: profile?.wishlist?.length || 0,
     totalSpent: totalSpent?.toFixed(2),
-    totalOrders: orders?.length,
+    totalOrders: profile?.totalOrders || 0,
   };
 
   if (status === "loading") {
@@ -211,7 +207,9 @@ const Profile = () => {
   if (status === "failed" || !profile || Object.keys(profile).length === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-red-500">Failed to load profile. Please log in again.</p>
+        <p className="text-red-500">
+          Failed to load profile. Please log in again.
+        </p>
       </div>
     );
   }
@@ -235,7 +233,11 @@ const Profile = () => {
               onClick={() => setIsDarkMode(!isDarkMode)}
               className="border-gray-300 text-gray-600 dark:text-gray-300 md:flex hidden"
             >
-              {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+              {isDarkMode ? (
+                <Sun className="w-5 h-5" />
+              ) : (
+                <Moon className="w-5 h-5" />
+              )}
             </Button>
             <Link href="/products">
               <Button
@@ -294,7 +296,7 @@ const Profile = () => {
                   {
                     icon: Package,
                     title: "Total Orders",
-                    value: orders?.length,
+                    value: profile.totalOrders,
                     subtext: "All time",
                   },
                   {
@@ -367,7 +369,7 @@ const Profile = () => {
                             <Package className="w-6 h-6 text-blue-500 dark:text-blue-400" />
                             <div>
                               <p className="font-semibold text-gray-900 dark:text-gray-100">
-                                Order #{order.id || order._id}
+                                Order #{order._id}
                               </p>
                               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                                 {formatDate(order.orderDate)}
@@ -574,7 +576,10 @@ const Profile = () => {
                       id="default-address"
                       checked={newAddress.isDefault}
                       onCheckedChange={(checked) =>
-                        setNewAddress((prev) => ({ ...prev, isDefault: checked }))
+                        setNewAddress((prev) => ({
+                          ...prev,
+                          isDefault: checked,
+                        }))
                       }
                     />
                     <Label
@@ -590,7 +595,9 @@ const Profile = () => {
                       onClick={handleAddAddress}
                       disabled={status === "loading"}
                       className={`bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-6 py-2 rounded-lg shadow-md transition-colors duration-200 ${
-                        status === "loading" ? "opacity-50 cursor-not-allowed" : ""
+                        status === "loading"
+                          ? "opacity-50 cursor-not-allowed"
+                          : ""
                       }`}
                     >
                       {status === "loading" ? "Adding..." : "Add Address"}
@@ -609,7 +616,7 @@ const Profile = () => {
                   {profile.addresses?.length > 0 ? (
                     profile.addresses.map((address) => (
                       <div
-                        key={address._id || address.id}
+                        key={address._id}
                         className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 flex flex-col sm:flex-row items-start justify-between gap-4 bg-white/50 dark:bg-gray-800/50 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all duration-200"
                       >
                         <div className="flex items-start gap-4">
@@ -647,7 +654,7 @@ const Profile = () => {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleDeleteAddress(address._id || address.id)}
+                            onClick={() => handleDeleteAddress(address._id)}
                             className="border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors duration-200"
                             title="Delete address"
                             disabled={status === "loading"}
@@ -658,7 +665,7 @@ const Profile = () => {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => handleSetDefaultAddress(address._id || address.id)}
+                              onClick={() => handleSetDefaultAddress(address._id)}
                               className="border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-lg transition-colors duration-200"
                               title="Set as default address"
                               disabled={status === "loading"}
@@ -791,7 +798,9 @@ const Profile = () => {
                               size="sm"
                               onClick={handleSaveAccountInfo}
                               className={`bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-lg transition-colors duration-200 ${
-                                status === "loading" ? "opacity-50 cursor-not-allowed" : ""
+                                status === "loading"
+                                  ? "opacity-50 cursor-not-allowed"
+                                  : ""
                               }`}
                               disabled={status === "loading"}
                             >

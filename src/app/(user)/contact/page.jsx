@@ -222,22 +222,17 @@ export default function ContactPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1 }}
-        className="relative h-[60vh] flex items-center justify-center bg-gradient-to-br from-green-100 to-blue-100 dark:from-green-900 dark:to-blue-900 overflow-hidden"
+        className="relative py-32 px-6 text-center overflow-hidden bg-gradient-to-r from-green-600 to-emerald-700 dark:from-green-800 dark:to-emerald-900 text-white"
       >
-        <div className="absolute inset-0 opacity-10">
-          <svg viewBox="0 0 1440 320" className="w-full h-full">
-            <path
-              fill="#22c55e"
-              d="M0,192L48,186.7C96,181,192,171,288,181.3C384,192,480,224,576,229.3C672,235,768,213,864,197.3C960,181,1056,171,1152,181.3C1248,192,1344,224,1392,240L1440,256L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"
-            />
-          </svg>
-        </div>
-        <div className="text-center z-10">
+        {/* Background Overlay with animation */}
+        <div className="absolute inset-0 bg-black/30"></div>
+        {/* Main Content */}
+        <div className="text-center z-10 relative">
           <motion.h1
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.6 }}
-            className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white mb-4"
+            className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6"
           >
             Connect with EcoTwist
           </motion.h1>
@@ -245,7 +240,7 @@ export default function ContactPage() {
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.6 }}
-            className="text-lg md:text-xl text-gray-700 dark:text-gray-300 max-w-2xl mx-auto"
+            className="text-lg md:text-xl text-white/80 max-w-2xl mx-auto mb-6"
           >
             Join us in creating a sustainable future. Reach out for inquiries,
             partnerships, or eco-friendly inspiration.
@@ -258,12 +253,24 @@ export default function ContactPage() {
           >
             <Button
               asChild
-              className="bg-green-600 hover:bg-green-700 text-white text-lg px-8 py-3"
+              className="bg-green-600 hover:bg-green-700 text-white text-lg px-8 py-3 rounded-lg transition duration-300 ease-in-out transform hover:scale-105"
             >
               <a href="#contact-form">Get in Touch</a>
             </Button>
           </motion.div>
         </div>
+
+        {/* Animated Circular Elements */}
+        <motion.div
+          className="absolute top-16 left-5 w-32 h-32 bg-white/20 rounded-full"
+          animate={{ y: [0, -20, 0], rotate: 360 }}
+          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute bottom-16 right-5 w-48 h-48 bg-white/30 rounded-full"
+          animate={{ y: [0, 20, 0], rotate: -360 }}
+          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+        />
       </motion.section>
 
       {/* Main Content */}
@@ -637,7 +644,7 @@ export default function ContactPage() {
               We’re proud to showcase their stories.
             </p>
           </div>
-          <div className="absolute top-5 right-20">
+          <div className="absolute top-5 right-20 ">
             <CarouselPrevious className="bg-green-600 hover:bg-green-700 text-white" />
             <CarouselNext className="bg-green-600 hover:bg-green-700 text-white" />
           </div>
@@ -672,39 +679,6 @@ export default function ContactPage() {
           </CarouselContent>
         </Carousel>
       </motion.section>
-
-      {/* Newsletter Signup */}
-      {/* <motion.section
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.6 }}
-        className="py-16 text-center"
-      >
-        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-          Join Our Eco-Community
-        </h2>
-        <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-xl mx-auto">
-          Subscribe to receive tips on sustainable living, product updates, and
-          exclusive offers.
-        </p>
-        <form
-          onSubmit={handleNewsletterSubmit}
-          className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto"
-        >
-          <Input
-            type="email"
-            placeholder="Enter your email"
-            value={newsletterEmail}
-            onChange={(e) => setNewsletterEmail(e.target.value)}
-            required
-            className="border-gray-200 dark:border-gray-700 focus:ring-green-500"
-          />
-          <Button className="bg-green-600 hover:bg-green-700 text-white">
-            Subscribe
-          </Button>
-        </form>
-      </motion.section> */}
     </div>
   );
 }
