@@ -24,7 +24,7 @@ export default function Orders() {
   const { orders, status: ordersStatus } = useSelector((state) => state.orders);
   const {
     profile,
-    wishlist,
+    wishlist = [], // Normalize wishlist to empty array
     status: userStatus,
     error: userError,
   } = useSelector((state) => state.user);
@@ -139,14 +139,13 @@ export default function Orders() {
             <div className="space-y-6">
               {filteredOrders.map((order) => (
                 <div
-                  key={order._id || order.id}
+                  key={order._id}
                   className="border border-gray-200 dark:border-gray-700 rounded-xl p-4 sm:p-6 bg-white/80 dark:bg-gray-800/80 shadow-sm"
                 >
-                  {/* Order Header */}
                   <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
                     <div>
                       <h3 className="text-lg font-semibold">
-                        Order #{order._id || order.id}
+                        Order #{order._id}
                       </h3>
                       <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                         Placed on {formatDate(order.orderDate)}
@@ -157,10 +156,13 @@ export default function Orders() {
                     </Badge>
                   </div>
 
-                  {/* Order Items */}
                   <div className="space-y-4 mb-6">
                     {order.items?.map((item) => {
-                      const productId = item?.product?._id || item?.product?.id;
+                      const product = {
+                        ...item.productId,
+                        image: item.productId?.images?.[0]?.url || "/placeholder.svg",
+                      };
+                      const productId = product._id;
                       const isInWishlist = wishlist.some(
                         (w) => w.productId === productId
                       );
@@ -171,17 +173,13 @@ export default function Orders() {
                           className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition"
                         >
                           <img
-                            src={item?.product?.image || "/placeholder.svg"}
-                            alt={item?.product?.name || "Product"}
+                            src={product.image}
+                            alt={item.name || "Product"}
                             className="w-16 h-16 object-cover rounded-md border"
-                            onError={(e) =>
-                              (e.currentTarget.src = "/placeholder.svg")
-                            }
+                            onError={(e) => (e.currentTarget.src = "/placeholder.svg")}
                           />
                           <div className="flex-1">
-                            <p className="font-medium">
-                              {item?.product?.name || "Unknown Product"}
-                            </p>
+                            <p className="font-medium">{item.name}</p>
                             <p className="text-sm text-gray-600">
                               Quantity: {item.quantity}
                             </p>
@@ -189,7 +187,7 @@ export default function Orders() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleAddToWishlist(item.product)}
+                            onClick={() => handleAddToWishlist(product)}
                             disabled={userStatus === "loading" || isInWishlist}
                             className={
                               isInWishlist
@@ -205,7 +203,6 @@ export default function Orders() {
                     })}
                   </div>
 
-                  {/* Order Footer */}
                   <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
                     <span className="font-semibold text-lg">
                       Total: ₹{order.totalAmount.toFixed(2)}
@@ -220,7 +217,7 @@ export default function Orders() {
                         <Truck className="w-4 h-4 mr-2" />
                         Track Order
                       </Button>
-                      <Link href={`/orders/${order._id || order.id}`}>
+                      <Link href={`/orders/${order._id}`}>
                         <Button variant="outline" size="sm">
                           <Eye className="w-4 h-4 mr-2" />
                           View Details
