@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { CiMail } from "react-icons/ci";
 import { FaXTwitter } from "react-icons/fa6";
@@ -7,257 +9,231 @@ import {
   FaLinkedin,
   FaYoutube,
   FaPinterest,
-  FaMapMarkedAlt,
 } from "react-icons/fa";
 import { FaPhoneAlt } from "react-icons/fa";
 
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Input } from "./ui/input";
 import CTA from "./CTA";
+import { motion } from "framer-motion";
 
 export default function Footer() {
+  const footerSections = [
+    {
+      title: "Quick Links",
+      links: [
+        { name: "About Us", path: "/about" },
+        { name: "Contact Us", path: "/contact" },
+        { name: "Shop", path: "/products" },
+        { name: "Blog", path: "/blog" },
+      ],
+    },
+    {
+      title: "Support",
+      links: [
+        { name: "Return Policy", path: "/return-policy" },
+        { name: "Privacy Policy", path: "/privacy-policy" },
+        { name: "Terms of Service", path: "/termsOfService" },
+        { name: "FAQ", path: "/faq" },
+        { name: "Shipping Policy", path: "/shipping-policy" },
+      ],
+    },
+  ];
+
+  const socialLinks = [
+    {
+      href: "https://www.facebook.com/ecotwiststores",
+      icon: <FaFacebook className="h-5 w-5 sm:h-6 sm:w-6" />,
+      label: "Facebook",
+      color: "hover:text-blue-600",
+    },
+    {
+      href: "https://www.instagram.com/ecotwiststores/",
+      icon: <FaInstagram className="h-5 w-5 sm:h-6 sm:w-6" />,
+      label: "Instagram",
+      color: "hover:text-pink-500",
+    },
+    {
+      href: "https://www.linkedin.com/company/ecotwiststores/",
+      icon: <FaLinkedin className="h-5 w-5 sm:h-6 sm:w-6" />,
+      label: "LinkedIn",
+      color: "hover:text-blue-400",
+    },
+    {
+      href: "http://x.com/ecotwiststores",
+      icon: <FaXTwitter className="h-5 w-5 sm:h-6 sm:w-6" />,
+      label: "Twitter",
+      color: "hover:text-blue-400",
+    },
+    {
+      href: "https://www.pinterest.com/ecotwiststores/",
+      icon: <FaPinterest className="h-5 w-5 sm:h-6 sm:w-6" />,
+      label: "Pinterest",
+      color: "hover:text-red-500",
+    },
+    {
+      href: "https://www.youtube.com/@ecotwiststores",
+      icon: <FaYoutube className="h-5 w-5 sm:h-6 sm:w-6" />,
+      label: "YouTube",
+      color: "hover:text-red-500",
+    },
+    {
+      href: "mailto:info@ecotwist.in",
+      icon: <CiMail className="h-5 w-5 sm:h-6 sm:w-6" />,
+      label: "Email",
+      color: "hover:text-red-500",
+    },
+  ];
   return (
     <footer className="text-slate-600 relative overflow-hidden bg-white">
       <CTA />
       {/* Main Footer */}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12 relative z-10">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-6 sm:gap-8 lg:gap-12 md:place-items-start items-start place-items-center max-w-7xl mx-auto">
-          {/* Company Info */}
-          <div className="col-span-2 space-y-2 flex flex-col items-center md:items-start">
-            <div className="flex items-center space-x-3 sm:space-x-4 justify-center md:justify-start">
-              <div>
+      <div className="py-8 sm:py-12 md:py-16 bg-gradient-to-t from-green-50 to-white dark:from-green-900 dark:to-gray-900 relative z-10">
+        <div className="max-w-full sm:max-w-3xl md:max-w-5xl lg:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Main Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-5 gap-6 sm:gap-8 md:gap-12">
+            {/* Company Info */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className="col-span-2 sm:col-span-2 md:col-span-2 text-center sm:text-left"
+            >
+              <div className="flex items-center justify-center sm:justify-start gap-3 mb-4">
                 <img
                   src="/logo.png"
                   alt="EcoTwist Logo"
-                  className="w-16 h-16 sm:w-20 sm:h-20 mix-blend-color"
+                  className="w-12 h-12 sm:w-14 sm:h-14 object-contain"
                 />
+                <div>
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+                    EcoTwist
+                  </h2>
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                    Innovations Pvt. Ltd.
+                  </p>
+                </div>
               </div>
-              <div className="text-center md:text-left">
-                <h2 className="font-heading font-bold text-2xl sm:text-3xl text-black">
-                  EcoTwist
-                </h2>
-                <p className="text-xs sm:text-sm text-slate-600">
-                  Innovtions Pvt. Ltd.
-                </p>
+              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 max-w-xs mx-auto sm:mx-0 leading-relaxed">
+                Crafting premium corporate gifts from recycled materials for a
+                sustainable future.
+              </p>
+              <div className="flex justify-center sm:justify-start gap-2 mt-4">
+                {socialLinks.map((link, index) => (
+                  <motion.a
+                    key={index}
+                    href={link.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    whileHover={{ scale: 1.2 }}
+                    whileTap={{ scale: 0.9 }}
+                    className={`p-2 rounded-full text-gray-600 dark:text-gray-300 ${link.color} transition-colors duration-300`}
+                    aria-label={`Visit our ${link.label}`}
+                  >
+                    {link.icon}
+                  </motion.a>
+                ))}
               </div>
-            </div>
-            <p className="text-slate-600 text-xs sm:text-sm leading-relaxed max-w-xs text-center md:text-left">
-              Transforming waste into premium corporate gifts. Every purchase
-              contributes to a sustainable future.
-            </p>
-            <div className="flex space-x-1 sm:space-x-2 mt-4 sm:mt-6 justify-center md:justify-start">
-              <a
-                href="https://www.facebook.com/ecotwiststores"
-                target="_blank"
-                rel="noopener noreferrer"
+            </motion.div>
+
+            {/* Quick Links and Support */}
+            {footerSections.map((section, index) => (
+              <motion.div
+                key={section.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                className="col-span-1 text-center sm:text-left"
               >
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-slate-600 hover:text-teal-500 rounded-full p-2 transition-all duration-300"
-                >
-                  <FaFacebook className="h-5 w-5 sm:h-6 sm:w-6 hover:text-teal-400 transition-all duration-300" />
-                </Button>
-              </a>
+                <h3 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3 sm:mb-4">
+                  {section.title}
+                </h3>
+                <ul className="space-y-2">
+                  {section.links.map((link) => (
+                    <li key={link.name}>
+                      <Link
+                        href={link.path}
+                        className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 transition-colors duration-300"
+                      >
+                        {link.name}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </motion.div>
+            ))}
 
-              <a
-                href="https://www.instagram.com/ecotwiststores/"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-slate-600 hover:text-pink-500 rounded-full p-2 transition-all duration-300"
-                >
-                  <FaInstagram className="h-5 w-5 sm:h-6 sm:w-6 hover:text-pink-400 transition-all duration-300" />
-                </Button>
-              </a>
-
-              <a
-                href="https://www.linkedin.com/company/ecotwiststores/"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-slate-600 hover:text-blue-400 rounded-full p-2 transition-all duration-300"
-                >
-                  <FaLinkedin className="h-5 w-5 sm:h-6 sm:w-6 hover:text-blue-600 transition-all duration-300" />
-                </Button>
-              </a>
-
-              <a
-                href="http://x.com/ecotwiststores"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-slate-600 hover:text-blue-400 rounded-full p-2 transition-all duration-300"
-                >
-                  <FaXTwitter className="h-5 w-5 sm:h-6 sm:w-6 hover:text-blue-600 transition-all duration-300" />
-                </Button>
-              </a>
-
-              <a
-                href="mailto:info@ecotwist.in"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-slate-600 hover:text-red-500 rounded-full p-2 transition-all duration-300"
-                >
-                  <CiMail className="h-5 w-5 sm:h-6 sm:w-6 hover:text-red-400 transition-all duration-300" />
-                </Button>
-              </a>
-
-              <a
-                href="https://www.pinterest.com/ecotwiststores/"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-slate-600 hover:text-red-500 rounded-full p-2 transition-all duration-300"
-                >
-                  <FaPinterest className="h-5 w-5 sm:h-6 sm:w-6 hover:text-red-400 transition-all duration-300" />
-                </Button>
-              </a>
-
-              <a
-                href="https://www.youtube.com/@ecotwiststores"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-slate-600 hover:text-red-500 rounded-full p-2 transition-all duration-300"
-                >
-                  <FaYoutube className="h-5 w-5 sm:h-6 sm:w-6 hover:text-red-400 transition-all duration-300" />
-                </Button>
-              </a>
-            </div>
-          </div>
-
-          {/* Quick Links */}
-          <div className="space-y-4 sm:space-y-6">
-            <h3 className="font-heading font-semibold text-lg sm:text-xl mb-3 sm:mb-4 text-slate-600">
-              Quick Links
-            </h3>
-            <ul className="space-y-2 sm:space-y-3">
-              {[
-                { name: "About Us", path: "/about" },
-                { name: "Contact Us", path: "/contact" },
-                { name: "Shop", path: "/products" },
-                { name: "Blog", path: "/blog" },
-              ].map((item) => (
-                <li key={item.name}>
-                  <Link
-                    href={item.path}
-                    className="text-slate-600 hover:text-teal-500 transition-all duration-300 text-xs sm:text-sm hover:translate-x-2 transform block"
-                  >
-                    {item.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Support */}
-          <div className="space-y-4 sm:space-y-6 ">
-            <h3 className="font-heading font-semibold text-lg sm:text-xl mb-3 sm:mb-4 text-slate-600">
-              Support
-            </h3>
-            <ul className="space-y-2 sm:space-y-3">
-              {[
-                { name: "Return and Refund Policy", path: "/return-policy" },
-                { name: "Privacy Policy", path: "/privacy-policy" },
-                { name: "Terms of service", path: "/termsOfService" },
-                { name: "FAQ", path: "/faq" },
-                { name: "Shipping Policy", path: "/shipping-Policy" },
-              ].map((item) => (
-                <li key={item.name}>
-                  <Link
-                    href={item.path}
-                    className="text-slate-600 hover:text-teal-500 transition-all duration-300 text-xs sm:text-sm hover:translate-x-2 transform block"
-                  >
-                    {item.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Address */}
-          <div className="space-y-4 sm:space-y-8">
-            <div>
-              <h3 className="font-heading font-semibold text-lg sm:text-xl mb-3 sm:mb-4 text-slate-600">
+            {/* Address  */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="col-span-2 sm:col-span-2 md:col-span-1 text-center sm:text-left"
+            >
+              <h3 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3 sm:mb-4">
                 Address
               </h3>
-              <ul className="space-y-2 sm:space-y-3 text-xs sm:text-sm text-slate-600">
+              <ul className="space-y-2 text-xs sm:text-sm text-gray-600 dark:text-gray-300">
                 <li>
                   <a
                     href="https://maps.google.com/?q=B-Hub+Maurya+Lok+Patna,+Bihar,+India+800001"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="hover:text-teal-500 transition-colors"
+                    className="hover:text-green-600 dark:hover:text-green-400 transition-colors"
                   >
-                    B-Hub, Maurya Lok complex, Patna, Bihar, India – 800001
+                    B-Hub, Maurya Lok, Patna, Bihar, India – 800001
                   </a>
                 </li>
               </ul>
-              <p className="font-heading font-semibold text-lg sm:text-xl mb-3 sm:mb-4 text-slate-600 mt-4">
-                For Bulk/Custom Order
-              </p>
 
-              {/* Email */}
-              <div className="flex items-center gap-3 text-sm sm:text-base text-slate-600 mt-3">
-                <CiMail className="text-xl sm:text-2xl text-teal-500" />
-                <a
-                  href="mailto:info@ecotwist.in"
-                  className="hover:text-teal-600 font-medium transition-colors"
-                >
-                  info@ecotwist.in
-                </a>
-              </div>
-
-              {/* Phone */}
-              <div className="flex items-center gap-3 text-sm sm:text-base text-slate-600 mt-2">
-                <FaPhoneAlt className="text-xl sm:text-2xl text-teal-500" />
-                <a
-                  href="tel:+917091323777"
-                  className="hover:text-teal-600 font-medium transition-colors"
-                >
-                  +91 709-132-3777
-                </a>
-              </div>
-
-              {/* Business Hours */}
-             
-            </div>
+              <h3 className="mt-4 text-base sm:text-lg font-medium text-gray-800 dark:text-gray-200 mb-2 sm:mb-4">
+                Bulk/Custom Order
+              </h3>
+              <ul className="space-y-2 text-xs sm:text-sm text-gray-600 dark:text-gray-300">
+                <li className="flex items-center justify-center sm:justify-start gap-2 mt-4">
+                  <CiMail className="h-5 w-5 text-green-600 dark:text-green-400" />
+                  <a
+                    href="mailto:info@ecotwist.in"
+                    className="hover:text-green-600 dark:hover:text-green-400 transition-colors"
+                  >
+                    info@ecotwist.in
+                  </a>
+                </li>
+                <li className="flex items-center justify-center sm:justify-start gap-2">
+                  <FaPhoneAlt className="h-4 w-4 text-green-600 dark:text-green-400" />
+                  <a
+                    href="tel:+917091323777"
+                    className="hover:text-green-600 dark:hover:text-green-400 transition-colors"
+                  >
+                    +91 709-132-3777
+                  </a>
+                </li>
+              </ul>
+            </motion.div>
           </div>
-        </div>
 
-        {/* Copyright */}
-        <div className="mt-6 sm:mt-8 lg:mt-12 pt-6 sm:pt-8 border-t border-slate-700 text-center">
-          <p>
-            © 2025{" "}
-            <Link
-              href="/"
-              className="font-semibold text-teal-600 hover:text-teal-800 transition-colors duration-300"
-            >
-              EcoTwist
-            </Link>{" "}
-            | All rights reserved. | Made with 💚 for our green planet
-          </p>
+          {/* Copyright */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="mt-8 sm:mt-10 md:mt-12 pt-6 border-t border-gray-200 dark:border-gray-700 text-center"
+          >
+            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
+              © 2025{" "}
+              <Link
+                href="/"
+                className="font-semibold text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 transition-colors"
+              >
+                EcoTwist
+              </Link>{" "}
+              | All rights reserved. | Crafted with 🌿 for a sustainable future
+            </p>
+          </motion.div>
         </div>
       </div>
     </footer>

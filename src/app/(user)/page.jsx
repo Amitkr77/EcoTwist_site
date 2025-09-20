@@ -14,7 +14,9 @@ import {
   Award,
   MoveRight,
   ArrowRight,
-  BadgeInfo,
+  Leaf,
+  Users,
+  Globe,
   ShoppingBag,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -26,6 +28,41 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import { motion } from "framer-motion";
+
+const stats = [
+  {
+    icon: <Leaf className="h-8 w-8 sm:h-10 sm:w-10 text-emerald-500" />,
+    value: "100K+",
+    label: "CO₂ Reduced (kg)",
+    description: "Offsetting emissions through sustainable practices.",
+    color:
+      "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400",
+  },
+  {
+    icon: <Users className="h-8 w-8 sm:h-10 sm:w-10 text-blue-500" />,
+    value: "500+",
+    label: "Communities Empowered",
+    description: "Supporting local artisans and eco-initiatives.",
+    color: "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400",
+  },
+  {
+    icon: <Recycle className="h-8 w-8 sm:h-10 sm:w-10 text-amber-500" />,
+    value: "10K+",
+    label: "Materials Repurposed",
+    description: "Transforming waste into beautiful products.",
+    color:
+      "bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400",
+  },
+  {
+    icon: <Globe className="h-8 w-8 sm:h-10 sm:w-10 text-purple-500" />,
+    value: "1M+",
+    label: "Lives Impacted",
+    description: "Creating a global ripple effect for sustainability.",
+    color:
+      "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400",
+  },
+];
 
 export default function Home() {
   const [products, setProducts] = useState([]);
@@ -54,8 +91,6 @@ export default function Home() {
     };
     fetchProducts();
   }, []);
-
-  console.log(products);
 
   const dispatch = useDispatch();
   useEffect(() => {
@@ -136,7 +171,7 @@ export default function Home() {
         </div>
 
         {/* Image Block */}
-        <div className="relative w-full lg:w-1/2 h-64 sm:h-80 md:h-96 lg:h-[650px] mt-16">
+        <div className="relative w-full lg:w-1/2 h-72 sm:h-80 md:h-96 lg:h-[650px] sm:mt-16 mt-0">
           <div className="relative w-full h-full">
             <Image
               src="./new_hero1.png"
@@ -151,7 +186,7 @@ export default function Home() {
         </div>
 
         {/* Content Block */}
-        <div className="relative z-10 w-full lg:w-1/2 px-4 sm:px-6 lg:px-12 flex items-center justify-center mt-16">
+        <div className="relative z-10 w-full lg:w-1/2 px-4 sm:px-6 lg:px-12 flex items-center justify-center sm:mt-16 mt-0 ">
           <div className="w-full max-w-3xl bg-white/95 p-6 sm:p-8 lg:p-12 rounded-xl border border-teal-100 shadow-md transition-transform duration-300 hover:shadow-lg lg:-rotate-1 lg:hover:rotate-0">
             {/* Badge */}
             <span className="inline-block bg-teal-100 px-3 py-1 rounded-full text-xs uppercase tracking-wide font-semibold text-teal-800">
@@ -159,9 +194,21 @@ export default function Home() {
             </span>
 
             {/* Heading */}
-            <h1 className="mt-6 font-sans text-3xl sm:text-4xl lg:text-6xl xl:text-7xl font-bold leading-tight tracking-tight text-gray-800 group hover:text-teal-600 transition-colors duration-300">
-              Upcycle to{" "}
-              <span className="group-hover:text-teal-500">Eco-Luxury</span>
+            <h1 className="mt-6 font-sans text-3xl sm:text-4xl lg:text-6xl xl:text-7xl font-bold leading-tight tracking-tight text-gray-800 group">
+              <span className="group-hover:text-teal-600 group-hover:scale-105 transition-all duration-300 ">
+                Elevate
+              </span>{" "}
+              <span className=" group-hover:scale-105 transition-all duration-300">
+                Eco
+              </span>
+              -
+              <span className="group-hover:text-teal-600 group-hover:scale-105 transition-all duration-300">
+                Luxury
+              </span>{" "}
+              with{" "}
+              <span className="group-hover:text-teal-600 group-hover:scale-105 transition-all duration-300">
+                Style
+              </span>
             </h1>
 
             {/* Subheading */}
@@ -255,147 +302,213 @@ export default function Home() {
       </section>
 
       {/* Impact Stats */}
-      <section className="py-8 sm:py-12 lg:py-8 bg-gradient-to-r from-forest to-forest-600 text-black">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8 sm:mb-10 lg:mb-12">
-            <h2 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4">
+      <section className="py-8 sm:py-12 md:py-16 bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
+        <div className="max-w-full sm:max-w-3xl md:max-w-5xl lg:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Heading */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="text-center mb-8 sm:mb-10 md:mb-12"
+          >
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
               Our{" "}
-              <span className="bg-gradient-to-r from-emerald-400 via-green-300 to-lime-200 text-transparent bg-clip-text">
-                Environmental
+              <span className="text-emerald-600 dark:text-emerald-400">
+                Impact
               </span>{" "}
-              Impact
+              in Action
             </h2>
-            <p className="text-base sm:text-lg lg:text-xl text-forest-100 max-w-md sm:max-w-lg lg:max-w-2xl mx-auto">
-              Together, we&apos;re making a real difference for our
-              planet&apos;s future.
+            <p className="mt-2 text-sm sm:text-base md:text-lg text-gray-600 dark:text-gray-300 max-w-md sm:max-w-lg md:max-w-xl mx-auto">
+              Driving sustainability and community growth with every step we
+              take.
             </p>
+          </motion.div>
+
+          {/* Stats Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
+            {stats.map((stat, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                whileHover={{ scale: 1.05 }}
+                className="relative"
+              >
+                <Card
+                  className={`flex flex-col items-center justify-center text-center p-10 rounded-full 
+                    02 ${stat.color} border-none shadow-sm hover:shadow-md transition-shadow duration-300`}
+                  aria-label={`${stat.label}: ${stat.value}`}
+                >
+                  <CardContent className="flex flex-col items-center justify-center p-0 space-y-3">
+                    <div className="flex items-center justify-center h-12 w-12 sm:h-14 sm:w-14 rounded-full bg-white dark:bg-gray-800">
+                      {stat.icon}
+                    </div>
+                    <div className="text-2xl sm:text-3xl md:text-4xl font-bold">
+                      {stat.value}
+                    </div>
+                    <h3 className="text-sm sm:text-base font-semibold">
+                      {stat.label}
+                    </h3>
+                    <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 line-clamp-2">
+                      {stat.description}
+                    </p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
-            <div className="text-center animate-fade-in">
-              <div className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-2 text-[#228B22]">
-                50K+
-              </div>
-              <div className="text-sm sm:text-base lg:text-lg text-forest-100">
-                Trees Saved
-              </div>
-            </div>
-            <div className="text-center animate-fade-in">
-              <div className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-2 text-[#8B4513]">
-                25K+
-              </div>
-              <div className="text-sm sm:text-base lg:text-lg text-forest-100">
-                Waste Upcycled (kg)
-              </div>
-            </div>
-            <div className="text-center animate-fade-in">
-              <div className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-2 text-[#6A5ACD]">
-                100+
-              </div>
-              <div className="text-sm sm:text-base lg:text-lg text-forest-100">
-                Artisan Partners
-              </div>
-            </div>
-            <div className="text-center animate-fade-in">
-              <div className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-2 text-[#008080]">
-                5K+
-              </div>
-              <div className="text-sm sm:text-base lg:text-lg text-forest-100">
-                Happy Customers
-              </div>
-            </div>
-          </div>
+          {/* CTA */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            className="text-center mt-8 sm:mt-10 md:mt-12 flex items-center"
+          >
+            <Button
+              asChild
+              className="px-4 sm:px-6 py-2 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 font-medium text-sm sm:text-base flex items-center gap-2 hover:gap-3 transition-all duration-300 mx-auto"
+            >
+              <Link href="/about">
+                Learn More
+                <MoveRight className="w-4 sm:w-5 h-4 sm:h-5" />
+              </Link>
+            </Button>
+          </motion.div>
         </div>
       </section>
 
       {/* Featured Products */}
-      <section className="py-8 sm:py-12 lg:py-24 bg-gradient-to-b from-green-50 to-green-100">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Heading + Button */}
-          <div className="flex flex-col sm:flex-row w-full justify-between items-center sm:items-end mb-8 sm:mb-12 px-0 sm:px-4 lg:px-10">
-            <div className="text-center sm:text-left space-y-3">
-              <h2 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 tracking-tight">
+      <section className="py-8 sm:py-12 md:py-16 bg-white dark:bg-gray-900">
+        <div className="max-w-full sm:max-w-3xl md:max-w-5xl lg:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Heading and CTA */}
+          <div className="flex flex-col sm:flex-row justify-between items-center sm:items-end mb-6 sm:mb-8 md:mb-10">
+            <div className="text-center sm:text-left space-y-2">
+              <motion.h2
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5 }}
+                className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-white"
+              >
                 Featured Products
-              </h2>
-              <p className="text-base sm:text-lg lg:text-xl text-slate-600 max-w-md sm:max-w-lg lg:max-w-2xl mx-auto sm:mx-0 leading-relaxed">
-                Handcrafted with care, designed for impact. Each product tells a
-                story of transformation.
-              </p>
+              </motion.h2>
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+                className="text-sm sm:text-base md:text-lg text-gray-600 dark:text-gray-300 max-w-md sm:max-w-lg"
+              >
+                Discover our handpicked selection, crafted to inspire and
+                delight.
+              </motion.p>
             </div>
-            <div className="flex justify-center mt-4 sm:mt-0">
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className="mt-4 sm:mt-0"
+            >
               <Button
                 asChild
-                className="text-sm sm:text-lg px-6 sm:px-8 py-2 sm:py-3 rounded-full font-medium inline-flex items-center gap-2 sm:gap-3 bg-slate-800 text-white hover:bg-slate-900 hover:gap-4 transition-all duration-300"
+                className="px-4 sm:px-6 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 font-medium text-sm sm:text-base flex items-center gap-2 hover:gap-3 transition-all duration-300"
               >
                 <Link href="/products">
                   View All
-                  <MoveRight className="w-4 sm:w-5 h-4 sm:h-5 transition-transform duration-300" />
+                  <MoveRight className="w-4 sm:w-5 h-4 sm:h-5" />
                 </Link>
               </Button>
-            </div>
+            </motion.div>
           </div>
 
           {/* Product Carousel */}
-          <div className="w-full">
-            <Carousel className="w-full relative">
-              <CarouselContent>
-                {products.map((product) => (
-                  <CarouselItem
-                    key={product._id}
-                    className="basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4 p-2"
+          <Carousel
+            className="relative"
+            opts={{
+              align: "start",
+              loop: true,
+            }}
+            aria-roledescription="carousel"
+            aria-label="Featured products"
+          >
+            <CarouselContent className="-mx-2 sm:-mx-3">
+              {products.map((product, index) => (
+                <CarouselItem
+                  key={product._id}
+                  className="basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4 px-2 sm:px-3"
+                >
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
                   >
-                    <Card className="border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 bg-white rounded-lg overflow-hidden">
+                    <Card className="border dark:bg-gray-800 shadow-sm hover:shadow-md transition-all duration-300 rounded-lg overflow-hidden">
                       <CardContent className="p-4 sm:p-5">
-                        <div className="relative w-full h-48 sm:h-56 md:h-60 lg:h-64 rounded-md overflow-hidden group">
+                        <div className="relative w-full h-40 sm:h-48 md:h-52 rounded-md overflow-hidden group">
                           <Image
                             src={
                               product.images?.[0]?.url || "/product_image.png"
                             }
                             alt={product.name}
                             fill
-                            className="object-cover transition-transform duration-500 group-hover:scale-105"
+                            className="object-cover transition-all duration-300 group-hover:scale-105"
                             sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                            priority={index < 2}
                           />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                         </div>
-                        <div className="mt-4 space-y-2">
-                          <h3 className="text-base sm:text-lg font-semibold text-slate-900 truncate group-hover:text-slate-800 transition-colors duration-300">
+                        <div className="mt-3 space-y-2">
+                          <h3 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white truncate group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors duration-300">
                             {product.name}
                           </h3>
-                          <div className=" flex justify-between items-center">
-                            <p className="text-slate-700 text-sm sm:text-lg font-medium">
+                          <div className="flex justify-between items-center">
+                            <p className="text-base sm:text-lg font-bold text-green-700 dark:text-gray-200">
                               ₹
                               {product.variants[0].price.toLocaleString(
                                 "en-IN"
                               )}
                             </p>
-                            <p className="text-gray-800 gap-2 px-2 py-1 text-sm sm:text-base font-medium bg-green-600/50 rounded-full flex items-center">
-                              <BadgeInfo size={20} />{" "}
-                              {product.categories[0].split(" ")[1]}
-                            </p>{" "}
+                            {product.categories[0] && (
+                              <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded-full">
+                                {product.brand}
+                              </span>
+                            )}
                           </div>
                           <Button
                             asChild
                             variant="outline"
-                            className="mt-3 w-full border-slate-400 text-green-800 text-sm sm:text-base font-medium hover:bg-green-800 hover:text-white transition-colors duration-300 rounded-full"
+                            className="w-full mt-4 text-sm sm:text-base text-green-600 dark:text-green-400 border-green-600 dark:border-green-400 hover:bg-green-600 hover:text-white dark:hover:bg-green-600 dark:hover:text-white rounded-md transition-colors duration-300 flex items-center justify-center gap-2"
                           >
                             <Link href={`/product-info/${product._id}`}>
-                              <ShoppingBag />
+                              <ShoppingBag className="w-4 h-4" />
                               View Product
                             </Link>
                           </Button>
                         </div>
                       </CardContent>
                     </Card>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <div className="absolute left-1/2 -bottom-10 flex gap-2">
-                <CarouselPrevious className="h-8 w-8 sm:h-10 sm:w-10 bg-green-800 text-white  transition-colors duration-300" />
-                <CarouselNext className="h-8 w-8 sm:h-10 sm:w-10 bg-green-800 text-white  transition-colors duration-300" />
-              </div>
-            </Carousel>
-          </div>
+                  </motion.div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <div className="sm:flex hidden justify-center gap-2 mt-4 sm:mt-6  ">
+              <CarouselPrevious
+                className="h-8 w-8 sm:h-9 sm:w-9 bg-green-600 text-white hover:bg-green-700 rounded-full transition-colors duration-300"
+                aria-label="Previous product"
+              />
+              <CarouselNext
+                className="h-8 w-8 sm:h-9 sm:w-9 bg-green-600 text-white hover:bg-green-700 rounded-full transition-colors duration-300"
+                aria-label="Next product"
+              />
+            </div>
+          </Carousel>
         </div>
       </section>
 

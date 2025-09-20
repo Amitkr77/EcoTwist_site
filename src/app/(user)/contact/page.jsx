@@ -142,15 +142,11 @@ const faqs = [
   },
 ];
 
-
-
-
 export default function ContactPage() {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [newsletterEmail, setNewsletterEmail] = useState("");
 
-
-   const whatsappNumber = "917091323777";
+  const whatsappNumber = "917091323777";
   const whatsappLink = `https://wa.me/${whatsappNumber}`;
   const whatsappCall = `tel:+${whatsappNumber}`;
 
@@ -442,14 +438,14 @@ export default function ContactPage() {
             className="space-y-8"
           >
             <Card className="bg-white dark:bg-gray-800 border-none shadow-xl rounded-2xl h-full">
-              <CardHeader>
-                <CardTitle className="text-xl font-bold text-gray-900 dark:text-white flex items-center">
+              <CardHeader className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900 dark:to-blue-900 p-6">
+                <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white flex items-center">
                   <Leaf className="mr-2 h-6 w-6 text-green-600 dark:text-green-400" />
                   Reach Out
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="flex items-center gap-4">
+              <CardContent className="space-y-10 mt-5">
+                <div className="flex items-start gap-4">
                   <Mail className="h-6 w-6 text-green-600 dark:text-green-400" />
                   <div>
                     <p className="font-medium text-gray-900 dark:text-white">
@@ -463,7 +459,7 @@ export default function ContactPage() {
                     </a>
                   </div>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-start gap-4">
                   <MapPin className="h-6 w-6 text-green-600 dark:text-green-400" />
                   <div>
                     <p className="font-medium text-gray-900 dark:text-white">
@@ -474,11 +470,11 @@ export default function ContactPage() {
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-start gap-4">
                   <Clock className="h-6 w-6 text-green-600 dark:text-green-400" />
                   <div>
                     <p className="font-medium text-gray-900 dark:text-white">
-                      Hours
+                      Office Hours
                     </p>
                     <p className="text-gray-600 dark:text-gray-300">
                       Mon-Sat: 9:00 AM - 6:00 PM
@@ -487,7 +483,7 @@ export default function ContactPage() {
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-start gap-4">
                   <Headphones className="h-6 w-6 text-green-600 dark:text-green-400" />
                   <div>
                     <p className="font-medium text-gray-900 dark:text-white">
@@ -569,87 +565,54 @@ export default function ContactPage() {
           </CardContent>
         </Card>
 
-        {/* FAQ Section */}
-        {/* <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="py-16"
-        >
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white text-center mb-8">
-            Frequently Asked Questions
-          </h2>
-          <Accordion
-            type="single"
-            collapsible
-            className="max-w-3xl mx-auto bg-white dark:bg-gray-800 rounded-2xl shadow-xl border-none"
-          >
-            {faqs.map((faq, index) => (
-              <AccordionItem
-                key={index}
-                value={`faq-${index}`}
-                className="border-b-0"
-              >
-                <AccordionTrigger className="px-6 py-4 text-gray-900 dark:text-white hover:text-green-600 dark:hover:text-green-400">
-                  {faq.question}
-                </AccordionTrigger>
-                <AccordionContent className="px-6 py-2 text-gray-600 dark:text-gray-300">
-                  {faq.answer}
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        </motion.section> */}
-
         {/* Live Chat Dialog */}
         <Dialog open={isChatOpen} onOpenChange={setIsChatOpen}>
-      {/* Floating WhatsApp Button */}
-      <DialogTrigger asChild>
-        <Button
-          className="fixed bottom-6 right-6 bg-green-600 hover:bg-green-700 text-white rounded-full p-4 shadow-2xl z-50"
-          aria-label="Open WhatsApp Support"
-        >
-          <MessageCircle className="h-6 w-6" />
-        </Button>
-      </DialogTrigger>
-
-      {/* Dialog Content */}
-      <DialogContent className="bg-white dark:bg-gray-800 border-none shadow-2xl rounded-2xl">
-        <DialogHeader>
-          <DialogTitle className="text-gray-900 dark:text-white">
-            WhatsApp Support
-          </DialogTitle>
-        </DialogHeader>
-        <div className="p-6 text-center">
-          <Headphones className="h-12 w-12 text-green-600 dark:text-green-400 mx-auto mb-4" />
-          <p className="text-gray-600 dark:text-gray-300 mb-6">
-            Connect with us instantly on WhatsApp for chat or call support.
-          </p>
-
-          {/* Chat on WhatsApp */}
-          <a href={whatsappLink} target="_blank" rel="noopener noreferrer">
-            <Button className="bg-green-600 hover:bg-green-700 text-white w-full mb-3">
-              Chat on WhatsApp
+          {/* Floating WhatsApp Button */}
+          <DialogTrigger asChild>
+            <Button
+              className="fixed bottom-6 right-6 bg-green-600 hover:bg-green-700 text-white rounded-full p-4 shadow-2xl z-50"
+              aria-label="Open WhatsApp Support"
+            >
+              <MessageCircle className="h-6 w-6" />
             </Button>
-          </a>
+          </DialogTrigger>
 
-          {/* Call on WhatsApp (or normal phone call) */}
-          <a href={whatsappCall}>
-            <Button className="bg-green-500 hover:bg-green-600 text-white w-full">
-              Call Us on WhatsApp
-            </Button>
-          </a>
+          {/* Dialog Content */}
+          <DialogContent className="bg-white dark:bg-gray-800 border-none shadow-2xl rounded-2xl">
+            <DialogHeader>
+              <DialogTitle className="text-gray-900 dark:text-white">
+                WhatsApp Support
+              </DialogTitle>
+            </DialogHeader>
+            <div className="p-6 text-center">
+              <Headphones className="h-12 w-12 text-green-600 dark:text-green-400 mx-auto mb-4" />
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
+                Connect with us instantly on WhatsApp for chat or call support.
+              </p>
 
-          <Button
-            onClick={() => setIsChatOpen(false)}
-            className="mt-4 bg-gray-300 hover:bg-gray-400 text-gray-800 w-full"
-          >
-            Close
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
+              {/* Chat on WhatsApp */}
+              <a href={whatsappLink} target="_blank" rel="noopener noreferrer">
+                <Button className="bg-green-600 hover:bg-green-700 text-white w-full mb-3">
+                  Chat on WhatsApp
+                </Button>
+              </a>
+
+              {/* Call on WhatsApp (or normal phone call) */}
+              <a href={whatsappCall}>
+                <Button className="bg-green-500 hover:bg-green-600 text-white w-full">
+                  Call Us on WhatsApp
+                </Button>
+              </a>
+
+              <Button
+                onClick={() => setIsChatOpen(false)}
+                className="mt-4 bg-gray-300 hover:bg-gray-400 text-gray-800 w-full"
+              >
+                Close
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Testimonials Carousel */}
