@@ -269,17 +269,17 @@ function ProductCard({ product, viewMode = "grid" }) {
       {/* Content Container */}
       <div
         className={`
-          p-2 sm:p-3 lg:p-4 flex-1 flex flex-col
+          p-3 sm:p-3 lg:p-4 flex-1 flex flex-col
           ${
             viewMode === "list"
               ? "justify-between gap-2 sm:gap-3"
               : "gap-2 sm:gap-3"
           }
-          min-h-[120px] sm:min-h-[140px]
+          min-h-[100px] sm:min-h-[140px]
         `}
       >
         {/* Header Section - Product Name and Categories */}
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-3 mb-2 sm:mb-3">
+        <div className="flex  sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-3 mb-1 sm:mb-3">
           {/* Product Name */}
           <div className="flex-1 min-h-[2rem] sm:min-h-[2.25rem] md:min-h-[2.5rem]">
             <h3
@@ -330,12 +330,12 @@ function ProductCard({ product, viewMode = "grid" }) {
         {/* Price and Action Section */}
         <div
           className={`
-            flex w-full justify-between  ${viewMode === "list" ? "mt-auto" : ""}
+            flex w-full items-center justify-between  ${viewMode === "list" ? "mt-auto" : ""}
           `}
         >
           {/* Price */}
           <div className="flex-shrink-0">
-            <span className="text-xs text-gray-500 block mb-0.5 sm:mb-1 sr-only sm:not-sr-only">
+            <span className="text-xs text-gray-500 block mb-0.5 sm:mb-1 ">
               Price
             </span>
             <span
@@ -356,7 +356,7 @@ function ProductCard({ product, viewMode = "grid" }) {
             className={`
               flex items-center justify-center gap-1.5 sm:gap-2 
               px-3 py-2 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm 
-              font-medium text-white flex-1 sm:flex-none
+              font-medium text-white 
               transition-all duration-200 focus:ring-2 focus:ring-indigo-500/50
               min-h-[2rem] sm:min-h-[2.5rem]
               ${
