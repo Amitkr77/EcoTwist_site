@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Menu, Search, ShoppingCart, User, LogIn, X } from "lucide-react";
+import { Menu, ShoppingCart, User, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
@@ -14,14 +14,11 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import {
-  fetchCart,
-  clearCart,
-} from "@/store/slices/cartSlice";
+import { fetchCart, clearCart } from "@/store/slices/cartSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-hot-toast";
 
-// Optional: Add throttle helper
+// Throttle helper
 function throttle(func, limit) {
   let inThrottle;
   return function () {
@@ -35,7 +32,7 @@ function throttle(func, limit) {
   };
 }
 
-// Dummy nav items
+// Nav items
 const navItems = [
   { name: "Home", path: "/" },
   { name: "Shop", path: "/products" },
@@ -61,7 +58,7 @@ export default function Header() {
       state.cart?.items?.reduce((total, item) => total + item.quantity, 0) || 0
   );
 
-  // Check authentication on mount
+  // Check auth on mount
   useEffect(() => {
     const token = localStorage.getItem("user-token");
     setIsAuthenticated(!!token);
@@ -89,7 +86,7 @@ export default function Header() {
     }
   }, [cartStatus, cartError]);
 
-  // Handle scroll
+  // Scroll behavior
   useEffect(() => {
     const handleScroll = throttle(() => {
       const currentScrollY = window.scrollY;
@@ -120,25 +117,25 @@ export default function Header() {
       } ${scrolled ? "shadow-lg" : "shadow-sm"} fixed top-0 left-0 right-0 z-50`}
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center py-2">
           {/* Logo */}
           <Link href="/" aria-label="Homepage" className="flex items-center">
             <img
               src="/logo.png"
               alt="Logo"
-              className="h-12 sm:h-14 lg:h-16 w-auto"
+              className="h-12 sm:h-14 w-auto"
               loading="lazy"
               decoding="async"
             />
           </Link>
 
-          {/* Desktop Navigation */}
+          {/* Desktop Nav */}
           <nav className="hidden md:flex items-center space-x-6 lg:space-x-8 uppercase tracking-wide text-sm font-semibold text-gray-700">
             {navItems.map((item) => (
               <Link
                 key={item.path}
                 href={item.path}
-                className={`relative hover:text-forest transition-colors ${
+                className={`relative group hover:text-forest transition-colors ${
                   isActive(item.path) ? "text-forest" : ""
                 }`}
                 aria-current={isActive(item.path) ? "page" : undefined}
@@ -153,7 +150,7 @@ export default function Header() {
             ))}
           </nav>
 
-          {/* Right Side Icons */}
+          {/* Right Side */}
           <div className="flex items-center gap-2 sm:gap-3 lg:gap-4">
             <Sidebar />
 
@@ -163,9 +160,8 @@ export default function Header() {
                   <Button
                     variant="ghost"
                     className="p-2 rounded-md hover:bg-gray-100"
-                    aria-label="User menu"
                   >
-                    <User className="h-4 sm:h-5 w-4 sm:w-5 text-gray-600" />
+                    <User className="h-5 w-5 text-gray-600" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-44">
@@ -193,33 +189,63 @@ export default function Header() {
                 <Button
                   variant="ghost"
                   className="p-2 rounded-md hover:bg-gray-100"
-                  aria-label="Sign in"
                 >
-                  <User className="h-4 sm:h-5 w-4 sm:w-5 text-gray-600" />
+                  <User className="h-5 w-5 text-gray-600" />
                 </Button>
               </Link>
             )}
 
-            {/* Cart Icon */}
-            <div className="relative text-xs sm:text-sm">
-              <Link href="/cart">
-                <Button
-                  variant="outline"
-                  className="relative text-xs sm:text-sm cursor-pointer"
-                  aria-label={`Cart with ${totalCartItems} items`}
-                >
-                  <ShoppingCart className="w-3 h-3 sm:w-4 sm:h-4 " /> cart
-                  {totalCartItems > 0 && (
-                    <Badge className="absolute -top-2 -right-2 w-4 h-4 sm:w-5 sm:h-5 p-0 text-xs bg-green-500">
-                      {totalCartItems}
-                    </Badge>
-                  )}
-                </Button>
-              </Link>
-            </div>
+            {/* Cart */}
+            <Link href="/cart" className="relative">
+              <Button variant="outline" className="relative">
+                <ShoppingCart className="w-4 h-4 mr-2" />
+                {totalCartItems > 0 && (
+                  <Badge className="absolute -top-2 -right-2 w-5 h-5 p-0 text-xs bg-green-500">
+                    {totalCartItems}
+                  </Badge>
+                )}
+              </Button>
+            </Link>
+
+            {/* Hamburger (Mobile) */}
+            <button
+              className="md:hidden p-2 rounded-md hover:bg-gray-100 transition"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              aria-label="Toggle menu"
+            >
+              {isMenuOpen ? (
+                <X className="h-6 w-6 text-gray-700" />
+              ) : (
+                <Menu className="h-6 w-6 text-gray-700" />
+              )}
+            </button>
           </div>
         </div>
       </div>
+
+      {/* Mobile Menu */}
+      <div
+        className={`md:hidden bg-white shadow-lg overflow-hidden transition-all duration-300 ${
+          isMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+        }`}
+      >
+        <nav className="flex flex-col space-y-4 py-6 px-6 text-gray-700 font-medium">
+          {navItems.map((item) => (
+            <Link
+              key={item.path}
+              href={item.path}
+              onClick={() => setIsMenuOpen(false)}
+              className={`hover:text-forest transition-colors ${
+                isActive(item.path) ? "text-forest" : ""
+              }`}
+            >
+              {item.name}
+            </Link>
+          ))}
+        </nav>
+      </div>
     </header>
-  );
+  );                                                                                                                                                                                                                                                                                                                                                           
 }
+
+
