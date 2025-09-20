@@ -253,7 +253,6 @@ export default function CartPage() {
         return { ...item, productId, quantity: item.quantity || 1 };
       }
 
-      console.log("🔄 Enriching cart item:", productId);
       const product = productsById[productId];
 
       if (!product) {
@@ -321,6 +320,12 @@ export default function CartPage() {
     }
   }, [isGuestCart, enhancedItems, items, dispatch]);
 
+   useEffect(() => {
+    return () => {
+      debouncedUpdateCart.cancel();
+    };
+  }, [debouncedUpdateCart]);
+  
   // Suggested products
   const suggestedProducts = useMemo(() => {
     return allIds
@@ -504,11 +509,7 @@ export default function CartPage() {
       </div>
     );
   }
-  useEffect(() => {
-    return () => {
-      debouncedUpdateCart.cancel();
-    };
-  }, [debouncedUpdateCart]);
+ 
 
   return (
     <div className="mt-16 min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900 pt-20 p-4 md:p-6">
