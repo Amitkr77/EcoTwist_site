@@ -9,6 +9,7 @@ import {
   FaPinterest,
   FaMapMarkedAlt,
 } from "react-icons/fa";
+import { FaPhoneAlt } from "react-icons/fa";
 
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -18,7 +19,7 @@ import CTA from "./CTA";
 export default function Footer() {
   return (
     <footer className="text-slate-600 relative overflow-hidden bg-white">
-      <CTA/>
+      <CTA />
       {/* Main Footer */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12 relative z-10">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-6 sm:gap-8 lg:gap-12 md:place-items-start items-start place-items-center max-w-7xl mx-auto">
@@ -154,8 +155,9 @@ export default function Footer() {
             <ul className="space-y-2 sm:space-y-3">
               {[
                 { name: "About Us", path: "/about" },
+                { name: "Contact Us", path: "/contact" },
+                { name: "Shop", path: "/products" },
                 { name: "Blog", path: "/blog" },
-                { name: "Contact", path: "/contact" },
               ].map((item) => (
                 <li key={item.name}>
                   <Link
@@ -181,7 +183,6 @@ export default function Footer() {
                 { name: "Terms of service", path: "/termsOfService" },
                 { name: "FAQ", path: "/faq" },
                 { name: "Shipping Policy", path: "/shipping-Policy" },
-
               ].map((item) => (
                 <li key={item.name}>
                   <Link
@@ -213,17 +214,34 @@ export default function Footer() {
                   </a>
                 </li>
               </ul>
-            </div>
-            <div className="flex items-center shadow-2xl">
-              <Input
-                className="rounded-none rounded-l-full placeholder:p-1"
-                placeholder="Enter your email"
-                type="text"
-                required
-              />
-              <Button className="rounded-none  bg-gradient-to-r from-green-700 via-green-600 to-green-800 rounded-r-full">
-                subscribe
-              </Button>
+              <p className="font-heading font-semibold text-lg sm:text-xl mb-3 sm:mb-4 text-slate-600 mt-4">
+                For Bulk/Custom Order
+              </p>
+
+              {/* Email */}
+              <div className="flex items-center gap-3 text-sm sm:text-base text-slate-600 mt-3">
+                <CiMail className="text-xl sm:text-2xl text-teal-500" />
+                <a
+                  href="mailto:info@ecotwist.in"
+                  className="hover:text-teal-600 font-medium transition-colors"
+                >
+                  info@ecotwist.in
+                </a>
+              </div>
+
+              {/* Phone */}
+              <div className="flex items-center gap-3 text-sm sm:text-base text-slate-600 mt-2">
+                <FaPhoneAlt className="text-xl sm:text-2xl text-teal-500" />
+                <a
+                  href="tel:+917091323777"
+                  className="hover:text-teal-600 font-medium transition-colors"
+                >
+                  +91 709-132-3777
+                </a>
+              </div>
+
+              {/* Business Hours */}
+             
             </div>
           </div>
         </div>

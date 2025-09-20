@@ -1,4 +1,5 @@
 import React from "react";
+import Footer from "@/components/Footer";
 
 export default function ShippingPolicyPage() {
   return (
@@ -64,6 +65,7 @@ export default function ShippingPolicyPage() {
 
         {/* <footer className="mt-8 text-sm text-slate-500">Last updated: {new Date().toLocaleDateString()}</footer> */}
       </article>
+      <Footer/>
     </main>
   );
 }
