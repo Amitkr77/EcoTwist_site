@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Menu, ShoppingCart, User, X, Heart, LogOut } from "lucide-react";
+import { Menu, ShoppingCart, User, X, Heart, LogOut,LogIn } from "lucide-react";
 import {
   Sheet,
   SheetContent,

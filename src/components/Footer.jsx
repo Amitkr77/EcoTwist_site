@@ -11,8 +11,6 @@ import {
   FaPinterest,
 } from "react-icons/fa";
 import { FaPhoneAlt } from "react-icons/fa";
-
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import CTA from "./CTA";
 import { motion } from "framer-motion";
@@ -150,7 +148,7 @@ export default function Footer() {
                 <h3 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3 sm:mb-4">
                   {section.title}
                 </h3>
-                <ul className="space-y-2">
+                <ul className="space-y-2 ">
                   {section.links.map((link) => (
                     <li key={link.name}>
                       <Link
