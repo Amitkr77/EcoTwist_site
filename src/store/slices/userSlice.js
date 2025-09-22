@@ -2,16 +2,63 @@
 
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
+import { jwtDecode } from "jwt-decode";
 
-// Existing thunks (fetchUserProfile, updateAccountInfo, addAddress, deleteAddress, setDefaultAddress, addToWishlist) remain unchanged
+// Utility to retrieve and validate token, extracting userId
+const getAuthToken = () => {
+  // First check localStorage
+  let token = localStorage.getItem("user-token");
+  console.log(token);
+  // If not found in localStorage, check cookies
+  if (!token) {
+    const cookies = document.cookie.split('; ');
+    const tokenCookie = cookies.find(cookie => cookie.startsWith('user-token='));
+
+    if (tokenCookie) {
+      token = tokenCookie.split('=')[1];
+    }
+  }
+
+  if (!token) {
+    throw new Error("No authentication token found");
+  }
+
+  try {
+    const decoded = jwtDecode(token);
+    console.log(decoded);
+
+    const currentTime = Date.now() / 1000;
+    console.log(currentTime);
+    if (decoded.exp && decoded.exp < currentTime) {
+      // Remove token from both localStorage and cookies if expired
+      localStorage.removeItem("user-token");
+      document.cookie = "user-token=; Max-Age=0";  // Remove from cookies
+      throw new Error("Token has expired");
+    }
+
+    // Check for 'id' instead of 'sub' or 'userId'
+    const userId = decoded.id;
+    if (!userId) {
+      throw new Error("Invalid token: userId not found");
+    }
+
+    return { token, userId };
+  } catch (error) {
+    throw new Error("Invalid token: " + error.message);
+  }
+};
+
+// Utility to handle API errors consistently
+const handleApiError = (error, defaultMessage) => {
+  return error.message || error.response?.data?.message || defaultMessage;
+};
+
+// Thunks
 export const fetchUserProfile = createAsyncThunk(
   "user/fetchProfile",
-  async (userId, { rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem("user-token");
-      if (!token) {
-        return rejectWithValue("No authentication token found");
-      }
+      const { token, userId } = getAuthToken();
       const response = await axios.get(`/api/user/profile/${userId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -20,16 +67,17 @@ export const fetchUserProfile = createAsyncThunk(
       }
       return rejectWithValue("User data not found");
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || "Failed to fetch user");
+      return rejectWithValue(handleApiError(error, "Failed to fetch user"));
     }
   }
 );
 
 export const updateAccountInfo = createAsyncThunk(
   "user/updateAccountInfo",
-  async ({ userId, accountInfo }, { rejectWithValue }) => {
+  async (accountInfo, { rejectWithValue }) => {
+    if (!accountInfo) return rejectWithValue("Invalid account information");
     try {
-      const token = localStorage.getItem("user-token");
+      const { token, userId } = getAuthToken();
       const response = await axios.put(
         `/api/user/profile/${userId}`,
         accountInfo,
@@ -37,16 +85,17 @@ export const updateAccountInfo = createAsyncThunk(
       );
       return response.data.user;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || "Failed to update account");
+      return rejectWithValue(handleApiError(error, "Failed to update account"));
     }
   }
 );
 
 export const addAddress = createAsyncThunk(
   "user/addAddress",
-  async ({ userId, address }, { rejectWithValue }) => {
+  async (address, { rejectWithValue }) => {
+    if (!address) return rejectWithValue("Invalid address");
     try {
-      const token = localStorage.getItem("user-token");
+      const { token, userId } = getAuthToken();
       const response = await axios.post(
         `/api/user/address/${userId}`,
         address,
@@ -54,31 +103,33 @@ export const addAddress = createAsyncThunk(
       );
       return response.data.user.addresses;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || "Failed to add address");
+      return rejectWithValue(handleApiError(error, "Failed to add address"));
     }
   }
 );
 
 export const deleteAddress = createAsyncThunk(
   "user/deleteAddress",
-  async ({ userId, addressId }, { rejectWithValue }) => {
+  async (addressId, { rejectWithValue }) => {
+    if (!addressId) return rejectWithValue("Invalid addressId");
     try {
-      const token = localStorage.getItem("user-token");
+      const { token, userId } = getAuthToken();
       const response = await axios.delete(`/api/user/address/${userId}/${addressId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       return response.data.user.addresses;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || "Failed to delete address");
+      return rejectWithValue(handleApiError(error, "Failed to delete address"));
     }
   }
 );
 
 export const setDefaultAddress = createAsyncThunk(
   "user/setDefaultAddress",
-  async ({ userId, addressId }, { rejectWithValue }) => {
+  async (addressId, { rejectWithValue }) => {
+    if (!addressId) return rejectWithValue("Invalid addressId");
     try {
-      const token = localStorage.getItem("user-token");
+      const { token, userId } = getAuthToken();
       const response = await axios.put(
         `/api/user/address/${userId}/default`,
         { addressId },
@@ -86,16 +137,17 @@ export const setDefaultAddress = createAsyncThunk(
       );
       return response.data.user.addresses;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || "Failed to set default address");
+      return rejectWithValue(handleApiError(error, "Failed to set default address"));
     }
   }
 );
 
 export const addToWishlist = createAsyncThunk(
   "user/addToWishlist",
-  async ({ userId, productId }, { rejectWithValue }) => {
+  async (productId, { rejectWithValue }) => {
+    if (!productId) return rejectWithValue("Invalid productId");
     try {
-      const token = localStorage.getItem("user-token");
+      const { token, userId } = getAuthToken();
       const response = await axios.post(
         `/api/user/wishlist/${userId}`,
         { productId },
@@ -103,23 +155,23 @@ export const addToWishlist = createAsyncThunk(
       );
       return response.data.wishlist.items;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || "Failed to add to wishlist");
+      return rejectWithValue(handleApiError(error, "Failed to add to wishlist"));
     }
   }
 );
 
-// New thunk for removing from wishlist
 export const removeFromWishlist = createAsyncThunk(
   "user/removeFromWishlist",
-  async ({ userId, productId }, { rejectWithValue }) => {
+  async (productId, { rejectWithValue }) => {
+    if (!productId) return rejectWithValue("Invalid productId");
     try {
-      const token = localStorage.getItem("user-token");
+      const { token, userId } = getAuthToken();
       const response = await axios.delete(`/api/user/wishlist/${userId}/${productId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      return response.data.wishlist.items; // Assume backend returns updated wishlist
+      return response.data.wishlist.items;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || "Failed to remove from wishlist");
+      return rejectWithValue(handleApiError(error, "Failed to remove from wishlist"));
     }
   }
 );
@@ -131,6 +183,28 @@ const initialState = {
   error: null,
 };
 
+// Utility to handle async state transitions
+const handleAsyncState = (builder, action, fulfilledHandler) => {
+  builder
+    .addCase(action.pending, (state) => {
+      state.status = "loading";
+      state.error = null;
+    })
+    .addCase(action.fulfilled, (state, action) => {
+      state.status = "succeeded";
+      fulfilledHandler(state, action);
+    })
+    .addCase(action.rejected, (state, action) => {
+      state.status = "failed";
+      state.error = action.payload || "Unknown error";
+      if (action.payload.includes("token")) {
+        state.profile = {};
+        state.wishlist = [];
+        localStorage.removeItem("user-token"); // Clear invalid token
+      }
+    });
+};
+
 const userSlice = createSlice({
   name: "user",
   initialState,
@@ -140,96 +214,35 @@ const userSlice = createSlice({
       state.wishlist = [];
       state.status = "idle";
       state.error = null;
+      localStorage.removeItem("user-token"); // Clear token on logout
     },
     updateWishlist(state, action) {
       state.wishlist = Array.isArray(action.payload) ? action.payload : state.wishlist;
     },
   },
   extraReducers: (builder) => {
-    builder
-      .addCase(fetchUserProfile.pending, (state) => {
-        state.status = "loading";
-        state.error = null;
-      })
-      .addCase(fetchUserProfile.fulfilled, (state, action) => {
-        state.status = "succeeded";
-        state.profile = action.payload || {};
-        state.wishlist = action.payload?.wishlist?.items || [];
-      })
-      .addCase(fetchUserProfile.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = action.payload || "Unknown error";
-      })
-      .addCase(updateAccountInfo.pending, (state) => {
-        state.status = "loading";
-        state.error = null;
-      })
-      .addCase(updateAccountInfo.fulfilled, (state, action) => {
-        state.status = "succeeded";
-        state.profile = action.payload || {};
-      })
-      .addCase(updateAccountInfo.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = action.payload || "Unknown error";
-      })
-      .addCase(addAddress.pending, (state) => {
-        state.status = "loading";
-        state.error = null;
-      })
-      .addCase(addAddress.fulfilled, (state, action) => {
-        state.status = "succeeded";
-        state.profile.addresses = action.payload || [];
-      })
-      .addCase(addAddress.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = action.payload || "Unknown error";
-      })
-      .addCase(deleteAddress.pending, (state) => {
-        state.status = "loading";
-        state.error = null;
-      })
-      .addCase(deleteAddress.fulfilled, (state, action) => {
-        state.status = "succeeded";
-        state.profile.addresses = action.payload || [];
-      })
-      .addCase(deleteAddress.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = action.payload || "Unknown error";
-      })
-      .addCase(setDefaultAddress.pending, (state) => {
-        state.status = "loading";
-        state.error = null;
-      })
-      .addCase(setDefaultAddress.fulfilled, (state, action) => {
-        state.status = "succeeded";
-        state.profile.addresses = action.payload || [];
-      })
-      .addCase(setDefaultAddress.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = action.payload || "Unknown error";
-      })
-      .addCase(addToWishlist.pending, (state) => {
-        state.status = "loading";
-      })
-      .addCase(addToWishlist.fulfilled, (state, action) => {
-        state.status = "succeeded";
-        state.wishlist = action.payload || [];
-      })
-      .addCase(addToWishlist.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = action.payload || "Unknown error";
-      })
-      .addCase(removeFromWishlist.pending, (state) => {
-        state.status = "loading";
-      })
-      .addCase(removeFromWishlist.fulfilled, (state, action) => {
-        state.status = "succeeded";
-        state.wishlist = action.payload || [];
-      })
-      .addCase(removeFromWishlist.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = action.payload || "Unknown error";
-      });
+    handleAsyncState(builder, fetchUserProfile, (state, action) => {
+      state.profile = action.payload || {};
+      state.wishlist = action.payload?.wishlist?.items || [];
+    });
+    handleAsyncState(builder, updateAccountInfo, (state, action) => {
+      state.profile = action.payload || {};
+    });
+    handleAsyncState(builder, addAddress, (state, action) => {
+      state.profile = { ...state.profile, addresses: action.payload || [] };
+    });
+    handleAsyncState(builder, deleteAddress, (state, action) => {
+      state.profile = { ...state.profile, addresses: action.payload || [] };
+    });
+    handleAsyncState(builder, setDefaultAddress, (state, action) => {
+      state.profile = { ...state.profile, addresses: action.payload || [] };
+    });
+    handleAsyncState(builder, addToWishlist, (state, action) => {
+      state.wishlist = action.payload || [];
+    });
+    handleAsyncState(builder, removeFromWishlist, (state, action) => {
+      state.wishlist = action.payload || [];
+    });
   },
 });
 

@@ -22,9 +22,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useDebounce } from "use-debounce";
 import toast from "react-hot-toast";
 import { mergeGuestCart, fetchCart } from "@/store/slices/cartSlice";
+import { jwtDecode } from "jwt-decode";
 
 // Constants for API endpoints
 const API_ENDPOINTS = {
@@ -50,29 +50,26 @@ export default function LoginPage() {
   const [resetMessage, setResetMessage] = useState("");
   const [resetLoading, setResetLoading] = useState(false);
 
-  // Debounce form input changes
-  const [debouncedFormData] = useDebounce(formData, 300);
-
   // Validate form inputs
   const validateForm = useCallback(() => {
     const newErrors = { email: "", password: "", general: "" };
-    if (!debouncedFormData.email) {
+    if (!formData.email) {
       newErrors.email = "Email is required.";
-    } else if (!EMAIL_REGEX.test(debouncedFormData.email)) {
+    } else if (!EMAIL_REGEX.test(formData.email)) {
       newErrors.email = "Please enter a valid email.";
     }
-    if (!debouncedFormData.password) {
+    if (!formData.password) {
       newErrors.password = "Password is required.";
-    } else if (debouncedFormData.password.length < 6) {
+    } else if (formData.password.length < 6) {
       newErrors.password = "Password must be at least 6 characters.";
     }
     setErrors(newErrors);
     return !newErrors.email && !newErrors.password;
-  }, [debouncedFormData]);
+  }, [formData]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value.trim() }));
     setErrors((prev) => ({ ...prev, general: "" }));
   };
 
@@ -85,13 +82,16 @@ export default function LoginPage() {
     setErrors((prev) => ({ ...prev, general: "" }));
 
     try {
+      console.log("Sending login request with:", formData); // Debug log
       const res = await fetch(API_ENDPOINTS.LOGIN, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(debouncedFormData),
+        body: JSON.stringify(formData),
+        credentials: "include", // Ensure cookies are sent
       });
 
       const data = await res.json();
+      console.log("Login response:", data); // Debug log
 
       if (res.ok) {
         // Store the token
@@ -100,9 +100,11 @@ export default function LoginPage() {
         // Decode token to get user ID
         try {
           const decoded = jwtDecode(data.token);
-          const userId = decoded?.userId || decoded?.id || decoded?.sub;
+          const userId = decoded?.id || decoded?.sub || decoded?.userId;
           if (userId) {
             localStorage.setItem("user-id", userId);
+          } else {
+            console.error("No userId found in token:", decoded);
           }
         } catch (decodeError) {
           console.error("Failed to decode token:", decodeError);
@@ -112,13 +114,9 @@ export default function LoginPage() {
         const guestCart = localStorage.getItem("guest-cart");
         if (guestCart) {
           console.log("🛒 Guest cart detected, merging with auth cart...");
-
           try {
-            // Merge guest cart first
             await dispatch(mergeGuestCart()).unwrap();
             console.log("✅ Guest cart merged successfully");
-
-            // Show success message if items were merged
             const mergedCart = localStorage.getItem("guest-cart");
             if (
               !mergedCart ||
@@ -143,7 +141,6 @@ export default function LoginPage() {
         }, 1500);
 
         toast.success("Welcome back! Logging you in...", { duration: 2000 });
-        
       } else {
         setErrors((prev) => ({
           ...prev,
@@ -356,7 +353,7 @@ export default function LoginPage() {
                 placeholder="Enter your email"
                 value={resetEmail}
                 onChange={(e) => {
-                  setResetEmail(e.target.value);
+                  setResetEmail(e.target.value.trim());
                   setResetMessage("");
                 }}
                 className="w-full border-teal-200 focus:border-teal-400 focus:ring-teal-400 transition-colors duration-200"

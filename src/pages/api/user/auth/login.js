@@ -1,50 +1,25 @@
 import jwt from "jsonwebtoken";
 import User from "@/models/User.js";
 import dbConnect from "@/lib/mongodb";
-import cookie from 'cookie'
-
-// Simple in-memory rate limiter (not suitable for production)
-// const rateLimitMap = new Map();
-
-// function isRateLimited(ip) {
-//   const now = Date.now();
-//   const record = rateLimitMap.get(ip) || { count: 0, time: now };
-
-//   if (now - record.time > 15 * 60 * 1000) {
-//     rateLimitMap.set(ip, { count: 1, time: now });
-//     return false;
-//   }
-
-//   if (record.count >= 5) {
-//     return true;
-//   }
-
-//   record.count += 1;
-//   rateLimitMap.set(ip, record);
-//   return false;
-// }
+import cookie from "cookie";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method Not Allowed" });
   }
 
-  // const ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress || "unknown";
-
-  // if (isRateLimited(ip)) {
-  //   return res.status(429).json({ error: "Too many requests" });
-  // }
-
   try {
     await dbConnect();
     const { email, password } = req.body;
 
     if (!email || !password) {
+      console.log("Missing email or password:", { email, password });
       return res.status(400).json({ error: "Missing email or password" });
     }
 
     const user = await User.findOne({ email }).select("+password");
     if (!user) {
+      console.log("No user found for email:", email);
       return res.status(401).json({ error: "Invalid Email" });
     }
 
@@ -63,14 +38,12 @@ export default async function handler(req, res) {
       { expiresIn: "1d" }
     );
 
-    await user.save();
-
     res.setHeader(
       "Set-Cookie",
       cookie.serialize("user-token", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        maxAge: 60 * 60 * 24, 
+        maxAge: 60 * 60 * 24,
         path: "/",
         sameSite: "lax",
       })
@@ -85,10 +58,9 @@ export default async function handler(req, res) {
         email: user.email,
         role: user.role,
       },
-
     });
   } catch (error) {
     console.error("Login error:", error);
     return res.status(500).json({ error: "Internal server error" });
-  } 
+  }
 }

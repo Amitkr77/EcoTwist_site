@@ -92,33 +92,33 @@ export default function Home() {
     fetchProducts();
   }, []);
 
-  const dispatch = useDispatch();
-  useEffect(() => {
-    const token = localStorage.getItem("user-token");
-    if (token) {
-      try {
-        const decoded = jwtDecode(token);
-        const userId = decoded?.userId || decoded?.id || decoded?.sub;
-        if (userId) {
-          dispatch(fetchUserProfile(userId));
-        } else {
-          console.error("User ID not found in token");
-          // toast({
-          //   title: "Error",
-          //   description: "Invalid user token. Please log in again.",
-          //   variant: "destructive",
-          // });
-        }
-      } catch (error) {
-        console.error("Invalid token", error);
-        // toast({
-        //   title: "Error",
-        //   description: "Invalid token. Please log in again.",
-        //   variant: "destructive",
-        // });
-      }
-    }
-  }, [dispatch]);
+  // const dispatch = useDispatch();
+  // useEffect(() => {
+  //   const token = localStorage.getItem("user-token");
+  //   if (token) {
+  //     try {
+  //       const decoded = jwtDecode(token);
+  //       const userId = decoded?.userId || decoded?.id || decoded?.sub;
+  //       if (userId) {
+  //         dispatch(fetchUserProfile(userId));
+  //       } else {
+  //         console.error("User ID not found in token");
+  //         // toast({
+  //         //   title: "Error",
+  //         //   description: "Invalid user token. Please log in again.",
+  //         //   variant: "destructive",
+  //         // });
+  //       }
+  //     } catch (error) {
+  //       console.error("Invalid token", error);
+  //       // toast({
+  //       //   title: "Error",
+  //       //   description: "Invalid token. Please log in again.",
+  //       //   variant: "destructive",
+  //       // });
+  //     }
+  //   }
+  // }, [dispatch]);
 
   const testimonials = [
     {

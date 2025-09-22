@@ -893,14 +893,14 @@ export default function ProductsPage() {
               )}
             </AnimatePresence>
 
-            <button
+            {/* <button
               onClick={() => setShowFilters(!showFilters)}
               className="sm:flex hidden  items-center gap-2 bg-white/20 backdrop-blur-sm px-6 py-3 rounded-lg border border-white/30 hover:bg-white/30 transition-all "
               aria-label="Toggle filters"
             >
               <FunnelIcon className="h-5 w-5" />
               Filters
-            </button>
+            </button> */}
           </div>
         </div>
         {/* Background animations */}
