@@ -207,7 +207,7 @@ export default function Home() {
         <div className="relative w-full lg:w-1/2 h-72 sm:h-80 md:h-96 lg:h-[650px] sm:mt-16 mt-0">
           <div className="relative w-full h-full">
             <Image
-              src="./new_hero1.png"
+              src="./eco-hero-image.png"
               alt="Eco-Friendly Gifts"
               fill
               sizes="(max-width: 768px) 100vw, 50vw"

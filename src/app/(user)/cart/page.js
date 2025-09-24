@@ -562,15 +562,15 @@ export default function CartPage() {
                 >
                   <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
                     {/* Product Image and Details */}
-                    <div className="flex items-start gap-4 w-full lg:w-auto flex-1 ">
-                      <Link href={`/product-info/${item.productId}`} className="relative bg-yellow-300 flex-shrink-0">
+                    <div className="flex items-start gap-4 w-full lg:w-auto flex-1">
+                      <Link href={`/product-info/${item.productId}`} className="relative  flex-shrink-0">
                         {Array.isArray(item.images) && item.images[0] ? (
                           <Image
                             src={item.images[0]}
                             alt={item.name || "Product"}
                             width={80}
                             height={80}
-                            className="object-cover rounded-md hover:opacity-80 transition-opacity duration-200"
+                            className="object-cover rounded-md hover:opacity-80 transition-opacity duration-200 h-full"
                           />
                         ) : (
                           <div className="w-20 h-20 bg-gray-200 dark:bg-gray-700 rounded-md flex items-center justify-center">
@@ -816,7 +816,7 @@ export default function CartPage() {
                   </div>
 
                   {/* Promo Code */}
-                  {totalPrice > 0 && (
+                  {/* {totalPrice > 0 && (
                     <div className="space-y-3">
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         <Tag className="w-4 h-4 inline mr-2" />
@@ -847,18 +847,34 @@ export default function CartPage() {
                         </p>
                       )}
                     </div>
-                  )}
+                  )} */}
 
                   {/* Checkout Button */}
                   <Link href="/checkout">
-                    <Button
-                      className="w-full bg-green-600 dark:bg-green-500 hover:bg-green-700 dark:hover:bg-green-600 flex items-center justify-center text-white py-3 text-lg font-semibold shadow-lg"
+                    <button
+                      className={`
+        w-full max-w-md mx-auto 
+        bg-gradient-to-r from-green-600 to-green-500 
+        dark:from-green-500 dark:to-green-400 
+        hover:from-green-700 hover:to-green-600 
+        dark:hover:from-green-600 dark:hover:to-green-500 
+        text-white py-3 px-4 rounded-lg 
+        flex items-center justify-center 
+        text-base sm:text-lg font-semibold 
+        shadow-lg hover:shadow-xl 
+        transition-all duration-300 ease-in-out 
+        focus:outline-none focus:ring-4 focus:ring-green-300 
+        dark:focus:ring-green-700 
+        disabled:bg-gray-400 disabled:cursor-not-allowed 
+        disabled:shadow-none disabled:hover:from-gray-400 disabled:hover:to-gray-400
+      `}
                       disabled={status === "loading" || totalQuantity === 0}
-                      aria-label={`Proceed to checkout for ${finalTotal}`}
+                      aria-label={`Proceed to checkout for ₹${finalTotal}`}
+                      aria-disabled={status === "loading" || totalQuantity === 0}
                     >
-                      <CheckCircle className="w-5 h-5 mr-2" />
-                      Proceed to Checkout - ₹{finalTotal}
-                    </Button>
+                      <CheckCircle className="w-5 h-5 mr-2 sm:w-6 sm:h-6" aria-hidden="true" />
+                      <span className="truncate">Proceed to Checkout - ₹{finalTotal}</span>
+                    </button>
                   </Link>
 
                   {/* Tips */}
@@ -989,7 +1005,7 @@ export default function CartPage() {
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                         className="
                           object-cover w-full h-full
-                          transition-transform duration-300 group-hover:scale-105
+                          transition-all duration-300 group-hover:scale-105
                         "
                         priority={index < 2}
                       />
