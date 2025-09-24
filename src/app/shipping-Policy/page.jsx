@@ -3,6 +3,7 @@ import Footer from "@/components/Footer";
 
 export default function ShippingPolicyPage() {
   return (
+    <div>
     <main className="min-h-screen bg-slate-50 py-12 px-4 sm:px-8 lg:px-24">
       <article className="max-w-4xl mx-auto bg-white rounded-2xl shadow-md p-8 sm:p-12">
         <header className="mb-6">
@@ -65,7 +66,9 @@ export default function ShippingPolicyPage() {
 
         {/* <footer className="mt-8 text-sm text-slate-500">Last updated: {new Date().toLocaleDateString()}</footer> */}
       </article>
-      <Footer/>
+      
     </main>
+    <Footer/>
+    </div>
   );
 }
