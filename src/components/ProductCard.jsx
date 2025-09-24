@@ -156,7 +156,7 @@ function ProductCard({ product, viewMode = "grid" }) {
           min-h-[200px] sm:min-h-[220px] md:min-h-[240px] lg:min-h-[260px]
         `}
       >
-        <Link href={`/product-info/${product._id}`} passHref>
+        <Link href={`/product-info/${product.slug}--${product._id}`} passHref>
           <div className="relative w-full h-full">
             <Image
               src={imageError ? "/placeholder.svg" : images[currentImageIndex]}
@@ -330,7 +330,9 @@ function ProductCard({ product, viewMode = "grid" }) {
         {/* Price and Action Section */}
         <div
           className={`
-            flex w-full items-center justify-between  ${viewMode === "list" ? "mt-auto" : ""}
+            flex w-full items-center justify-between  ${
+              viewMode === "list" ? "mt-auto" : ""
+            }
           `}
         >
           {/* Price */}
