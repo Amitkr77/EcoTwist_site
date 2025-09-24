@@ -33,7 +33,7 @@ export default function Footer() {
         { name: "Privacy Policy", path: "/privacy-policy" },
         { name: "Terms of Service", path: "/termsOfService" },
         { name: "FAQ", path: "/faq" },
-        { name: "Shipping Policy", path: "/shipping-policy" },
+        { name: "Shipping Policy", path: "/shipping-Policy" },
       ],
     },
   ];
@@ -229,7 +229,11 @@ export default function Footer() {
               >
                 EcoTwist
               </Link>{" "}
-              | All rights reserved. | Crafted with 🌿 for a sustainable future
+              | All rights reserved.
+              <span className="block sm:inline">
+                {" "}
+                | Crafted with 🌿 for a sustainable future
+              </span>
             </p>
           </motion.div>
         </div>

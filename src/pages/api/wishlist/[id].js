@@ -6,33 +6,21 @@ export default async function handler(req, res) {
     if (req.method !== 'DELETE') {
         return res.status(405).json({ message: 'Method Not Allowed' });
     }
-
     try {
-        // Authenticate user
         const user = await authMiddleware(req, res);
         if (!user) return res.status(401).json({ message: 'Unauthorized' });
-
-        // Get the productId from URL params (req.query is for query params, req.params is for URL params)
-        const { id } = req.query; // 'id' comes from the URL
-
-        // Validate productId presence
+        const { id } = req.query;
         if (!id) {
             return res.status(400).json({ message: 'Product ID is required' });
         }
-
-        // Find the wishlist and remove the product by id
         const wishlist = await Wishlist.findOneAndUpdate(
-            { userId: user.userId },
+            { userId: user.userId, 'items.productId': id },
             { $pull: { items: { productId: id } } },
-            { new: true } // Return the updated wishlist
+            { new: true }
         );
-
-        // // If the wishlist does not exist or product is not found
-        // if (!wishlist || wishlist.items.length === 0) {
-        //     return res.status(404).json({ message: 'Product not found in your wishlist' });
-        // }
-
-        // Return the updated wishlist
+        if (!wishlist) {
+            return res.status(404).json({ message: 'Product not found in your wishlist' });
+        }
         return res.status(200).json({ message: 'Product removed from wishlist', wishlist });
     } catch (err) {
         console.error('Error removing product from wishlist:', err);

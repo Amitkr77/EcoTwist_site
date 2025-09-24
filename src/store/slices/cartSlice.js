@@ -10,11 +10,11 @@ const getAuthToken = () => {
 // Helper function to enrich cart items with product data
 const enrichCartItems = (items, productsById) => {
   if (!items || !Array.isArray(items)) return [];
-  
+
   return items.map(item => {
     // If item already has all the necessary fields, return as is
-    if (item.name && typeof item.price === 'number' && item.price >= 0 && 
-        (Array.isArray(item.images) && item.images.length > 0)) {
+    if (item.name && typeof item.price === 'number' && item.price >= 0 &&
+      (Array.isArray(item.images) && item.images.length > 0)) {
       return { ...item, quantity: item.quantity || 1 };
     }
 
@@ -39,8 +39,8 @@ const enrichCartItems = (items, productsById) => {
       name: product.name || "Unnamed Product",
       description: product.description || "",
       images: product.images?.map(img => img.url) || [firstImage],
-      price: typeof variant?.price === 'number' ? variant.price : 
-             (typeof product.variants?.[0]?.price === 'number' ? product.variants[0].price : 0),
+      price: typeof variant?.price === 'number' ? variant.price :
+        (typeof product.variants?.[0]?.price === 'number' ? product.variants[0].price : 0),
       variantName: variant?.name || variant?.sku || "",
       stock: product.stock || 999,
       quantity: item.quantity || 1,
@@ -54,7 +54,7 @@ const enrichCartItems = (items, productsById) => {
 // Helper function to save to localStorage safely
 const saveToLocalStorage = (cartItems) => {
   try {
-    localStorage.setItem("guest-cart", JSON.stringify({ 
+    localStorage.setItem("guest-cart", JSON.stringify({
       cart: { items: cartItems },
       timestamp: Date.now()
     }));
@@ -82,12 +82,12 @@ export const fetchCart = createAsyncThunk(
   async (_, { rejectWithValue, getState }) => {
     const token = getAuthToken();
     const { products: { byId } } = getState();
-    
+
     console.log("Fetching cart - Token exists:", !!token);
-    
+
     // Always try to load from localStorage first (for both guest and fallback)
     const localCartItems = loadFromLocalStorage();
-    
+
     if (!token) {
       // Guest user - return enriched local cart
       console.log("Guest user - loading from localStorage:", localCartItems?.length || 0, "items");
@@ -112,40 +112,40 @@ export const fetchCart = createAsyncThunk(
       if (!res.ok) {
         const errorData = await res.text();
         console.error("API cart fetch failed:", errorData);
-        
+
         // If API fails, fallback to localStorage
         if (localCartItems && localCartItems.length > 0) {
           console.warn("API failed, falling back to local cart");
           const enrichedItems = enrichCartItems(localCartItems, byId);
           return { items: enrichedItems };
         }
-        
+
         return rejectWithValue(`Failed to fetch cart: ${errorData}`);
       }
 
       const data = await res.json();
       const cartItems = data.cart?.items || [];
       console.log("API returned", cartItems.length, "items");
-      
+
       // Enrich items with product data if not already present
       const enrichedItems = enrichCartItems(cartItems, byId);
-      
+
       // Also save to localStorage as backup
       if (enrichedItems.length > 0) {
         saveToLocalStorage(enrichedItems);
       }
-      
+
       return { items: enrichedItems };
     } catch (error) {
       console.error("Network error fetching cart:", error);
-      
+
       // Fallback to localStorage on any error
       if (localCartItems && localCartItems.length > 0) {
         console.warn("Network error, falling back to local cart");
         const enrichedItems = enrichCartItems(localCartItems, byId);
         return { items: enrichedItems };
       }
-      
+
       return rejectWithValue(error.message || "Failed to fetch cart");
     }
   }
@@ -230,9 +230,9 @@ export const addToCart = createAsyncThunk(
   async (productData, { rejectWithValue, getState, dispatch }) => {
     const token = getAuthToken();
     const { products: { byId } } = getState();
-    
+
     console.log("Adding to cart:", productData, "Token:", !!token);
-    
+
     // Validate required fields
     if (!productData.productId || !productData.variantSku) {
       console.error("Missing required product data:", productData);
@@ -270,7 +270,7 @@ export const addToCart = createAsyncThunk(
       // Guest user - handle locally
       console.log("Guest user - adding to local cart");
       const localCartItems = loadFromLocalStorage() || [];
-      
+
       // Check if item already exists
       const existingItemIndex = localCartItems.findIndex(
         item => item.productId === cartItem.productId && item.variantSku === cartItem.variantSku
@@ -294,7 +294,7 @@ export const addToCart = createAsyncThunk(
 
       // Save to localStorage
       saveToLocalStorage(updatedItems);
-      
+
       // Return the updated cart
       return { items: updatedItems };
     }
@@ -317,7 +317,7 @@ export const addToCart = createAsyncThunk(
       if (!res.ok) {
         const errorData = await res.text();
         console.error("API add to cart failed:", errorData);
-        
+
         // Fallback to local storage for offline support
         const localCartItems = loadFromLocalStorage() || [];
         const existingItemIndex = localCartItems.findIndex(
@@ -343,17 +343,17 @@ export const addToCart = createAsyncThunk(
       const data = await res.json();
       const cartItems = data.cart?.items || [];
       console.log("API add to cart success, got", cartItems.length, "items");
-      
+
       // Enrich with product data
       const enrichedItems = enrichCartItems(cartItems, byId);
-      
+
       // Save to localStorage as backup
       saveToLocalStorage(enrichedItems);
-      
+
       return { items: enrichedItems };
     } catch (error) {
       console.error("Network error adding to cart:", error);
-      
+
       // Fallback to local storage
       const localCartItems = loadFromLocalStorage() || [];
       const existingItemIndex = localCartItems.findIndex(
@@ -384,9 +384,9 @@ export const removeFromCart = createAsyncThunk(
   async ({ productId, variantSku }, { rejectWithValue, getState }) => {
     const token = getAuthToken();
     const { products: { byId } } = getState();
-    
+
     console.log("Removing from cart:", { productId, variantSku }, "Token:", !!token);
-    
+
     if (!token) {
       // Guest user - handle locally
       console.log("Guest user - removing from local cart");
@@ -394,10 +394,10 @@ export const removeFromCart = createAsyncThunk(
       const updatedItems = localCartItems.filter(
         (item) => !(item.productId === productId && item.variantSku === variantSku)
       );
-      
+
       saveToLocalStorage(updatedItems);
       console.log("Removed item, now", updatedItems.length, "items in cart");
-      
+
       return { items: updatedItems };
     }
 
@@ -415,37 +415,37 @@ export const removeFromCart = createAsyncThunk(
       if (!res.ok) {
         const errorData = await res.text();
         console.error("API remove from cart failed:", errorData);
-        
+
         // Fallback to local storage
         const localCartItems = loadFromLocalStorage() || [];
         const updatedItems = localCartItems.filter(
           (item) => !(item.productId === productId && item.variantSku === variantSku)
         );
-        
+
         saveToLocalStorage(updatedItems);
         return { items: updatedItems };
       }
 
       const data = await res.json();
       const cartItems = data.cart?.items || [];
-      
+
       // Enrich with product data
       const enrichedItems = enrichCartItems(cartItems, byId);
-      
+
       // Save to localStorage as backup
       saveToLocalStorage(enrichedItems);
-      
+
       console.log("Successfully removed item via API");
       return { items: enrichedItems };
     } catch (error) {
       console.error("Network error removing from cart:", error);
-      
+
       // Fallback to local storage
       const localCartItems = loadFromLocalStorage() || [];
       const updatedItems = localCartItems.filter(
         (item) => !(item.productId === productId && item.variantSku === variantSku)
       );
-      
+
       saveToLocalStorage(updatedItems);
       return { items: updatedItems };
     }
@@ -458,9 +458,9 @@ export const updateCart = createAsyncThunk(
   async ({ productId, variantSku, quantity }, { rejectWithValue, getState }) => {
     const token = getAuthToken();
     const { products: { byId } } = getState();
-    
+
     console.log("Updating cart quantity:", { productId, variantSku, quantity }, "Token:", !!token);
-    
+
     if (quantity < 0) {
       return rejectWithValue("Quantity cannot be negative");
     }
@@ -480,10 +480,10 @@ export const updateCart = createAsyncThunk(
         }
         return item;
       }).filter(item => item.quantity > 0);
-      
+
       saveToLocalStorage(updatedItems);
       console.log("Updated quantity, now", updatedItems.length, "items");
-      
+
       return { items: updatedItems };
     }
 
@@ -500,7 +500,7 @@ export const updateCart = createAsyncThunk(
       if (!res.ok) {
         const errorData = await res.text();
         console.error("API update cart failed:", errorData);
-        
+
         // Fallback to local storage
         const localCartItems = loadFromLocalStorage() || [];
         const updatedItems = localCartItems.map((item) => {
@@ -509,25 +509,25 @@ export const updateCart = createAsyncThunk(
           }
           return item;
         }).filter(item => item.quantity > 0);
-        
+
         saveToLocalStorage(updatedItems);
         return { items: updatedItems };
       }
 
       const data = await res.json();
       const cartItems = data.cart?.items || [];
-      
+
       // Enrich with product data
       const enrichedItems = enrichCartItems(cartItems, byId);
-      
+
       // Save to localStorage as backup
       saveToLocalStorage(enrichedItems);
-      
+
       console.log("Successfully updated quantity via API");
       return { items: enrichedItems };
     } catch (error) {
       console.error("Network error updating cart:", error);
-      
+
       // Fallback to local storage
       const localCartItems = loadFromLocalStorage() || [];
       const updatedItems = localCartItems.map((item) => {
@@ -536,7 +536,7 @@ export const updateCart = createAsyncThunk(
         }
         return item;
       }).filter(item => item.quantity > 0);
-      
+
       saveToLocalStorage(updatedItems);
       return { items: updatedItems };
     }
@@ -548,9 +548,9 @@ export const clearCart = createAsyncThunk(
   "cart/clearCart",
   async (_, { rejectWithValue }) => {
     const token = getAuthToken();
-    
+
     console.log("Clearing cart - Token:", !!token);
-    
+
     if (!token) {
       // Guest user - clear local storage
       console.log("Guest user - clearing local storage");
@@ -569,7 +569,7 @@ export const clearCart = createAsyncThunk(
       if (!res.ok) {
         const errorData = await res.text();
         console.error("API clear cart failed:", errorData);
-        
+
         // Fallback - clear local storage
         localStorage.removeItem("guest-cart");
         return { items: [] };
@@ -577,14 +577,14 @@ export const clearCart = createAsyncThunk(
 
       const data = await res.json();
       console.log("Successfully cleared cart via API");
-      
+
       // Also clear localStorage
       localStorage.removeItem("guest-cart");
-      
+
       return data.cart || { items: [] };
     } catch (error) {
       console.error("Network error clearing cart:", error);
-      
+
       // Fallback - clear local storage
       localStorage.removeItem("guest-cart");
       return { items: [] };
@@ -612,8 +612,9 @@ const cartSlice = createSlice({
     },
     // Add this reducer to manually refresh cart after guest actions
     refreshCartItems: (state, action) => {
-      const { products: { byId } } = action.meta || {};
-      state.items = enrichCartItems(action.payload.items || [], byId || {});
+      // const { products: { byId } } = action.meta || {};
+      const byId = action.meta?.products?.byId || {}
+      state.items = enrichCartItems(action.payload.items || [], byId);
       state.totalPrice = state.items.reduce(
         (total, item) => total + (item.price || 0) * (item.quantity || 0),
         0

@@ -112,20 +112,20 @@ function CheckoutPage() {
     setShippingEstimate(postalCode.length > 5 ? 1 : 2);
   };
 
-  const applyPromoCode = () => {
-    const validCodes = {
-      SAVE10: { discount: 10 },
-      FREESHIP: { discount: 0, freeShipping: true },
-    };
-    const promo = validCodes[formData.promoCode.toUpperCase()];
-    if (promo) {
-      setAppliedPromo(promo);
-      if (promo.freeShipping) setShippingEstimate(0);
-      setErrors({ ...errors, promoCode: "" });
-    } else {
-      setErrors({ ...errors, promoCode: "Invalid promo code" });
-    }
-  };
+  // const applyPromoCode = () => {
+  //   const validCodes = {
+  //     SAVE10: { discount: 10 },
+  //     FREESHIP: { discount: 0, freeShipping: true },
+  //   };
+  //   const promo = validCodes[formData.promoCode.toUpperCase()];
+  //   if (promo) {
+  //     setAppliedPromo(promo);
+  //     if (promo.freeShipping) setShippingEstimate(0);
+  //     setErrors({ ...errors, promoCode: "" });
+  //   } else {
+  //     setErrors({ ...errors, promoCode: "Invalid promo code" });
+  //   }
+  // };
 
   const validatePromoCode = (code) => {
     return ["SAVE10", "FREESHIP"].includes(code.toUpperCase());
@@ -167,13 +167,13 @@ function CheckoutPage() {
 
       const result = await dispatch(placeOrder(orderData));
       if (placeOrder.fulfilled.match(result)) {
-        const orderId = result.payload.data._id; // Assuming backend returns _id
+        const orderId = result.payload.data._id; 
         await dispatch(clearCart());
         toast({
           title: "Payment Successful!",
           description: `Order ${orderId} placed successfully. Payment ID: ${paymentId}`,
         });
-        router.push(`/new-order?orderId=${orderId}`);
+        router.push(`/orders?orderId=${orderId}`);
       } else {
         throw new Error(result.error?.message || "Failed to place order");
       }
@@ -213,8 +213,7 @@ function CheckoutPage() {
     }
 
     if (formData.paymentMethod === "online") {
-      // For online payment, RazorpayPayment component will trigger handleRazorpaySuccess
-      // No need to dispatch placeOrder here; it’s handled in handleRazorpaySuccess
+     
       return;
     }
 
@@ -744,7 +743,7 @@ function CheckoutPage() {
           We use secure encryption for all online payments.
         </p>
       </div>
-      <div className="mb-6">
+      {/* <div className="mb-6">
         <label className="block text-sm font-medium text-gray-700">
           Promo Code
         </label>
@@ -777,7 +776,7 @@ function CheckoutPage() {
             Promo applied successfully!
           </p>
         )}
-      </div>
+      </div> */}
       <div>
         <label className="block text-sm font-medium text-gray-700">
           Special Instructions

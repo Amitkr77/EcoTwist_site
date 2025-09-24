@@ -149,7 +149,7 @@ export const addToWishlist = createAsyncThunk(
     try {
       const { token, userId } = getAuthToken();
       const response = await axios.post(
-        `/api/user/wishlist/${userId}`,
+        `/api/wishlist`,
         { productId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -160,13 +160,28 @@ export const addToWishlist = createAsyncThunk(
   }
 );
 
+export const fetchWishlist = createAsyncThunk(
+  "user/fetchWishlist",
+  async (_, { rejectWithValue }) => {
+    try {
+      const { token, userId } = getAuthToken();
+      const response = await axios.get(`/api/wishlist`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return response.data.wishlist.items;
+    } catch (error) {
+      return rejectWithValue(handleApiError(error, "Failed to fetch wishlist"));
+    }
+  }
+);
+
 export const removeFromWishlist = createAsyncThunk(
   "user/removeFromWishlist",
   async (productId, { rejectWithValue }) => {
     if (!productId) return rejectWithValue("Invalid productId");
     try {
       const { token, userId } = getAuthToken();
-      const response = await axios.delete(`/api/user/wishlist/${userId}/${productId}`, {
+      const response = await axios.delete(`/api/wishlist/${productId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       return response.data.wishlist.items;
@@ -204,6 +219,8 @@ const handleAsyncState = (builder, action, fulfilledHandler) => {
       }
     });
 };
+
+
 
 const userSlice = createSlice({
   name: "user",

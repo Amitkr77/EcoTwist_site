@@ -6,17 +6,17 @@ import { addToCart } from "@/store/slices/cartSlice";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ShoppingCart,
-  CheckCircle,
   Heart,
   Loader2,
   ShoppingBag,
 } from "lucide-react";
-import { Button } from "./ui/button";
 import Image from "next/image";
 import axios from "axios";
 import Link from "next/link";
 import { updateWishlist } from "@/store/slices/userSlice";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
+
 
 function ProductCard({ product, viewMode = "grid" }) {
   const dispatch = useDispatch();
@@ -87,26 +87,35 @@ function ProductCard({ product, viewMode = "grid" }) {
     const token = getAuthToken();
     if (!token) {
       console.warn("No authentication token found");
+      router.push("/login"); // Redirect to login
       return;
     }
 
     setWishlistLoading(true);
     try {
-      const response = await axios.post(
-        "/api/wishlist",
-        { productId: product._id },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      let response;
+      if (isInWishlist) {
+        response = await axios.delete(`/api/wishlist/${product._id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      } else {
+        response = await axios.post(
+          "/api/wishlist",
+          { productId: product._id },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      }
 
-      if (response.status === 200 && response.data.success) {
+      if (response.status === 200 || response.status === 201) {
         dispatch(updateWishlist(response.data?.wishlist?.items || []));
       }
     } catch (error) {
       console.error("Failed to toggle wishlist", error);
+      toast.error(error.response?.data?.message || "Failed to update wishlist");
     } finally {
       setWishlistLoading(false);
     }
-  }, [product._id, dispatch]);
+  }, [product._id, dispatch, isInWishlist, router]);
 
   const categories = Array.isArray(product.categories)
     ? product.categories[0].split(" ")[1] ||

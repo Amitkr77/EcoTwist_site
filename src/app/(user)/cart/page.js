@@ -562,8 +562,8 @@ export default function CartPage() {
                 >
                   <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
                     {/* Product Image and Details */}
-                    <div className="flex items-start gap-4 w-full lg:w-auto flex-1">
-                      <Link href={`/product-info/${item.productId}`} className="relative flex-shrink-0">
+                    <div className="flex items-start gap-4 w-full lg:w-auto flex-1 ">
+                      <Link href={`/product-info/${item.productId}`} className="relative bg-yellow-300 flex-shrink-0">
                         {Array.isArray(item.images) && item.images[0] ? (
                           <Image
                             src={item.images[0]}
