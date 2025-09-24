@@ -220,8 +220,6 @@ const handleAsyncState = (builder, action, fulfilledHandler) => {
     });
 };
 
-
-
 const userSlice = createSlice({
   name: "user",
   initialState,
@@ -231,7 +229,7 @@ const userSlice = createSlice({
       state.wishlist = [];
       state.status = "idle";
       state.error = null;
-      localStorage.removeItem("user-token"); // Clear token on logout
+      localStorage.removeItem("user-token"); 
     },
     updateWishlist(state, action) {
       state.wishlist = Array.isArray(action.payload) ? action.payload : state.wishlist;
