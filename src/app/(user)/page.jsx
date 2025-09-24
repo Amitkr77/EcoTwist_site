@@ -30,6 +30,39 @@ import {
 } from "@/components/ui/carousel";
 import { motion } from "framer-motion";
 
+
+const testimonials = [
+  {
+    name: "Priya Sharma",
+    role: "Eco-Entrepreneur",
+    content:
+      "EcoTwist's sustainable products and responsive support made our event a hit. Highly recommend!",
+    rating: 5,
+  },
+  {
+    name: "Rahul Verma",
+    role: "Corporate Buyer",
+    content:
+      "The custom branding options were fantastic. Quick response and eco-friendly packaging!",
+    rating: 4,
+  },
+  {
+    name: "Anita Desai",
+    role: "Sustainability Advocate",
+    content:
+      "Partnering with EcoTwist was seamless. Their commitment to sustainability is inspiring.",
+    rating: 5,
+  },
+  {
+    name: "Anita Desai",
+    role: "Sustainability Advocate",
+    content:
+      "Partnering with EcoTwist was seamless. Their commitment to sustainability is inspiring.",
+    rating: 5,
+  },
+];
+
+
 const stats = [
   {
     icon: <Leaf className="h-8 w-8 sm:h-10 sm:w-10 text-emerald-500" />,
@@ -120,35 +153,35 @@ export default function Home() {
   //   }
   // }, [dispatch]);
 
-  const testimonials = [
-    {
-      name: "Priya sharma",
-      company: "TechCorp Inc.",
-      rating: 5,
-      comment:
-        "EcoTwist's sustainable products and responsive support made our event a hit. Highly recommend!",
-      image:
-        "https://images.unsplash.com/photo-1494790108755-2616b612b0bd?auto=format&fit=crop&w=100&q=80",
-    },
-    {
-      name: "Rahul verma",
-      company: "GreenStart",
-      rating: 5,
-      comment:
-        "The custom branding options were fantastic. Quick response and eco-friendly packaging!",
-      image:
-        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=100&q=80",
-    },
-    {
-      name: "Anita Desai",
-      company: "EcoFlow Solutions",
-      rating: 5,
-      comment:
-        "Partnering with EcoTwist was seamless. Their commitment to sustainability is inspiring.",
-      image:
-        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80",
-    },
-  ];
+  // const testimonials = [
+  //   {
+  //     name: "Priya sharma",
+  //     company: "TechCorp Inc.",
+  //     rating: 5,
+  //     comment:
+  //       "EcoTwist's sustainable products and responsive support made our event a hit. Highly recommend!",
+  //     image:
+  //       "https://images.unsplash.com/photo-1494790108755-2616b612b0bd?auto=format&fit=crop&w=100&q=80",
+  //   },
+  //   {
+  //     name: "Rahul verma",
+  //     company: "GreenStart",
+  //     rating: 5,
+  //     comment:
+  //       "The custom branding options were fantastic. Quick response and eco-friendly packaging!",
+  //     image:
+  //       "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=100&q=80",
+  //   },
+  //   {
+  //     name: "Anita Desai",
+  //     company: "EcoFlow Solutions",
+  //     rating: 5,
+  //     comment:
+  //       "Partnering with EcoTwist was seamless. Their commitment to sustainability is inspiring.",
+  //     image:
+  //       "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80",
+  //   },
+  // ];
 
   return (
     <div className="min-h-screen">
@@ -369,15 +402,7 @@ export default function Home() {
             transition={{ duration: 0.5, delay: 0.4 }}
             className="text-center mt-8 sm:mt-10 md:mt-12 flex items-center"
           >
-            <Button
-              asChild
-              className="px-4 sm:px-6 py-2 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 font-medium text-sm sm:text-base flex items-center gap-2 hover:gap-3 transition-all duration-300 mx-auto"
-            >
-              <Link href="/about">
-                Learn More
-                <MoveRight className="w-4 sm:w-5 h-4 sm:h-5" />
-              </Link>
-            </Button>
+            
           </motion.div>
         </div>
       </section>
@@ -642,56 +667,79 @@ export default function Home() {
       </section>
 
       {/* Customer Testimonials */}
-      <section className="py-8 sm:py-12 lg:py-16 bg-white">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8 sm:mb-10 lg:mb-12">
-            <h2 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-800 mb-3 sm:mb-4">
-              What Our Customers Say
-            </h2>
-            <p className="text-base sm:text-lg lg:text-xl text-slate-600 max-w-md sm:max-w-lg lg:max-w-2xl mx-auto">
-              Join thousands of satisfied customers who trust us for their
-              corporate gifting needs.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 px-0 sm:px-4 lg:px-10">
-            {testimonials.map((testimonial, index) => (
-              <Card key={index} className="glass-card">
-                <CardContent className="p-4 sm:p-6">
-                  <div className="flex items-center mb-3 sm:mb-4">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className="h-3 sm:h-4 w-3 sm:w-4 text-green-400 fill-current"
-                      />
-                    ))}
-                  </div>
-                  <p className="text-sm sm:text-base text-slate-600 mb-3 sm:mb-4 italic">
-                    &quot;{testimonial.comment}&quot;
+      <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="py-8 sm:py-12 md:py-16 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900 dark:to-blue-900 rounded-xl"
+              aria-label="Customer testimonials"
+            >
+              <div className="max-w-full sm:max-w-3xl md:max-w-5xl lg:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="mb-6 sm:mb-8">
+                  <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2 sm:mb-3">
+                    What Our Customers Say
+                  </h2>
+                  <p className="text-sm sm:text-base md:text-lg text-gray-600 dark:text-gray-300 max-w-2xl">
+                    Hear directly from our customers about their experiences with us.
+                    We’re proud to showcase their stories.
                   </p>
-                  <div className="flex items-center">
-                    <Image
-                      src={testimonial.image}
-                      alt={testimonial.name}
-                      width={40}
-                      height={40}
-                      className="w-10 h-10 sm:w-12 sm:h-12 rounded-full mr-2 sm:mr-3 object-cover"
+                </div>
+      
+                <Carousel
+                  className="relative"
+                  opts={{
+                    align: "start",
+                    loop: true,
+                  }}
+                  aria-roledescription="carousel"
+                >
+                  <div className="absolute -top-20 right-4 sm:right-20 sm:flex  z-10 hidden gap-2 sm:gap-3">
+                    <CarouselPrevious
+                      className="h-8 w-8 sm:h-9 sm:w-9 bg-green-600 hover:bg-green-700 text-white rounded-full shadow-sm"
+                      aria-label="Previous testimonial"
                     />
-                    <div>
-                      <p className="font-semibold text-sm sm:text-base text-slate-800">
-                        {testimonial.name}
-                      </p>
-                      <p className="text-xs sm:text-sm text-slate-600">
-                        {testimonial.company}
-                      </p>
-                    </div>
+                    <CarouselNext
+                      className="h-8 w-8 sm:h-9 sm:w-9 bg-green-600 hover:bg-green-700 text-white rounded-full shadow-sm"
+                      aria-label="Next testimonial"
+                    />
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
+                  <CarouselContent className="px-2 sm:px-4 -mx-2 sm:-mx-4">
+                    {testimonials.map((testimonial, index) => (
+                      <CarouselItem
+                        key={index}
+                        className="basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4 px-2 sm:px-3"
+                      >
+                        <Card className="bg-white dark:bg-gray-800 border-none shadow-sm hover:shadow-md transition-shadow duration-200 h-full ">
+                          <CardContent className="p-4 sm:p-6 flex flex-col justify-between  sm:items-start items-center h-full gap-4">
+                            <div className="flex mb-2 sm:mb-3">
+                              {[...Array(testimonial.rating)].map((_, i) => (
+                                <Star
+                                  key={i}
+                                  className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-400 fill-current"
+                                  aria-hidden="true"
+                                />
+                              ))}
+                            </div>
+                            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 line-clamp-4 text-center sm:text-left">
+                              {testimonial.content}
+                            </p>
+                            <div>
+                              <p className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">
+                                {testimonial.name}
+                              </p>
+                              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                                {testimonial.role}
+                              </p>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </CarouselItem>
+                    ))}
+                  </CarouselContent>
+                </Carousel>
+              </div>
+            </motion.section>
     </div>
   );
 }
