@@ -7,11 +7,10 @@ const WishlistItemSchema = new Schema({
   name: String,
   price: Number,
   imageUrl: String,  
-}, { _id: false }); // Optional but recommended
-
+}, { _id: false }); 
 const WishlistSchema = new Schema({
   userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   items: [WishlistItemSchema],
-}, { timestamps: true }); // Recommended
+}, { timestamps: true }); 
 
 export default mongoose.models.Wishlist || mongoose.model('Wishlist', WishlistSchema);
