@@ -66,7 +66,7 @@ import { jwtDecode } from "jwt-decode";
 export default function ProductPage() {
   const dispatch = useDispatch();
   const router = useRouter();
-  const { productId } = useParams();
+  const { slugAndId } = useParams();
   const {
     byId: productsById,
     allIds,
@@ -94,6 +94,9 @@ export default function ProductPage() {
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength).trim() + "...";
   };
+  const productId = useMemo(() => {
+    return slugAndId?.split("--").pop();
+  }, [slugAndId]);
 
   const product = productsById[productId];
 
