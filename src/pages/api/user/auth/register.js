@@ -2,34 +2,10 @@ import User from "@/models/User.js";
 import dbConnect from "@/lib/mongodb";
 import sendEmail from "@/lib/nodemailer/mail-handler";
 
-const rateLimitMap = new Map();
-
-function isRateLimited(ip) {
-  const now = Date.now();
-  const record = rateLimitMap.get(ip) || { count: 0, time: now };
-
-  if (now - record.time > 15 * 60 * 1000) {
-    rateLimitMap.set(ip, { count: 1, time: now });
-    return false;
-  }
-
-  if (record.count >= 5) {
-    return true;
-  }
-
-  record.count += 1;
-  rateLimitMap.set(ip, record);
-  return false;
-}
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
-  }
-
-  const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
-  if (isRateLimited(ip)) {
-    return res.status(429).json({ error: "Too many requests" });
   }
 
   try {
