@@ -7,7 +7,6 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
-  SheetClose,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -128,7 +127,7 @@ export default function Header() {
       } fixed top-0 left-0 right-0 z-50`}
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center py-2">
+        <div className="flex justify-between items-center ">
           <div className="flex items-center">
             {/* Hamburger (Mobile) */}
             <button
@@ -148,7 +147,7 @@ export default function Header() {
               <img
                 src="/logo.png"
                 alt="Logo"
-                className="h-12 sm:h-14 w-auto"
+                className="h-12 sm:h-20 w-auto"
                 loading="lazy"
                 decoding="async"
               />
@@ -160,14 +159,14 @@ export default function Header() {
               <Link
                 key={item.path}
                 href={item.path}
-                className={`relative group hover:text-forest transition-colors ${
-                  isActive(item.path) ? "text-forest" : ""
+                className={`relative group hover:text-green-700 transition-colors ${
+                  isActive(item.path) ? "text-green-700" : ""
                 }`}
                 aria-current={isActive(item.path) ? "page" : undefined}
               >
                 {item.name}
                 <span
-                  className={`absolute left-0 bottom-[-6px] h-[2px] bg-gradient-to-r from-forest to-forest-600 transition-all duration-300 ${
+                  className={`absolute left-0 bottom-[-6px] h-[2px] bg-green-700 transition-all duration-300 ${
                     isActive(item.path) ? "w-full" : "w-0 group-hover:w-full"
                   }`}
                 />
