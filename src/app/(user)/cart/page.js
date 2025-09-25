@@ -197,8 +197,8 @@ export default function CartPage() {
         promo.freeShipping
           ? "Free shipping applied! 🎉"
           : `${promo.discount}% discount applied! Save ₹${newDiscount.toFixed(
-              2
-            )}`
+            2
+          )}`
       );
     } else {
       setDiscount(0);
@@ -294,8 +294,8 @@ export default function CartPage() {
           typeof variant?.price === "number"
             ? variant.price
             : typeof product.variants?.[0]?.price === "number"
-            ? product.variants[0].price
-            : 0,
+              ? product.variants[0].price
+              : 0,
         variantName: variant?.name || variant?.sku || "",
         stock: product.stock || 999,
         quantity: item.quantity || 1,
@@ -851,9 +851,8 @@ export default function CartPage() {
                 Order Summary
               </h3>
               <ChevronDown
-                className={`w-5 h-5 text-gray-600 dark:text-gray-300 transition-transform ${
-                  showSummary ? "rotate-180" : ""
-                }`}
+                className={`w-5 h-5 text-gray-600 dark:text-gray-300 transition-transform ${showSummary ? "rotate-180" : ""
+                  }`}
               />
             </button>
 
@@ -993,8 +992,7 @@ export default function CartPage() {
                     </h4>
                     <ul className="space-y-1 text-gray-700 dark:text-gray-300 list-disc pl-4">
                       <li>
-                        Items in your cart aren't reserved checkout soon to
-                        avoid stocks out.
+                        Items in your cart aren&apos;t reserved checkout soon to avoid stocks out.
                       </li>
                       <li>Enjoy free shipping on all orders over ₹499.</li>
                       {isGuestCart && (
@@ -1208,35 +1206,30 @@ export default function CartPage() {
                         }}
                         className={`
                           w-full py-2.5 px-3 rounded-lg text-sm font-medium
-                          border-2 ${
-                            showSuccess
-                              ? "border-green-600/30"
-                              : "border-green-500/20"
+                          border-2 ${showSuccess
+                            ? "border-green-600/30"
+                            : "border-green-500/20"
                           } 
-                          ${
-                            showSuccess
-                              ? "bg-green-100"
-                              : isAdding
+                          ${showSuccess
+                            ? "bg-green-100"
+                            : isAdding
                               ? "bg-green-100/50"
                               : "bg-green-50"
                           } 
-                          ${
-                            showSuccess
-                              ? "text-green-700"
-                              : isAdding
+                          ${showSuccess
+                            ? "text-green-700"
+                            : isAdding
                               ? "text-green-600"
                               : "text-green-700"
                           }
-                          ${
-                            isAdding || showSuccess
-                              ? "cursor-not-allowed"
-                              : "hover:bg-green-100 hover:border-green-500/40"
+                          ${isAdding || showSuccess
+                            ? "cursor-not-allowed"
+                            : "hover:bg-green-100 hover:border-green-500/40"
                           }
                           dark:border-green-400/30 
-                          dark:${
-                            showSuccess
-                              ? "bg-green-900/40"
-                              : isAdding
+                          dark:${showSuccess
+                            ? "bg-green-900/40"
+                            : isAdding
                               ? "bg-green-900/30"
                               : "bg-green-900/20"
                           } 
@@ -1244,8 +1237,7 @@ export default function CartPage() {
                           transition-all duration-200 flex items-center justify-center gap-2
                           focus:ring-2 focus:ring-green-500/30 focus:outline-none
                           group-hover:border-green-500/50
-                          ${
-                            isAdding || showSuccess ? "pointer-events-none" : ""
+                          ${isAdding || showSuccess ? "pointer-events-none" : ""
                           }
                         `}
                         disabled={isAdding || showSuccess}
