@@ -18,7 +18,7 @@ export default async function handler(req, res) {
     if (!user) return res.status(401).json({ message: 'Unauthorized' });
 
     // Find the order by orderId and userId to ensure ownership
-    const order = await Order.findOne({ id, userId: user.userId });
+    const order = await Order.findOne({ orderId: id, userId: user.userId });
     if (!order) {
       return res.status(404).json({ message: 'Order not found' });
     }
