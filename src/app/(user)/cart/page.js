@@ -54,9 +54,11 @@ export default function CartPage() {
     error,
     isGuestCart = false,
   } = useSelector((state) => state.cart || {});
-  const { byId: productsById = {}, allIds = [], status: productStatus } = useSelector(
-    (state) => state.products || {}
-  );
+  const {
+    byId: productsById = {},
+    allIds = [],
+    status: productStatus,
+  } = useSelector((state) => state.products || {});
   const [promoCode, setPromoCode] = useState("");
   const [discount, setDiscount] = useState(0);
   const [isClearing, setIsClearing] = useState(false);
@@ -187,12 +189,16 @@ export default function CartPage() {
     const code = promoCode.toLowerCase().trim();
     if (validCodes[code]) {
       const promo = validCodes[code];
-      const newDiscount = promo.discount ? totalPrice * (promo.discount / 100) : 0;
+      const newDiscount = promo.discount
+        ? totalPrice * (promo.discount / 100)
+        : 0;
       setDiscount(newDiscount);
       toast.success(
         promo.freeShipping
           ? "Free shipping applied! 🎉"
-          : `${promo.discount}% discount applied! Save ₹${newDiscount.toFixed(2)}`
+          : `${promo.discount}% discount applied! Save ₹${newDiscount.toFixed(
+              2
+            )}`
       );
     } else {
       setDiscount(0);
@@ -201,7 +207,7 @@ export default function CartPage() {
   };
 
   // Calculate final total
-  const shipping = discount > 0 && promoCode.toLowerCase().trim() === "freeship" ? 0 : 50;
+  const shipping = totalPrice >= 499 ? 0 : 69;
   const finalTotal = Math.max(0, totalPrice - discount + shipping).toFixed(2);
 
   // Handle clear cart
@@ -234,7 +240,9 @@ export default function CartPage() {
           productId: "unknown", // Fallback to avoid breaking the UI
           name: item.name || "Product not found",
           price: typeof item.price === "number" ? item.price : 0,
-          images: Array.isArray(item.images) ? item.images : ["/product_image.png"],
+          images: Array.isArray(item.images)
+            ? item.images
+            : ["/product_image.png"],
           description: item.description || "",
           variantName: item.variantName || "",
           quantity: item.quantity || 1,
@@ -262,7 +270,9 @@ export default function CartPage() {
           productId,
           name: item.name || "Product not found",
           price: typeof item.price === "number" ? item.price : 0,
-          images: Array.isArray(item.images) ? item.images : ["/product_image.png"],
+          images: Array.isArray(item.images)
+            ? item.images
+            : ["/product_image.png"],
           description: item.description || "",
           variantName: item.variantName || "",
           quantity: item.quantity || 1,
@@ -284,14 +294,19 @@ export default function CartPage() {
           typeof variant?.price === "number"
             ? variant.price
             : typeof product.variants?.[0]?.price === "number"
-              ? product.variants[0].price
-              : 0,
+            ? product.variants[0].price
+            : 0,
         variantName: variant?.name || variant?.sku || "",
         stock: product.stock || 999,
         quantity: item.quantity || 1,
       };
 
-      console.log("✅ Enriched item:", enrichedItem.name, "Price:", enrichedItem.price);
+      console.log(
+        "✅ Enriched item:",
+        enrichedItem.name,
+        "Price:",
+        enrichedItem.price
+      );
       return enrichedItem;
     },
     [productsById]
@@ -310,7 +325,10 @@ export default function CartPage() {
     if (isGuestCart && enhancedItems.length > 0 && items.length > 0) {
       // Ensure all items are properly enriched
       const needsRefresh = items.some(
-        (item) => !item.name || typeof item.price !== "number" || !Array.isArray(item.images)
+        (item) =>
+          !item.name ||
+          typeof item.price !== "number" ||
+          !Array.isArray(item.images)
       );
 
       if (needsRefresh) {
@@ -319,7 +337,6 @@ export default function CartPage() {
       }
     }
   }, [isGuestCart, enhancedItems, items, dispatch]);
-
 
   // Suggested products
   const suggestedProducts = useMemo(() => {
@@ -331,7 +348,8 @@ export default function CartPage() {
   }, [allIds, enhancedItems, productsById]);
 
   // Show loading state only during initial load or when no items but loading
-  const isLoading = initialLoad || (status === "loading" && productStatus !== "succeeded");
+  const isLoading =
+    initialLoad || (status === "loading" && productStatus !== "succeeded");
 
   if (isLoading && enhancedItems.length === 0) {
     return (
@@ -347,7 +365,12 @@ export default function CartPage() {
   }
 
   // Only show error state for critical errors after initial load
-  if (status === "failed" && !initialLoad && error && !error.includes("Failed to fetch cart")) {
+  if (
+    status === "failed" &&
+    !initialLoad &&
+    error &&
+    !error.includes("Failed to fetch cart")
+  ) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-red-50 to-pink-100 dark:from-red-900 dark:to-pink-900 pt-20 text-center">
         <div className="max-w-2xl mx-auto bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
@@ -367,7 +390,10 @@ export default function CartPage() {
               Retry
             </Button>
             <Link href="/products">
-              <Button variant="outline" className="border-gray-300 dark:border-gray-600">
+              <Button
+                variant="outline"
+                className="border-gray-300 dark:border-gray-600"
+              >
                 Continue Shopping
               </Button>
             </Link>
@@ -416,7 +442,10 @@ export default function CartPage() {
 
               {isGuestCart && (
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-4">
-                  <Link href="/login" className="text-green-600 hover:underline font-medium">
+                  <Link
+                    href="/login"
+                    className="text-green-600 hover:underline font-medium"
+                  >
                     Sign in
                   </Link>{" "}
                   to save your cart and get personalized recommendations
@@ -440,10 +469,14 @@ export default function CartPage() {
                         exit={{ opacity: 0, y: -20 }}
                         className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600"
                       >
-                        <Link href={`/product-info/${product._id}`} className="block">
+                        <Link
+                          href={`/product-info/${product._id}`}
+                          className="block"
+                        >
                           <Image
                             src={
-                              product.images?.find((img) => img.isPrimary)?.url ||
+                              product.images?.find((img) => img.isPrimary)
+                                ?.url ||
                               product.images?.[0]?.url ||
                               "/product_image.png"
                             }
@@ -457,7 +490,12 @@ export default function CartPage() {
                           {product.name}
                         </h4>
                         <p className="text-green-600 dark:text-green-400 font-semibold mb-3">
-                          ₹{Math.min(...(product.variants?.map((v) => v.price || 0) || [0])).toFixed(2)}
+                          ₹
+                          {Math.min(
+                            ...(product.variants?.map((v) => v.price || 0) || [
+                              0,
+                            ])
+                          ).toFixed(2)}
                         </p>
                         <Button
                           variant="outline"
@@ -465,7 +503,10 @@ export default function CartPage() {
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            console.log("🛒 Adding suggested product to cart:", product._id);
+                            console.log(
+                              "🛒 Adding suggested product to cart:",
+                              product._id
+                            );
                             dispatch(
                               addToCart({
                                 productId: product._id,
@@ -475,7 +516,10 @@ export default function CartPage() {
                             )
                               .unwrap()
                               .then((result) => {
-                                console.log("✅ Suggested product added:", result);
+                                console.log(
+                                  "✅ Suggested product added:",
+                                  result
+                                );
                                 toast.success(`${product.name} added to cart!`);
                                 // For guest users, manually refresh to ensure enrichment
                                 if (isGuestCart) {
@@ -485,7 +529,10 @@ export default function CartPage() {
                                 }
                               })
                               .catch((err) => {
-                                console.error("❌ Failed to add suggested product:", err);
+                                console.error(
+                                  "❌ Failed to add suggested product:",
+                                  err
+                                );
                                 toast.error(err || "Failed to add to cart");
                               });
                           }}
@@ -505,7 +552,6 @@ export default function CartPage() {
     );
   }
 
-
   return (
     <div className="mt-16 min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900 pt-20 p-4 md:p-6">
       {/* Header */}
@@ -518,7 +564,8 @@ export default function CartPage() {
         </Link>
         <div className="flex-1">
           <h2 className="text-2xl md:text-3xl font-medium text-gray-900 dark:text-gray-100">
-            Shopping Cart ({totalQuantity} {totalQuantity === 1 ? "item" : "items"})
+            Shopping Cart ({totalQuantity}{" "}
+            {totalQuantity === 1 ? "item" : "items"})
           </h2>
           {isGuestCart && (
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -538,7 +585,9 @@ export default function CartPage() {
           {status === "loading" && enhancedItems.length === 0 && (
             <div className="bg-white dark:bg-gray-800 rounded-lg p-8 text-center border border-gray-200 dark:border-gray-700">
               <Loader2 className="w-8 h-8 animate-spin text-green-600 dark:text-green-400 mx-auto mb-4" />
-              <p className="text-gray-600 dark:text-gray-400">Updating your cart...</p>
+              <p className="text-gray-600 dark:text-gray-400">
+                Updating your cart...
+              </p>
             </div>
           )}
 
@@ -546,7 +595,9 @@ export default function CartPage() {
             {enhancedItems.map((item, index) => {
               // Ensure productId is a valid string
               if (!item.productId || typeof item.productId !== "string") {
-                console.warn(`Invalid productId for item: ${JSON.stringify(item)}`);
+                console.warn(
+                  `Invalid productId for item: ${JSON.stringify(item)}`
+                );
                 return null; // Skip rendering this item
               }
 
@@ -563,7 +614,10 @@ export default function CartPage() {
                   <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
                     {/* Product Image and Details */}
                     <div className="flex items-start gap-4 w-full lg:w-auto flex-1">
-                      <Link href={`/product-info/${item.productId}`} className="relative  flex-shrink-0">
+                      <Link
+                        href={`/product-info/${item.productId}`}
+                        className="relative  flex-shrink-0"
+                      >
                         {Array.isArray(item.images) && item.images[0] ? (
                           <Image
                             src={item.images[0]}
@@ -611,7 +665,12 @@ export default function CartPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => debouncedUpdateCart(item, Math.max(1, item.quantity - 1))}
+                          onClick={() =>
+                            debouncedUpdateCart(
+                              item,
+                              Math.max(1, item.quantity - 1)
+                            )
+                          }
                           disabled={status === "loading" || item.quantity <= 1}
                           className="border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 h-10 w-10 p-0 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
                           aria-label={`Decrease quantity of ${item.name}`}
@@ -623,7 +682,10 @@ export default function CartPage() {
                           type="number"
                           value={item.quantity}
                           onChange={(e) => {
-                            const newQty = Math.max(1, parseInt(e.target.value) || 1);
+                            const newQty = Math.max(
+                              1,
+                              parseInt(e.target.value) || 1
+                            );
                             if (newQty !== item.quantity) {
                               debouncedUpdateCart(item, newQty);
                             }
@@ -638,7 +700,9 @@ export default function CartPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => debouncedUpdateCart(item, item.quantity + 1)}
+                          onClick={() =>
+                            debouncedUpdateCart(item, item.quantity + 1)
+                          }
                           disabled={status === "loading"}
                           className="border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 h-10 w-10 p-0 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
                           aria-label={`Increase quantity of ${item.name}`}
@@ -670,8 +734,9 @@ export default function CartPage() {
                               Remove Item?
                             </AlertDialogTitle>
                             <AlertDialogDescription className="text-gray-600 dark:text-gray-400">
-                              Are you sure you want to remove <strong>{item.name}</strong> from your cart? This action
-                              cannot be undone.
+                              Are you sure you want to remove{" "}
+                              <strong>{item.name}</strong> from your cart? This
+                              action cannot be undone.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
@@ -688,12 +753,19 @@ export default function CartPage() {
                                 )
                                   .unwrap()
                                   .then(() => {
-                                    toast.info(`${item.name} removed from cart`);
+                                    toast.info(
+                                      `${item.name} removed from cart`
+                                    );
                                     console.log("✅ Item removed from UI");
                                   })
                                   .catch((err) => {
-                                    toast.error(err || "Failed to remove from cart");
-                                    console.error("❌ Remove from UI failed:", err);
+                                    toast.error(
+                                      err || "Failed to remove from cart"
+                                    );
+                                    console.error(
+                                      "❌ Remove from UI failed:",
+                                      err
+                                    );
                                   });
                               }}
                               className="bg-red-600 dark:bg-red-500 text-white hover:bg-red-700 dark:hover:bg-red-600"
@@ -744,7 +816,8 @@ export default function CartPage() {
                       Clear Entire Cart?
                     </AlertDialogTitle>
                     <AlertDialogDescription className="text-gray-600 dark:text-gray-400">
-                      This will remove all {enhancedItems.length} items from your cart. This action cannot be undone.
+                      This will remove all {enhancedItems.length} items from
+                      your cart. This action cannot be undone.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -770,12 +843,17 @@ export default function CartPage() {
             <button
               onClick={() => setShowSummary(!showSummary)}
               className="lg:hidden w-full flex justify-between items-center mb-4 pb-2 border-b border-gray-200 dark:border-gray-700"
-              aria-label={showSummary ? "Hide order summary" : "Show order summary"}
+              aria-label={
+                showSummary ? "Hide order summary" : "Show order summary"
+              }
             >
-              <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">Order Summary</h3>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+                Order Summary
+              </h3>
               <ChevronDown
-                className={`w-5 h-5 text-gray-600 dark:text-gray-300 transition-transform ${showSummary ? "rotate-180" : ""
-                  }`}
+                className={`w-5 h-5 text-gray-600 dark:text-gray-300 transition-transform ${
+                  showSummary ? "rotate-180" : ""
+                }`}
               />
             </button>
 
@@ -791,26 +869,49 @@ export default function CartPage() {
                   {/* Price Breakdown */}
                   <div className="space-y-3">
                     <div className="flex justify-between py-2 border-b border-gray-200 dark:border-gray-700">
-                      <span className="text-gray-700 dark:text-gray-300">Subtotal ({totalQuantity} items)</span>
-                      <span className="font-semibold text-gray-900 dark:text-gray-100">₹{totalPrice.toFixed(2)}</span>
+                      <span className="text-gray-700 dark:text-gray-300">
+                        Subtotal ({totalQuantity} items)
+                      </span>
+                      <span className="font-semibold text-gray-900 dark:text-gray-100">
+                        ₹{totalPrice.toFixed(2)}
+                      </span>
                     </div>
 
                     <div className="flex justify-between py-2">
-                      <span className="text-gray-700 dark:text-gray-300">Shipping Estimate</span>
-                      <span className="font-semibold text-gray-900 dark:text-gray-100">₹{shipping.toFixed(2)}</span>
+                      <span className="text-gray-700 dark:text-gray-300">
+                        Shipping Estimate
+                      </span>
+                      <span>
+                        {shipping === 0 ? (
+                          <>
+                            <span className="line-through text-gray-500 mr-1">
+                              ₹69
+                            </span>
+                            <span className="text-green-600">FREE</span>
+                          </>
+                        ) : (
+                          `₹${shipping.toFixed(2)}`
+                        )}
+                      </span>
                     </div>
 
                     {discount > 0 && (
                       <div className="flex justify-between py-2 text-green-600 dark:text-green-400">
                         <span>Discount Applied</span>
-                        <span className="font-semibold">-₹{discount.toFixed(2)}</span>
+                        <span className="font-semibold">
+                          -₹{discount.toFixed(2)}
+                        </span>
                       </div>
                     )}
 
                     <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
                       <div className="flex justify-between items-center">
-                        <span className="text-lg font-bold text-gray-900 dark:text-gray-100">Total</span>
-                        <span className="text-2xl font-bold text-green-600 dark:text-green-400">₹{finalTotal}</span>
+                        <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                          Total
+                        </span>
+                        <span className="text-2xl font-bold text-green-600 dark:text-green-400">
+                          ₹{finalTotal}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -870,10 +971,17 @@ export default function CartPage() {
       `}
                       disabled={status === "loading" || totalQuantity === 0}
                       aria-label={`Proceed to checkout for ₹${finalTotal}`}
-                      aria-disabled={status === "loading" || totalQuantity === 0}
+                      aria-disabled={
+                        status === "loading" || totalQuantity === 0
+                      }
                     >
-                      <CheckCircle className="w-5 h-5 mr-2 sm:w-6 sm:h-6" aria-hidden="true" />
-                      <span className="truncate">Proceed to Checkout - ₹{finalTotal}</span>
+                      <CheckCircle
+                        className="w-5 h-5 mr-2 sm:w-6 sm:h-6"
+                        aria-hidden="true"
+                      />
+                      <span className="truncate">
+                        Proceed to Checkout - ₹{finalTotal}
+                      </span>
                     </button>
                   </Link>
 
@@ -885,14 +993,16 @@ export default function CartPage() {
                     </h4>
                     <ul className="space-y-1 text-gray-700 dark:text-gray-300 list-disc pl-4">
                       <li>
-                        Use <code className="bg-blue-100 dark:bg-blue-800 px-1 py-0.5 rounded text-xs">SAVE10</code> for 10% off
+                        Items in your cart aren't reserved checkout soon to
+                        avoid stocks out.
                       </li>
-                      <li>
-                        Get free shipping with <code className="bg-blue-100 dark:bg-blue-800 px-1 py-0.5 rounded text-xs">FREESHIP</code>
-                      </li>
+                      <li>Enjoy free shipping on all orders over ₹499.</li>
                       {isGuestCart && (
                         <li>
-                          <Link href="/login" className="text-green-600 hover:underline">
+                          <Link
+                            href="/login"
+                            className="text-green-600 hover:underline"
+                          >
                             Sign in
                           </Link>{" "}
                           to save your cart and unlock exclusive offers
@@ -917,8 +1027,12 @@ export default function CartPage() {
           <div className="flex justify-between items-center max-w-4xl mx-auto">
             <div className="space-y-1">
               <div className="flex items-baseline justify-between">
-                <span className="text-lg font-bold text-gray-900 dark:text-gray-100">Total</span>
-                <span className="text-xl font-bold text-green-600 dark:text-green-400 ml-2">₹{finalTotal}</span>
+                <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                  Total
+                </span>
+                <span className="text-xl font-bold text-green-600 dark:text-green-400 ml-2">
+                  ₹{finalTotal}
+                </span>
               </div>
               {discount > 0 && (
                 <span className="text-xs text-green-600 dark:text-green-400">
@@ -1034,7 +1148,12 @@ export default function CartPage() {
 
                         <div className="flex items-center justify-between pt-1">
                           <p className="text-sm font-semibold text-green-600 dark:text-green-400">
-                            ₹{Math.min(...(product.variants?.map((v) => v.price || 0) || [0])).toFixed(2)}
+                            ₹
+                            {Math.min(
+                              ...(product.variants?.map(
+                                (v) => v.price || 0
+                              ) || [0])
+                            ).toFixed(2)}
                           </p>
 
                           {product.variants && product.variants.length > 1 && (
@@ -1055,7 +1174,10 @@ export default function CartPage() {
                           setShowSuccess(false);
 
                           try {
-                            console.log("🛒 Quick add from suggested products:", product._id);
+                            console.log(
+                              "🛒 Quick add from suggested products:",
+                              product._id
+                            );
                             const result = await dispatch(
                               addToCart({
                                 productId: product._id,
@@ -1078,23 +1200,53 @@ export default function CartPage() {
                             }, 2000);
                           } catch (err) {
                             console.error("❌ Quick add failed:", err);
-                            toast.error(err?.message || "Failed to add to cart");
+                            toast.error(
+                              err?.message || "Failed to add to cart"
+                            );
                             setIsAdding(false);
                           }
                         }}
                         className={`
                           w-full py-2.5 px-3 rounded-lg text-sm font-medium
-                          border-2 ${showSuccess ? "border-green-600/30" : "border-green-500/20"} 
-                          ${showSuccess ? "bg-green-100" : isAdding ? "bg-green-100/50" : "bg-green-50"} 
-                          ${showSuccess ? "text-green-700" : isAdding ? "text-green-600" : "text-green-700"}
-                          ${isAdding || showSuccess ? "cursor-not-allowed" : "hover:bg-green-100 hover:border-green-500/40"}
+                          border-2 ${
+                            showSuccess
+                              ? "border-green-600/30"
+                              : "border-green-500/20"
+                          } 
+                          ${
+                            showSuccess
+                              ? "bg-green-100"
+                              : isAdding
+                              ? "bg-green-100/50"
+                              : "bg-green-50"
+                          } 
+                          ${
+                            showSuccess
+                              ? "text-green-700"
+                              : isAdding
+                              ? "text-green-600"
+                              : "text-green-700"
+                          }
+                          ${
+                            isAdding || showSuccess
+                              ? "cursor-not-allowed"
+                              : "hover:bg-green-100 hover:border-green-500/40"
+                          }
                           dark:border-green-400/30 
-                          dark:${showSuccess ? "bg-green-900/40" : isAdding ? "bg-green-900/30" : "bg-green-900/20"} 
+                          dark:${
+                            showSuccess
+                              ? "bg-green-900/40"
+                              : isAdding
+                              ? "bg-green-900/30"
+                              : "bg-green-900/20"
+                          } 
                           dark:text-green-300 dark:hover:bg-green-900/40
                           transition-all duration-200 flex items-center justify-center gap-2
                           focus:ring-2 focus:ring-green-500/30 focus:outline-none
                           group-hover:border-green-500/50
-                          ${isAdding || showSuccess ? "pointer-events-none" : ""}
+                          ${
+                            isAdding || showSuccess ? "pointer-events-none" : ""
+                          }
                         `}
                         disabled={isAdding || showSuccess}
                         aria-label={`Add ${product.name} to cart`}

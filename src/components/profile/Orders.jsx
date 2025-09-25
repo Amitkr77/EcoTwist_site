@@ -151,8 +151,11 @@ export default function Orders() {
                         Placed on {formatDate(order.orderDate)}
                       </p>
                     </div>
-                    <Badge className={`${getStatusColor(order.status)} px-3 py-1`}>
-                      {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                    <Badge
+                      className={`${getStatusColor(order.status)} px-3 py-1`}
+                    >
+                      {order.status.charAt(0).toUpperCase() +
+                        order.status.slice(1)}
                     </Badge>
                   </div>
 
@@ -160,7 +163,9 @@ export default function Orders() {
                     {order.items?.map((item) => {
                       const product = {
                         ...item.productId,
-                        image: item.productId?.images?.[0]?.url || "/placeholder.svg",
+                        image:
+                          item.productId?.images?.[0]?.url ||
+                          "/placeholder.svg",
                       };
                       const productId = product._id;
                       const isInWishlist = wishlist.some(
@@ -176,7 +181,9 @@ export default function Orders() {
                             src={product.image}
                             alt={item.name || "Product"}
                             className="w-16 h-16 object-cover rounded-md border"
-                            onError={(e) => (e.currentTarget.src = "/placeholder.svg")}
+                            onError={(e) =>
+                              (e.currentTarget.src = "/placeholder.svg")
+                            }
                           />
                           <div className="flex-1">
                             <p className="font-medium">{item.name}</p>
@@ -231,7 +238,9 @@ export default function Orders() {
           ) : (
             <div className="text-center py-12">
               <Package className="w-16 h-16 mx-auto text-gray-600 mb-4" />
-              <p className="text-gray-600 text-lg">No orders match your criteria</p>
+              <p className="text-gray-600 text-lg">
+                No orders match your criteria
+              </p>
               <Link href="/products">
                 <Button className="mt-4">Start Shopping</Button>
               </Link>

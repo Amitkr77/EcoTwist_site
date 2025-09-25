@@ -70,6 +70,7 @@ import {
   clearUserData,
 } from "@/store/slices/userSlice";
 import { useRouter } from "next/navigation";
+import Orders from "@/components/profile/Orders";
 
 // Define the CSS for hiding the scrollbar
 const hideScrollbarStyles = `
@@ -93,6 +94,7 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState("overview");
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isAddingAddress, setIsAddingAddress] = useState(false);
+  const [isCancelled, setIscancelled] = useState(false);
   const [userInfo, setUserInfo] = useState({
     fullName: "",
     email: "",
@@ -206,6 +208,7 @@ export default function ProfilePage() {
       .catch((err) => toast.error(err || "Failed to set default address"));
   };
 
+ 
   const handleRemoveWishlistItem = (productId) => {
     dispatch(removeFromWishlist(productId))
       .unwrap()
@@ -238,6 +241,42 @@ export default function ProfilePage() {
   const cartItemsCount = profile?.cart?.items?.length || 0;
   const wishlistItems = wishlist || [];
   const isLoading = status === "loading";
+
+  const handleCancelorder = async (orderId) => {
+    const confirm = window.confirm(
+      "Are you sure you want to cancel this order?"
+    );
+    if (!confirm) return;
+
+    try {
+      // Optional: set loading state here
+      const token = localStorage.getItem("user-token");
+      const response = await fetch(`/api/orders/${orderId}/cancel`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to cancel the order.");
+        setIscancelled(true);
+      }
+
+      // Optional: show success toast or alert
+      alert("Order cancelled successfully!");
+
+      // Optionally refresh data or update UI state
+      // e.g., refetch orders, update local state, etc.
+    } catch (error) {
+      console.error(error);
+      alert("Something went wrong while cancelling the order.");
+    } finally {
+      // Optional: unset loading state here
+    }
+  };
+
 
   return (
     <div className="min-h-screen bg-green-700 flex items-center justify-center p-0 sm:p-4">
@@ -777,6 +816,16 @@ export default function ProfilePage() {
                                   Track Order
                                 </Button>
                               )}
+                              {order.status !== "cancelled" && (
+                                <Button
+                                  onClick={()=> handleCancelorder(order.orderId)}
+                                  variant="destructive"
+                                  size="sm"
+                                >
+                                  Cancel Order
+                                </Button>
+                              )}
+
                               {order.status === "delivered" && (
                                 <Button variant="outline" size="sm">
                                   Reorder
