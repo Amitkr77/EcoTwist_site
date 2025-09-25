@@ -112,7 +112,7 @@ export default function Page() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="pl-10 bg-white/70 border border-slate-300 focus:ring-2 focus:ring-forest/50 focus:outline-none transition"
+                className="pl-10 bg-white/70 border border-slate-300 focus:ring-2 focus:ring-green-700/50 focus:outline-none transition"
               />
             </div>
 
@@ -126,7 +126,7 @@ export default function Page() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="pl-10 bg-white/70 border border-slate-300 focus:ring-2 focus:ring-forest/50 focus:outline-none transition"
+                className="pl-10 bg-white/70 border border-slate-300 focus:ring-2 focus:ring-green-700/50 focus:outline-none transition"
               />
             </div>
 
@@ -168,7 +168,7 @@ export default function Page() {
             <div className="mt-4 text-center">
               <Link
                 href="mailto:amit@homeasy.io?cc=abhinav@homeasy.io"
-                className="flex text-zinc-600 items-center justify-center gap-1 text-forest hover:text-forest-600 font-medium transition"
+                className="flex text-zinc-600 items-center justify-center gap-1  hover:text-green-600 font-medium transition"
               >
                 Contact Tech team 
                <Mail className="w-4 h-4" />

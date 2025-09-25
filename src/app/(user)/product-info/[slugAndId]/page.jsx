@@ -88,6 +88,7 @@ export default function ProductPage() {
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [showAllFeatures, setShowAllFeatures] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   // Add this utility function
   const truncateDescription = (text, maxLength) => {
@@ -204,55 +205,23 @@ export default function ProductPage() {
       return null;
     }
   }
-
-  const handleAddToCart = () => {
-    const userToken = localStorage.getItem("user-token");
-    if (!userToken) {
-      toast.custom((t) => (
-        <div
-          className={`max-w-sm w-full bg-white shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5 p-4 ${
-            t.visible ? "animate-enter" : "animate-leave"
-          }`}
-        >
-          <div className="flex-1 w-0">
-            <p className="text-sm font-medium text-gray-900">
-              You need to be logged in to add items to the cart.
-            </p>
-            <p className="mt-1 text-sm text-gray-500">
-              Click below to login now.
-            </p>
-          </div>
-          <div className="flex ml-4">
-            <button
-              onClick={() => {
-                toast.dismiss(t.id);
-                router.push("/login");
-              }}
-              className="text-blue-600 hover:text-blue-800 font-semibold"
-            >
-              Login
-            </button>
-          </div>
-        </div>
-      ));
-      return;
+  const handleAddToCart = async () => {
+    setLoading(true);
+    try {
+      await dispatch(
+        addToCart({
+          productId: product._id,
+          variantSku: product.variants[0].sku,
+          quantity: 1,
+        })
+      );
+      // setAdded(true);
+    } catch (error) {
+      setLoading(false);
+      console.error("Failed to add item to cart", error);
+    } finally {
+      setLoading(false);
     }
-    if (!selectedVariant) {
-      toast.error("Please select a variant");
-      return;
-    }
-    const userId = getUserIdFromToken(userToken);
-    dispatch(
-      addToCart({
-        userId,
-        productId,
-        variantSku: selectedVariant.sku,
-        quantity,
-      })
-    )
-      .unwrap()
-      .then(() => toast.success(`${product.name} added to cart`))
-      .catch((err) => toast.error(err || "Failed to add to cart"));
   };
 
   const handleWishlistToggle = () => {
@@ -848,7 +817,7 @@ export default function ProductPage() {
                     <motion.div className="flex-1 relative group">
                       <Button
                         onClick={handleAddToCart}
-                        disabled={!isAvailable}
+                        disabled={loading}
                         size="lg"
                         className={`w-full relative overflow-hidden rounded-xl text-base lg:text-lg font-bold py-4 px-6 shadow-lg transition-all duration-300 ${
                           isAvailable

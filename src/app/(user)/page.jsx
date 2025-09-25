@@ -553,14 +553,14 @@ export default function Home() {
                   alt="Eco-friendly artisan crafting"
                   width={800}
                   height={500}
-                  className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105"
+                  className="w-full h-auto object-cover transition-all duration-500 group-hover:scale-105"
                   placeholder="blur"
                   blurDataURL="/product_image.png"
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 1100px"
                 />
               </div>
               <div className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 bg-white border border-slate-200 px-4 sm:px-6 py-2 sm:py-4 rounded-xl sm:rounded-2xl shadow-lg backdrop-blur-sm bg-opacity-90 animate-fade-in-up">
-                <div className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-forest mb-1">
+                <div className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-green-700 mb-1">
                   100%
                 </div>
                 <p className="text-xs sm:text-sm text-slate-600 font-medium">
@@ -577,7 +577,7 @@ export default function Home() {
                 </span>
 
                 <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 leading-tight tracking-tight mb-6 sm:mb-8 lg:mb-12">
-                  Where <span className="text-forest">Purpose</span> Meets Craft
+                  Where <span className="text-green-700">Purpose</span> Meets Craft
                 </h2>
 
                 <p className="text-base sm:text-lg text-slate-600 leading-relaxed mb-6 sm:mb-8 lg:mb-10">
@@ -595,7 +595,7 @@ export default function Home() {
 
                 <Button
                   asChild
-                  className="bg-forest hover:bg-green-700/10 text-black px-6 sm:px-8 py-2 sm:py-3 rounded-full text-sm sm:text-base font-semibold shadow-md transition-all cursor-pointer inline-flex items-center gap-2"
+                  className="bg-green-700 hover:bg-green-700/10 hover:text-black text-white px-6 sm:px-10 py-2 sm:py-3 rounded-full text-sm sm:text-base font-semibold shadow-md transition-all cursor-pointer inline-flex items-center gap-2"
                 >
                   <Link href="/about">
                     Learn More
@@ -627,7 +627,7 @@ export default function Home() {
                 name: "Bamboo",
                 icon: "🎋",
                 description: "Fast-growing, renewable, naturally antibacterial",
-                color: "forest",
+                color: "green-700",
               },
               {
                 name: "Jute",

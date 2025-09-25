@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,6 +50,23 @@ export default function LoginPage() {
   const [resetMessage, setResetMessage] = useState("");
   const [resetLoading, setResetLoading] = useState(false);
 
+  // Validate single field
+  const validateField = (name) => {
+    const newErrors = { ...errors };
+    if (name === "email") {
+      if (!formData.email) newErrors.email = "Email is required.";
+      else if (!EMAIL_REGEX.test(formData.email))
+        newErrors.email = "Please enter a valid email.";
+      else newErrors.email = "";
+    } else if (name === "password") {
+      if (!formData.password) newErrors.password = "Password is required.";
+      else if (formData.password.length < 6)
+        newErrors.password = "Password must be at least 6 characters.";
+      else newErrors.password = "";
+    }
+    setErrors(newErrors);
+  };
+
   // Validate form inputs
   const validateForm = useCallback(() => {
     const newErrors = { email: "", password: "", general: "" };
@@ -70,7 +87,8 @@ export default function LoginPage() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value.trim() }));
-    setErrors((prev) => ({ ...prev, general: "" }));
+    setErrors((prev) => ({ ...prev, general: "", [name]: "" }));
+    validateField(name);
   };
 
   // Enhanced handleSubmit with cart merge
@@ -91,24 +109,23 @@ export default function LoginPage() {
       });
 
       const data = await res.json();
-      console.log("Login response:", data); // Debug log
 
       if (res.ok) {
         // Store the token
         localStorage.setItem("user-token", data.token);
 
         // Decode token to get user ID
-        try {
-          const decoded = jwtDecode(data.token);
-          const userId = decoded?.id || decoded?.sub || decoded?.userId;
-          if (userId) {
-            localStorage.setItem("user-id", userId);
-          } else {
-            console.error("No userId found in token:", decoded);
-          }
-        } catch (decodeError) {
-          console.error("Failed to decode token:", decodeError);
-        }
+        // try {
+        //   const decoded = jwtDecode(data.token);
+        //   const userId = decoded?.id || decoded?.sub || decoded?.userId;
+        //   if (userId) {
+        //     localStorage.setItem("user-id", userId);
+        //   } else {
+        //     console.error("No userId found in token:", decoded);
+        //   }
+        // } catch (decodeError) {
+        //   console.error("Failed to decode token:", decodeError);
+        // }
 
         // Check if there's a guest cart to merge
         const guestCart = localStorage.getItem("guest-cart");
@@ -133,6 +150,8 @@ export default function LoginPage() {
               { duration: 5000 }
             );
           }
+        } else {
+          toast.success("Welcome back! Logging you in...", { duration: 2000 });
         }
 
         // Redirect after a short delay
@@ -140,7 +159,6 @@ export default function LoginPage() {
           window.location.href = "/";
         }, 1500);
 
-        toast.success("Welcome back! Logging you in...", { duration: 2000 });
       } else {
         setErrors((prev) => ({
           ...prev,

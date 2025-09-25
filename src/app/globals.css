@@ -3,8 +3,6 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Custom Colors (Add to tailwind.config.js if not present) */
-.bg-forest-100 { background-color: #e6f3e6; }
 
 /* Animations */
 .transition-opacity {

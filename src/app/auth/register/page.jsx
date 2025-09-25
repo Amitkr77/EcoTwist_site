@@ -119,7 +119,7 @@ export default function SignupPage() {
                 value={formData.name}
                 onChange={handleInputChange}
                 required
-                className="pl-10 bg-white/70 border border-slate-300 focus:ring-2 focus:ring-forest/50"
+                className="pl-10 bg-white/70 border border-slate-300 focus:ring-2 focus:ring-green-700/50"
               />
             </div>
 
@@ -135,7 +135,7 @@ export default function SignupPage() {
                 value={formData.email}
                 onChange={handleInputChange}
                 required
-                className="pl-10 bg-white/70 border border-slate-300 focus:ring-2 focus:ring-forest/50"
+                className="pl-10 bg-white/70 border border-slate-300 focus:ring-2 focus:ring-green-700/50"
               />
             </div>
 
@@ -151,7 +151,7 @@ export default function SignupPage() {
                 value={formData.password}
                 onChange={handleInputChange}
                 required
-                className="pl-10 bg-white/70 border border-slate-300 focus:ring-2 focus:ring-forest/50"
+                className="pl-10 bg-white/70 border border-slate-300 focus:ring-2 focus:ring-green-700/50"
               />
             </div>
 
@@ -167,7 +167,7 @@ export default function SignupPage() {
                 value={formData.confirmPassword}
                 onChange={handleInputChange}
                 required
-                className="pl-10 bg-white/70 border border-slate-300 focus:ring-2 focus:ring-forest/50"
+                className="pl-10 bg-white/70 border border-slate-300 focus:ring-2 focus:ring-green-700/50"
               />
             </div>
 
@@ -193,7 +193,7 @@ export default function SignupPage() {
             <span className="text-slate-500">Already have an account? </span>
             <Link
               href="/auth/login"
-              className="flex justify-center items-center gap-1 text-forest hover:text-forest-600 font-medium transition"
+              className="flex justify-center items-center gap-1 text-green-700 hover:text-green-600 font-medium transition"
             >
               Sign in
               <ArrowRightCircle className="w-4 h-4" />
