@@ -70,6 +70,7 @@ import {
   clearUserData,
 } from "@/store/slices/userSlice";
 import { useRouter } from "next/navigation";
+import Orders from "@/components/profile/Orders";
 
 // Define the CSS for hiding the scrollbar
 const hideScrollbarStyles = `
@@ -93,6 +94,7 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState("overview");
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isAddingAddress, setIsAddingAddress] = useState(false);
+  const [isCancelled, setIscancelled] = useState(false);
   const [userInfo, setUserInfo] = useState({
     fullName: "",
     email: "",
@@ -206,6 +208,7 @@ export default function ProfilePage() {
       .catch((err) => toast.error(err || "Failed to set default address"));
   };
 
+ 
   const handleRemoveWishlistItem = (productId) => {
     dispatch(removeFromWishlist(productId))
       .unwrap()
@@ -238,6 +241,41 @@ export default function ProfilePage() {
   const cartItemsCount = profile?.cart?.items?.length || 0;
   const wishlistItems = wishlist || [];
   const isLoading = status === "loading";
+
+  const handleCancelorder = async (orderId) => {
+    const confirm = window.confirm(
+      "Are you sure you want to cancel this order?"
+    );
+    if (!confirm) return;
+
+    try {
+      // Optional: set loading state here
+      const token = localStorage.getItem("user-token");
+      const response = await fetch(`/api/orders/${orderId}/cancel`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to cancel the order.");
+        setIscancelled(true);
+      }
+
+      // Optional: show success toast or alert
+      alert("Order cancelled successfully!");
+
+      // Optionally refresh data or update UI state
+      // e.g., refetch orders, update local state, etc.
+    } catch (error) {
+      console.error(error);
+      alert("Something went wrong while cancelling the order.");
+    } finally {
+      // Optional: unset loading state here
+    }
+  };
 
   return (
     <div className="min-h-screen bg-green-700 flex items-center justify-center p-0 sm:p-4">
@@ -434,7 +472,7 @@ export default function ProfilePage() {
                         <h2 className="text-lg sm:text-xl font-semibold">
                           Personal Information
                         </h2>
-                        {!isEditingProfile ? (
+                        {/* {!isEditingProfile ? (
                           <Button
                             variant="outline"
                             onClick={handleEditProfileToggle}
@@ -454,14 +492,14 @@ export default function ProfilePage() {
                               <Save className="w-4 h-4 mr-2" /> Save
                             </Button>
                           </div>
-                        )}
+                        )} */}
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                         <div>
                           <Label className="text-sm font-medium text-gray-700">
                             Full Name
                           </Label>
-                          {isEditingProfile ? (
+                          {/* {isEditingProfile ? (
                             <Input
                               name="fullName"
                               value={userInfo.fullName}
@@ -469,17 +507,17 @@ export default function ProfilePage() {
                               className="mt-1 text-sm sm:text-base"
                               aria-label="Full Name"
                             />
-                          ) : (
+                          ) : ( */}
                             <p className="mt-1 text-gray-600 text-sm sm:text-base">
                               {userInfo.fullName}
                             </p>
-                          )}
+                          {/* )} */}
                         </div>
                         <div>
                           <Label className="text-sm font-medium text-gray-700">
                             Email Address
                           </Label>
-                          {isEditingProfile ? (
+                          {/* {isEditingProfile ? (
                             <Input
                               name="email"
                               value={userInfo.email}
@@ -487,17 +525,17 @@ export default function ProfilePage() {
                               className="mt-1 text-sm sm:text-base"
                               aria-label="Email Address"
                             />
-                          ) : (
+                          ) : ( */}
                             <p className="mt-1 text-gray-600 text-sm sm:text-base">
                               {userInfo.email}
                             </p>
-                          )}
+                          {/* )} */}
                         </div>
                         <div>
                           <Label className="text-sm font-medium text-gray-700">
                             Phone Number
                           </Label>
-                          {isEditingProfile ? (
+                          {/* {isEditingProfile ? (
                             <Input
                               name="phone"
                               value={userInfo.phone}
@@ -505,11 +543,11 @@ export default function ProfilePage() {
                               className="mt-1 text-sm sm:text-base"
                               aria-label="Phone Number"
                             />
-                          ) : (
+                          ) : ( */}
                             <p className="mt-1 text-gray-600 text-sm sm:text-base">
                               {userInfo.phone}
                             </p>
-                          )}
+                          {/* )} */}
                         </div>
                         <div>
                           <Label className="text-sm font-medium text-gray-700">
@@ -578,7 +616,7 @@ export default function ProfilePage() {
                               Total Orders
                             </p>
                             <p className="text-xl sm:text-2xl font-bold">
-                              {profile?.totalOrders || 0}
+                              {profile.totalOrders || 0}
                             </p>
                           </CardContent>
                         </Card>
@@ -588,7 +626,7 @@ export default function ProfilePage() {
                               Total Spent
                             </p>
                             <p className="text-xl sm:text-2xl font-bold">
-                              ₹{profile?.totalSpent || 0}
+                              ₹{profile.totalSpent || 0}
                             </p>
                           </CardContent>
                         </Card>
@@ -777,6 +815,18 @@ export default function ProfilePage() {
                                   Track Order
                                 </Button>
                               )}
+                              {order.status !== "cancelled" && (
+                                <Button
+                                  onClick={() =>
+                                    handleCancelorder(order.orderId)
+                                  }
+                                  variant="destructive"
+                                  size="sm"
+                                >
+                                  Cancel Order
+                                </Button>
+                              )}
+
                               {order.status === "delivered" && (
                                 <Button variant="outline" size="sm">
                                   Reorder
@@ -1186,12 +1236,12 @@ export default function ProfilePage() {
                       >
                         Account
                       </TabsTrigger>
-                      <TabsTrigger
+                      {/* <TabsTrigger
                         value="payments"
                         className="text-sm sm:text-base"
                       >
                         Payments
-                      </TabsTrigger>
+                      </TabsTrigger> */}
                     </TabsList>
                     <TabsContent value="preferences">
                       <div className="space-y-4 sm:space-y-6">
@@ -1213,73 +1263,126 @@ export default function ProfilePage() {
                           </span>
                           <Switch />
                         </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-gray-700 text-sm sm:text-base">
-                            Dark Mode
-                          </span>
-                          <Switch />
-                        </div>
-                        <div>
-                          <Label className="text-sm sm:text-base text-gray-700">
-                            Currency
-                          </Label>
-                          <Select defaultValue="INR">
-                            <SelectTrigger className="mt-1 text-sm sm:text-base">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="INR">INR (₹)</SelectItem>
-                              <SelectItem value="USD">USD ($)</SelectItem>
-                              <SelectItem value="EUR">EUR (€)</SelectItem>
-                              <SelectItem value="GBP">GBP (£)</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
                       </div>
                     </TabsContent>
                     <TabsContent value="account">
                       <div className="space-y-4 sm:space-y-6">
+                        <>
+                          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6">
+                            <h2 className="text-lg sm:text-xl font-semibold">
+                              Account Information
+                            </h2>
+                            {!isEditingProfile ? (
+                              <Button
+                                variant="outline"
+                                onClick={handleEditProfileToggle}
+                                className="mt-2 sm:mt-0"
+                              >
+                                <Edit className="w-4 h-4 mr-2" /> Update
+                              </Button>
+                            ) : (
+                              <div className="flex space-x-2 mt-2 sm:mt-0">
+                                <Button
+                                  variant="outline"
+                                  onClick={handleEditProfileToggle}
+                                >
+                                  <X className="w-4 h-4 mr-2" /> Cancel
+                                </Button>
+                                <Button onClick={handleSaveProfile}>
+                                  <Save className="w-4 h-4 mr-2" /> Save
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                            <div>
+                              <Label className="text-sm font-medium text-gray-700">
+                                Full Name
+                              </Label>
+                              {isEditingProfile ? (
+                                <Input
+                                  name="fullName"
+                                  value={userInfo.fullName}
+                                  onChange={handleProfileInputChange}
+                                  className="mt-1 text-sm sm:text-base"
+                                  aria-label="Full Name"
+                                />
+                              ) : (
+                                <p className="mt-1 text-gray-600 text-sm sm:text-base">
+                                  {userInfo.fullName}
+                                </p>
+                              )}
+                            </div>
+                            <div>
+                              <Label className="text-sm font-medium text-gray-700">
+                                Email Address
+                              </Label>
+                              {isEditingProfile ? (
+                                <Input
+                                  name="email"
+                                  value={userInfo.email}
+                                  onChange={handleProfileInputChange}
+                                  className="mt-1 text-sm sm:text-base"
+                                  aria-label="Email Address"
+                                />
+                              ) : (
+                                <p className="mt-1 text-gray-600 text-sm sm:text-base">
+                                  {userInfo.email}
+                                </p>
+                              )}
+                            </div>
+                            <div>
+                              <Label className="text-sm font-medium text-gray-700">
+                                Phone Number
+                              </Label>
+                              {isEditingProfile ? (
+                                <Input
+                                  name="phone"
+                                  value={userInfo.phone}
+                                  onChange={handleProfileInputChange}
+                                  className="mt-1 text-sm sm:text-base"
+                                  aria-label="Phone Number"
+                                />
+                              ) : (
+                                <p className="mt-1 text-gray-600 text-sm sm:text-base">
+                                  {userInfo.phone}
+                                </p>
+                              )}
+                            </div>
+                            <div>
+                              <Label className="text-sm font-medium text-gray-700">
+                                Joined On
+                              </Label>
+                              <p className="mt-1 text-gray-600 text-sm sm:text-base">
+                                {new Date(
+                                  profile?.createdAt
+                                ).toLocaleDateString("en-IN", {
+                                  day: "numeric",
+                                  month: "long",
+                                  year: "numeric",
+                                })}
+                              </p>
+                            </div>
+                          </div>
+                        </>
                         <Button
-                          variant="outline"
-                          className="w-full justify-start text-sm sm:text-base"
+                          variant="primary"
+                          className="w-full justify-start text-sm sm:text-base cursor-pointer"
                         >
                           <Edit className="w-4 h-4 mr-2" /> Change Password
                         </Button>
                         <Button
-                          variant="outline"
-                          className="w-full justify-start text-sm sm:text-base"
+                          variant="primary"
+                          className="w-full justify-start text-sm sm:text-base cursor-pointer"
                         >
                           <User className="w-4 h-4 mr-2" /> Update Email
                         </Button>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button
-                              variant="outline"
-                              className="w-full justify-start text-sm sm:text-base"
-                            >
-                              <LogOut className="w-4 h-4 mr-2" /> Log Out
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Log Out?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Are you sure you want to log out?
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction onClick={handleLogout}>
-                                Log Out
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button
                               variant="destructive"
-                              className="w-full justify-start text-sm sm:text-base"
+                              className="w-1/5 justify-start text-sm sm:text-base"
                             >
                               <Trash2 className="w-4 h-4 mr-2" /> Delete Account
                             </Button>
@@ -1307,7 +1410,7 @@ export default function ProfilePage() {
                         </AlertDialog>
                       </div>
                     </TabsContent>
-                    <TabsContent value="payments">
+                    {/* <TabsContent value="payments">
                       <div className="space-y-4 sm:space-y-6">
                         <h3 className="text-base sm:text-lg font-semibold">
                           Saved Payment Methods
@@ -1356,7 +1459,7 @@ export default function ProfilePage() {
                           <Plus className="w-4 h-4 mr-2" /> Add Payment Method
                         </Button>
                       </div>
-                    </TabsContent>
+                    </TabsContent> */}
                   </Tabs>
                 </CardContent>
               </Card>

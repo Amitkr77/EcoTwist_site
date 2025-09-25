@@ -104,12 +104,12 @@ function CheckoutPage() {
     }));
     setErrors((prevErrors) => ({ ...prevErrors, [name]: "" }));
     if (name === "postalCode" && value.trim()) {
-      estimateShipping(value);
+      estimateShipping(cart.totalPrice);
     }
   };
 
-  const estimateShipping = (postalCode) => {
-    setShippingEstimate(postalCode.length > 5 ? 1 : 2);
+  const estimateShipping = (totalPrice) => {
+    setShippingEstimate(totalPrice > 499 ? 0 : 69);
   };
 
   // const applyPromoCode = () => {
@@ -357,9 +357,14 @@ function CheckoutPage() {
             <div className="flex justify-between mb-1">
               <span>Shipping</span>
               <span>
-                {shippingEstimate === 0
-                  ? "Free"
-                  : `₹${shippingEstimate.toFixed(2)}`}
+                {shippingEstimate === 0 ? (
+                  <>
+                    <span className="line-through text-gray-500 mr-1">₹69</span>
+                    <span className="text-green-600">FREE</span>
+                  </>
+                ) : (
+                  `₹${shippingEstimate.toFixed(2)}`
+                )}
               </span>
             </div>
             <div className="flex justify-between font-semibold mt-2 border-t pt-2">
