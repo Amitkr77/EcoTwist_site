@@ -3,15 +3,6 @@ import bcrypt from 'bcryptjs';
 
 const { Schema } = mongoose;
 
-// const addressSchema = new Schema({
-//   street: { type: String, trim: true, maxlength: [100, 'Street cannot exceed 100 characters'] },
-//   city: { type: String, trim: true, maxlength: [50, 'City cannot exceed 50 characters'] },
-//   state: { type: String, trim: true, maxlength: [50, 'State cannot exceed 50 characters'] },
-//   country: { type: String, trim: true, maxlength: [50, 'Country cannot exceed 50 characters'] },
-//   postalCode: { type: String, trim: true, match: [/^\d{5,6}$/, 'Invalid postal code format'] },
-//   isDefault: { type: Boolean, default: false },
-// }, { _id: false });
-
 const userSchema = new Schema({
   profilePicture: {
     type: String,
@@ -60,16 +51,7 @@ const userSchema = new Schema({
     match: [/^\+?[\d\s-]{10,15}$/, 'Please enter a valid phone number'],
     sparse: true,
   },
-  // wishlist: [{
-  //   type: Schema.Types.ObjectId,
-  //   ref: 'Product',
-  //   index: true,
-  // }],
-  // cart: [{
-  //   type: Schema.Types.ObjectId,
-  //   ref: 'Product'
-
-  // }],
+  
   createdAt: {
     type: Date,
     default: Date.now,
@@ -90,10 +72,7 @@ const userSchema = new Schema({
     default: false,
     index: true,
   },
-  // refreshToken: {
-  //   type: String,
-  //   select: false,
-  // },
+  
 }, {
   timestamps: true,
   toJSON: { virtuals: true },
@@ -199,7 +178,7 @@ userSchema.statics.updateProfilePicture = async function (userId, file) {
   if (!user) throw new Error("User not found");
 
   if (user.cloudinaryId) {
-    await cloudinary.uploader.destroy(user.cloudinaryId); // Remove old image
+    await cloudinary.uploader.destroy(user.cloudinaryId); 
   }
 
   const b64 = Buffer.from(await file.arrayBuffer()).toString("base64");
