@@ -23,7 +23,8 @@ async function sendEmail({ to, subject, html }) {
         for (let attempt = 1; attempt <= 3; attempt++) {
             try {
                 await transporter.sendMail(mailOptions);
-                return true; 
+                console.log(`Email sent successfully to ${to} on attempt ${attempt}`);
+                return true;
             } catch (error) {
                 console.error(`Attempt ${attempt} failed to send email to ${to}`, error);
                 if (attempt === 3) throw new Error("Failed to send email after 3 attempts");
