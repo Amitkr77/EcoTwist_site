@@ -249,8 +249,11 @@ export default function ProfilePage() {
       );
   };
 
-  const handleLogout = () => {
+  const handleLogout = async() => {
     dispatch(clearUserData());
+
+    await fetch("/api/user/auth/logout", { method: "POST" });
+    
     toast.success("Logged out successfully");
     router.push("/login");
   };
