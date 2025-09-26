@@ -407,9 +407,9 @@ export default function CartPage() {
   if (enhancedItems.length === 0) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900 pt-20 p-4 md:p-6">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           {/* Header */}
-          <div className="flex items-center mb-6">
+          <div className="flex items-center mb-6 mt-16">
             <Link
               href="/products"
               className="mr-4 text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300"
@@ -916,39 +916,7 @@ export default function CartPage() {
                     </div>
                   </div>
 
-                  {/* Promo Code */}
-                  {/* {totalPrice > 0 && (
-                    <div className="space-y-3">
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                        <Tag className="w-4 h-4 inline mr-2" />
-                        Promo Code
-                      </label>
-                      <div className="flex gap-2">
-                        <Input
-                          value={promoCode}
-                          onChange={(e) => setPromoCode(e.target.value)}
-                          placeholder="Enter code (SAVE10, FREESHIP)"
-                          className="flex-1 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 focus:ring-green-500 focus:border-green-500"
-                          disabled={status === "loading"}
-                          aria-label="Promo code"
-                        />
-                        <Button
-                          onClick={handleApplyPromo}
-                          variant="outline"
-                          className="border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 flex-shrink-0 px-4"
-                          disabled={status === "loading" || promoCode.trim() === ""}
-                          aria-label="Apply promo code"
-                        >
-                          Apply
-                        </Button>
-                      </div>
-                      {discount > 0 && (
-                        <p className="text-xs text-green-600 dark:text-green-400">
-                          {promoCode.toUpperCase()} applied - Save ₹{discount.toFixed(2)}
-                        </p>
-                      )}
-                    </div>
-                  )} */}
+                 
 
                   {/* Checkout Button */}
                   <Link href="/checkout">
@@ -993,7 +961,7 @@ export default function CartPage() {
                     </h4>
                     <ul className="space-y-1 text-gray-700 dark:text-gray-300 list-disc pl-4">
                       <li>
-                        Items in your cart aren't reserved checkout soon to
+                        Items in your cart aren&apos;t reserved checkout soon to
                         avoid stocks out.
                       </li>
                       <li>Enjoy free shipping on all orders over ₹499.</li>

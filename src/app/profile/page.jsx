@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import { addToCart } from "@/store/slices/cartSlice";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
@@ -58,6 +60,9 @@ import {
   Calendar,
   MoreVert,
   EllipsisIcon,
+  Share2,
+  View,
+  Eye,
 } from "lucide-react";
 import { IndianRupee } from "lucide-react";
 import {
@@ -71,18 +76,19 @@ import {
 } from "@/store/slices/userSlice";
 import { useRouter } from "next/navigation";
 import Orders from "@/components/profile/Orders";
+import Link from "next/link";
 
 // Define the CSS for hiding the scrollbar
 const hideScrollbarStyles = `
-  .hide-scrollbar {
-    overflow-y: auto;
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE and Edge */
-  }
-  .hide-scrollbar::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, and other WebKit browsers */
-  }
-`;
+    .hide-scrollbar {
+      overflow-y: auto;
+      scrollbar-width: none; /* Firefox */
+      -ms-overflow-style: none; /* IE and Edge */
+    }
+    .hide-scrollbar::-webkit-scrollbar {
+      display: none; /* Chrome, Safari, and other WebKit browsers */
+    }
+  `;
 
 export default function ProfilePage() {
   const dispatch = useDispatch();
@@ -111,6 +117,7 @@ export default function ProfilePage() {
     isDefault: false,
   });
   const [addressErrors, setAddressErrors] = useState({});
+  const [loading, setLoading] = useState(false);
 
   const tabs = [
     { id: "overview", label: "Overview", icon: User },
@@ -119,6 +126,30 @@ export default function ProfilePage() {
     { id: "addresses", label: "Addresses", icon: MapPin },
     { id: "settings", label: "Settings", icon: Settings },
   ];
+
+  const handleAddToCart = async (item) => {
+    setLoading(true);
+    try {
+      // Validate item data
+      if (!item?.productId?._id || !item?.productId?.variants?.length) {
+        throw new Error("Invalid product or variant data");
+      }
+
+      const payload = {
+        productId: item.productId._id, // Use _id from productId
+        variantSku: item.productId.variants[0].sku, // Use first variant's SKU
+        quantity: 1,
+      };
+
+      await dispatch(addToCart(payload)).unwrap();
+      toast.success(`${item.name} added to cart!`);
+    } catch (error) {
+      console.error("Failed to add item to cart", error);
+      toast.error(error.message || "Failed to add item to cart");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (status === "idle") {
@@ -245,41 +276,6 @@ export default function ProfilePage() {
   const wishlistItems = wishlist || [];
   const isLoading = status === "loading";
 
-  const handleCancelorder = async (orderId) => {
-    const confirm = window.confirm(
-      "Are you sure you want to cancel this order?"
-    );
-    if (!confirm) return;
-
-    try {
-      // Optional: set loading state here
-      const token = localStorage.getItem("user-token");
-      const response = await fetch(`/api/orders/${orderId}/cancel`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to cancel the order.");
-        setIscancelled(true);
-      }
-
-      // Optional: show success toast or alert
-      alert("Order cancelled successfully!");
-
-      // Optionally refresh data or update UI state
-      // e.g., refetch orders, update local state, etc.
-    } catch (error) {
-      console.error(error);
-      alert("Something went wrong while cancelling the order.");
-    } finally {
-      // Optional: unset loading state here
-    }
-  };
-
   return (
     <div className="min-h-screen bg-green-700 flex items-center justify-center p-0 sm:p-4">
       <style jsx>{hideScrollbarStyles}</style>
@@ -307,11 +303,11 @@ export default function ProfilePage() {
                 <h2 className="text-base font-semibold">{userInfo.fullName}</h2>
                 <p className="text-xs text-gray-500">{userInfo.email}</p>
                 {/* <div className="flex items-center">
-                  <Star className="w-3 h-3 text-yellow-400 mr-1" />
-                  <span className="text-xs font-medium">
-                    {membership} Member
-                  </span>
-                </div> */}
+                    <Star className="w-3 h-3 text-yellow-400 mr-1" />
+                    <span className="text-xs font-medium">
+                      {membership} Member
+                    </span>
+                  </div> */}
               </div>
             </div>
           )}
@@ -351,7 +347,7 @@ export default function ProfilePage() {
         </div>
 
         {/* Desktop Sidebar */}
-        <aside className="hidden sm:block w-64 lg:w-72 bg-gray-50 p-4 sm:p-6 border-r border-gray-200 flex-shrink-0">
+        <aside className="hidden sm:block w-64 lg:w-72 bg-gray-50 p-4 sm:p-6 border-r border-gray-200 flex-shrink-0 ">
           <div className="flex items-center mb-6 sm:mb-8">
             {isLoading ? (
               <Skeleton className="w-16 h-16 sm:w-20 sm:h-20 rounded-full" />
@@ -387,59 +383,61 @@ export default function ProfilePage() {
               )}
             </div>
           </div>
-          <Separator className="my-3 sm:my-4" />
-          <ul className="space-y-2 sm:space-y-3">
-            {tabs.map((tab) => (
-              <li key={tab.id}>
-                <button
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`w-full flex items-center p-2 sm:p-3 rounded-lg sm:rounded-xl text-left transition-colors text-sm sm:text-base font-medium ${
-                    activeTab === tab.id
-                      ? "bg-blue-50 text-blue-600"
-                      : "text-gray-600 hover:bg-gray-100"
-                  }`}
-                  aria-current={activeTab === tab.id ? "page" : undefined}
-                >
-                  <tab.icon className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3" />
-                  {tab.label}
-                </button>
-              </li>
-            ))}
-          </ul>
-          <Separator className="my-3 sm:my-4" />
-          <div className="flex flex-col space-y-2">
-            <Button
-              variant="outline"
-              onClick={handleGoHome}
-              className="justify-start text-sm sm:text-base"
-            >
-              <Home className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3" /> Home
-            </Button>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="justify-start text-sm sm:text-base"
-                >
-                  <LogOut className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3" /> Log
-                  Out
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Log Out?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Are you sure you want to log out?
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleLogout}>
+          <div className="">
+            <Separator className="my-3 sm:my-4" />
+            <ul className="space-y-2 sm:space-y-3">
+              {tabs.map((tab) => (
+                <li key={tab.id}>
+                  <button
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`w-full flex items-center p-2 sm:p-3 rounded-lg sm:rounded-xl text-left transition-colors text-sm sm:text-base font-medium ${
+                      activeTab === tab.id
+                        ? "bg-blue-50 text-blue-600"
+                        : "text-gray-600 hover:bg-gray-100"
+                    }`}
+                    aria-current={activeTab === tab.id ? "page" : undefined}
+                  >
+                    <tab.icon className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3" />
+                    {tab.label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <Separator className="my-3 sm:my-4" />
+            <div className="flex flex-col space-y-2">
+              <Button
+                variant="outline"
+                onClick={handleGoHome}
+                className="justify-start text-sm sm:text-base"
+              >
+                <Home className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3" /> Home
+              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="justify-start text-sm sm:text-base"
+                  >
+                    <LogOut className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3" />{" "}
                     Log Out
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Log Out?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to log out?
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleLogout}>
+                      Log Out
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
           </div>
         </aside>
 
@@ -573,7 +571,7 @@ export default function ProfilePage() {
                   <Separator className="my-6 sm:my-8" />
                   <div>
                     <h2 className="text-lg sm:text-xl font-semibold mb-4">
-                      Membership Details
+                      Customer Details
                     </h2>
                     {isLoading ? (
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -582,8 +580,11 @@ export default function ProfilePage() {
                         ))}
                       </div>
                     ) : (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <Card className="bg-blue-50">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 cursor-pointer">
+                        <Card
+                          className="bg-blue-50"
+                          onClick={() => setActiveTab("wishlist")}
+                        >
                           <CardContent className="p-3 sm:p-4">
                             <p className="text-xs sm:text-sm text-gray-600">
                               Wishlist Items
@@ -593,27 +594,23 @@ export default function ProfilePage() {
                             </p>
                           </CardContent>
                         </Card>
-                        <Card className="bg-green-50">
-                          <CardContent className="p-3 sm:p-4">
-                            <p className="text-xs sm:text-sm text-gray-600">
-                              Membership Level
-                            </p>
-                            <p className="text-xl sm:text-2xl font-bold">
-                              {membership}
-                            </p>
-                          </CardContent>
-                        </Card>
-                        <Card className="bg-purple-50">
-                          <CardContent className="p-3 sm:p-4">
-                            <p className="text-xs sm:text-sm text-gray-600">
-                              Cart Items
-                            </p>
-                            <p className="text-xl sm:text-2xl font-bold">
-                              {cartItemsCount}
-                            </p>
-                          </CardContent>
-                        </Card>
-                        <Card className="bg-yellow-50">
+
+                        <Link href="/cart">
+                          <Card className="bg-purple-50">
+                            <CardContent className="p-3 sm:p-4">
+                              <p className="text-xs sm:text-sm text-gray-600">
+                                Cart Items
+                              </p>
+                              <p className="text-xl sm:text-2xl font-bold">
+                                {cartItemsCount}
+                              </p>
+                            </CardContent>
+                          </Card>
+                        </Link>
+                        <Card
+                          className="bg-yellow-50"
+                          onClick={() => setActiveTab("orders")}
+                        >
                           <CardContent className="p-3 sm:p-4">
                             <p className="text-xs sm:text-sm text-gray-600">
                               Total Orders
@@ -644,7 +641,7 @@ export default function ProfilePage() {
                     {isLoading ? (
                       <Skeleton className="h-24 sm:h-32" />
                     ) : orders.length === 0 ? (
-                      <div className="flex justify-center items-center flex-col gap-2 p-6 sm:p-10 bg-gray-100 rounded-lg sm:rounded-xl">
+                      <div className="flex justify-center items-center flex-col gap-2 p-6 sm:p-10 text-green-700 bg-green-100/50 rounded-lg sm:rounded-xl">
                         <Package size={32} className="sm:h-10 sm:w-10" />
                         <h1 className="text-base sm:text-lg">No orders yet</h1>
                         <Button
@@ -869,28 +866,43 @@ export default function ProfilePage() {
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                      {wishlistItems.map((item) => (
-                        <Card key={item.id} className="overflow-hidden">
+                      {wishlistItems.map((item, index) => (
+                        <Card key={index} className="overflow-hidden">
                           <CardContent className="p-3 sm:p-4">
-                            <img
-                              src={item.image || "/placeholder.jpg"}
-                              alt={item.name}
-                              className="w-full h-40 sm:h-48 object-cover rounded-lg mb-3 sm:mb-4"
-                            />
+                            <Link
+                              href={`/product-info/${item.productId.slug}--${item.productId._id}`}
+                            >
+                              <img
+                                src={item.imageUrl || "/placeholder.jpg"}
+                                alt={item.name}
+                                className="w-full h-40 sm:h-48 object-cover rounded-lg mb-3 sm:mb-4"
+                              />
+                            </Link>
                             <p className="font-semibold text-base sm:text-lg mb-1">
                               {item.name}
                             </p>
                             <p className="text-gray-600 mb-3 sm:mb-4 text-sm sm:text-base">
                               ₹{item.price}
                             </p>
-                            <div className="flex flex-wrap gap-2">
-                              <Button className="flex-1 text-sm sm:text-base">
+                            <div className="flex gap-2 ">
+                              {/* <Button
+                                onClick={handleAddToCart}
+                                disabled={loading}
+                                className="flex-1 text-sm sm:text-base"
+                              >
                                 Add to Cart
-                              </Button>
+                              </Button> */}
+                              <Link
+                                href={`/product-info/${item.productId.slug}--${item.productId._id}`}
+                                className="w-full gap-2 flex items-center px-4 py-2  bg-green-700 hover:bg-green-400 hover:text-green-800 text-white rounded-4xl text-sm sm:text-base text-center"
+                              >
+                                <Eye className="w-4 h-4" />
+                                view
+                              </Link>
                               <AlertDialog>
                                 <AlertDialogTrigger asChild>
                                   <Button variant="outline" size="icon">
-                                    <Trash2 className="w-4 h-4" />
+                                    <Trash2 className="w-4 h-4 " />
                                   </Button>
                                 </AlertDialogTrigger>
                                 <AlertDialogContent>
@@ -927,7 +939,8 @@ export default function ProfilePage() {
                     variant="outline"
                     className="mt-4 sm:mt-6 text-sm sm:text-base"
                   >
-                    <Heart className="w-4 h-4 mr-2" /> Share Wishlist
+                    <Share2 className="w-4 h-4 mr-2" />
+                    Share Wishlist
                   </Button>
                 </CardContent>
               </Card>

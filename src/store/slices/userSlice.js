@@ -215,7 +215,7 @@ const handleAsyncState = (builder, action, fulfilledHandler) => {
       if (action.payload.includes("token")) {
         state.profile = {};
         state.wishlist = [];
-        localStorage.removeItem("user-token"); // Clear invalid token
+        localStorage.removeItem("user-token");
       }
     });
 };

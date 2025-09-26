@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -12,82 +13,99 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Link from "next/link";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
+import debounce from "lodash/debounce";
+
+// Constants
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
 
 export default function SignupPage() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
   });
-  const [step, setStep] = useState("register"); 
-  const [otp, setOtp] = useState("");
-  const [userId, setUserId] = useState(null);
-  const [error, setError] = useState("");
-  const [resendLoading, setResendLoading] = useState(false);
-  const [resendCooldown, setResendCooldown] = useState(0);
+  const [errors, setErrors] = useState({
+    name: "",
+    email: "",
+    password: "",
+    general: "",
+  });
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleResendOtp = async () => {
-    if (resendCooldown > 0) return;
-
-    setResendLoading(true);
-    setError("");
-
-    try {
-      const res = await fetch("/api/user/auth/resendOtp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: formData.email }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || "Failed to resend OTP.");
-      } else {
-        setResendCooldown(60); 
+  // Validate single field
+  const validateField = useCallback(
+    (name) => {
+      const newErrors = { ...errors };
+      if (name === "name") {
+        if (!formData.name.trim()) newErrors.name = "Name is required.";
+        else newErrors.name = "";
+      } else if (name === "email") {
+        if (!formData.email) newErrors.email = "Email is required.";
+        else if (!EMAIL_REGEX.test(formData.email))
+          newErrors.email = "Please enter a valid email.";
+        else newErrors.email = "";
+      } else if (name === "password") {
+        if (!formData.password) newErrors.password = "Password is required.";
+        else if (!PASSWORD_REGEX.test(formData.password))
+          newErrors.password =
+            "Password must be at least 8 characters with uppercase, lowercase, and a number.";
+        else newErrors.password = "";
       }
-    } catch (err) {
-      setError("Failed to resend OTP. Try again.");
-    } finally {
-      setResendLoading(false);
-    }
-  };
+      setErrors(newErrors);
+    },
+    [formData, errors]
+  );
 
-  useEffect(() => {
-    if (resendCooldown <= 0) return;
+  // Validate entire form
+  const validateForm = useCallback(() => {
+    const newErrors = {
+      name: "",
+      email: "",
+      password: "",
+      general: "",
+    };
+    if (!formData.name.trim()) newErrors.name = "Name is required.";
+    if (!formData.email) newErrors.email = "Email is required.";
+    else if (!EMAIL_REGEX.test(formData.email))
+      newErrors.email = "Please enter a valid email.";
+    if (!formData.password) newErrors.password = "Password is required.";
+    else if (!PASSWORD_REGEX.test(formData.password))
+      newErrors.password =
+        "Password must be at least 8 characters with uppercase, lowercase, and a number.";
+    setErrors(newErrors);
+    return Object.values(newErrors).every((err) => !err);
+  }, [formData]);
 
-    const timer = setInterval(() => {
-      setResendCooldown((prev) => prev - 1);
-    }, 1000);
+  // Debounced validation
+  const debouncedValidateField = useCallback(debounce(validateField, 300), [
+    validateField,
+  ]);
 
-    return () => clearInterval(timer);
-  }, [resendCooldown]);
-
+  // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    setError("");
+    setErrors((prev) => ({ ...prev, general: "", [name]: "" }));
+    debouncedValidateField(name);
   };
 
-  const handleOtpChange = (e) => {
-    const value = e.target.value.replace(/\D/g, "").slice(0, 6); // Limit to 6 digits
-    setOtp(value);
-    setError("");
-  };
-
+  // Handle registration
   const handleRegister = async (e) => {
     e.preventDefault();
-    if (!formData.name || !formData.email || !formData.password) {
-      setError("Please fill in all fields.");
-      return;
-    }
-    const [firstName, ...rest] = formData.name.trim().split(" ");
-    const lastName = rest.join(" ");
+    if (!validateForm()) return;
+
+    setIsLoading(true);
+    setErrors((prev) => ({ ...prev, general: "" }));
+
     try {
-      const res = await fetch("api/user/auth/register", {
+      const [firstName, ...rest] = formData.name.trim().split(" ");
+      const lastName = rest.join(" ");
+      const res = await fetch("/api/user/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -97,55 +115,34 @@ export default function SignupPage() {
           password: formData.password,
         }),
       });
-      const data = await res.json();
-      if (res.ok) {
-        setUserId(data.userId); // Store userId for OTP verification
-        setStep("otp"); // Switch to OTP step
-      } else {
-        setError(data.error || "Registration failed.");
-      }
-    } catch (err) {
-      setError("An error occurred. Please try again.");
-      console.log(err);
-    }
-  };
 
-  const handleVerifyOtp = async (e) => {
-    e.preventDefault();
-    if (!otp) {
-      setError("Please enter the OTP.");
-      return;
-    }
-    try {
-      const res = await fetch("/api/user/auth/verifyOtp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: formData.email, otp }),
-      });
-      const data = await res.json();
+      let data;
+      try {
+        data = await res.json();
+      } catch (parseError) {
+        throw new Error("Invalid server response.");
+      }
+
       if (res.ok) {
-        toast.success("You are now green planet member 💚", { duration: 3000 });
-        // Automatically log in after OTP verification
-        const loginRes = await fetch("/api/user/auth/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: formData.email,
-            password: formData.password,
-          }),
+        // Store formData in localStorage to pass to OTP page
+        localStorage.setItem("signupFormData", JSON.stringify(formData));
+        toast.success("Registration successful! Please verify your OTP.", {
+          duration: 3000,
         });
-        const loginData = await loginRes.json();
-        if (loginRes.ok) {
-          localStorage.setItem("user-token", loginData.token);
-          window.location.href = "/";
-        } else {
-          setError(loginData.error || "Login failed after verification.");
-        }
+        router.push("/signup/verify");
       } else {
-        setError(data.error || "Invalid OTP.");
+        setErrors((prev) => ({
+          ...prev,
+          general: data.error || "Registration failed.",
+        }));
       }
     } catch (err) {
-      setError("An error occurred during verification.");
+      setErrors((prev) => ({
+        ...prev,
+        general: err.message || "An error occurred. Please try again.",
+      }));
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -154,148 +151,169 @@ export default function SignupPage() {
       <Card className="w-full max-w-md transform transition-all duration-300 hover:shadow-lg">
         <CardHeader className="text-center">
           <CardTitle className="text-3xl font-bold text-gray-800">
-            {step === "register"
-              ? "Join the Green Journey"
-              : "Verify Your Account"}
+            Join the Green Journey
           </CardTitle>
           <CardDescription className="text-gray-600">
-            {step === "register"
-              ? "Create an account to unlock eco-friendly gifting."
-              : "Enter the OTP sent to your email."}
+            Create an account to unlock eco-friendly gifting.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form
-            onSubmit={step === "register" ? handleRegister : handleVerifyOtp}
+            onSubmit={handleRegister}
             className="space-y-4"
+            role="form"
+            aria-label="Sign up form"
           >
-            {step === "register" ? (
-              <>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="name"
-                    className="text-sm font-medium text-gray-700"
-                  >
-                    Full Name
-                  </label>
-                  <Input
-                    id="name"
-                    name="name"
-                    type="text"
-                    placeholder="Enter your name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    className="w-full border-teal-200 focus:border-teal-400 focus:ring-teal-400"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="email"
-                    className="text-sm font-medium text-gray-700"
-                  >
-                    Email
-                  </label>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    placeholder="Enter your email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    className="w-full border-teal-200 focus:border-teal-400 focus:ring-teal-400"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="password"
-                    className="text-sm font-medium text-gray-700"
-                  >
-                    Password
-                  </label>
-                  <div className="relative">
-                    <Input
-                      id="password"
-                      name="password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Create a password"
-                      value={formData.password}
-                      onChange={handleChange}
-                      className="w-full border-teal-200 focus:border-teal-400 focus:ring-teal-400 pr-10"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                    >
-                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                    </button>
-                  </div>
-                </div>
-                <Button
-                  type="submit"
-                  className="w-full bg-teal-500 text-white hover:bg-teal-600 transition-colors duration-300"
+            <div className="space-y-2">
+              <label
+                htmlFor="name"
+                className="text-sm font-medium text-gray-700"
+              >
+                Full Name
+              </label>
+              <Input
+                id="name"
+                name="name"
+                type="text"
+                placeholder="Enter your name"
+                value={formData.name}
+                onChange={handleChange}
+                className={`w-full border-teal-200 focus:border-teal-400 focus:ring-teal-400 ${
+                  errors.name
+                    ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                    : ""
+                }`}
+                aria-invalid={!!errors.name}
+                aria-describedby={errors.name ? "name-error" : undefined}
+                disabled={isLoading}
+              />
+              {errors.name && (
+                <p
+                  id="name-error"
+                  className="text-sm text-red-500"
+                  aria-live="polite"
                 >
-                  Sign Up
-                </Button>
-              </>
-            ) : (
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <label
-                    htmlFor="otp"
-                    className="text-sm font-medium text-gray-700"
-                  >
-                    OTP
-                  </label>
-                  <Input
-                    id="otp"
-                    name="otp"
-                    type="text"
-                    placeholder="Enter 6-digit OTP"
-                    value={otp}
-                    onChange={handleOtpChange}
-                    maxLength={6}
-                    className="w-full border-teal-200 focus:border-teal-400 focus:ring-teal-400"
-                  />
-                </div>
-                <Button
-                  type="submit"
-                  className="w-full bg-teal-500 text-white hover:bg-teal-600 transition-colors duration-300"
+                  {errors.name}
+                </p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <label
+                htmlFor="email"
+                className="text-sm font-medium text-gray-700"
+              >
+                Email
+              </label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="Enter your email"
+                value={formData.email}
+                onChange={handleChange}
+                className={`w-full border-teal-200 focus:border-teal-400 focus:ring-teal-400 ${
+                  errors.email
+                    ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                    : ""
+                }`}
+                aria-invalid={!!errors.email}
+                aria-describedby={errors.email ? "email-error" : undefined}
+                disabled={isLoading}
+              />
+              {errors.email && (
+                <p
+                  id="email-error"
+                  className="text-sm text-red-500"
+                  aria-live="polite"
                 >
-                  Verify OTP
-                </Button>
+                  {errors.email}
+                </p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <label
+                htmlFor="password"
+                className="text-sm font-medium text-gray-700"
+              >
+                Password
+              </label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Create a password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  className={`w-full border-teal-200 focus:border-teal-400 focus:ring-teal-400 pr-10 ${
+                    errors.password
+                      ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                      : ""
+                  }`}
+                  aria-invalid={!!errors.password}
+                  aria-describedby={
+                    errors.password ? "password-error" : undefined
+                  }
+                  disabled={isLoading}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-400 rounded"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  disabled={isLoading}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
-            )}
-            {error && (
-              <p className="text-sm text-red-500 text-center">{error}</p>
+              {errors.password && (
+                <p
+                  id="password-error"
+                  className="text-sm text-red-500"
+                  aria-live="polite"
+                >
+                  {errors.password}
+                </p>
+              )}
+            </div>
+            <Button
+              type="submit"
+              className="w-full bg-teal-500 hover:bg-teal-600 text-white transition-colors duration-300 disabled:bg-teal-300 disabled:cursor-not-allowed"
+              disabled={
+                isLoading ||
+                !!errors.name ||
+                !!errors.email ||
+                !!errors.password
+              }
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Signing Up...
+                </>
+              ) : (
+                "Sign Up"
+              )}
+            </Button>
+            {errors.general && (
+              <div
+                className="p-3 bg-red-50 border border-red-200 rounded-md"
+                aria-live="polite"
+              >
+                <p className="text-sm text-red-700 text-center">
+                  {errors.general}
+                </p>
+              </div>
             )}
           </form>
         </CardContent>
         <CardFooter className="flex flex-col items-center space-y-2">
-          {step === "register" ? (
-            <p className="text-sm text-gray-600">
-              Already have an account?{" "}
-              <Link href="/login" className="text-teal-600 hover:underline">
-                Log In
-              </Link>
-            </p>
-          ) : (
-            <div className="text-sm text-gray-600 flex flex-col items-center">
-              <p>Didn't receive the OTP?</p>
-              <Button
-                onClick={handleResendOtp}
-                variant="link"
-                className="text-teal-600"
-                disabled={resendLoading || resendCooldown > 0}
-              >
-                {resendCooldown > 0
-                  ? `Resend in ${resendCooldown}s`
-                  : resendLoading
-                  ? "Resending..."
-                  : "Resend OTP"}
-              </Button>
-            </div>
-          )}
+          <p className="text-sm text-gray-600">
+            Already have an account?{" "}
+            <Link href="/login" className="text-teal-600 hover:underline">
+              Log In
+            </Link>
+          </p>
         </CardFooter>
       </Card>
     </div>

@@ -42,14 +42,14 @@ export default async function handler(req, res) {
           path: "wishlist",
           populate: {
             path: "items",
-            populate: { path: "productId", select: "name images price" },
+            populate: { path: "productId", select: "name images price slug variants" },
           },
         })
         .populate({
           path: "cart",
           populate: {
             path: "items",
-            populate: { path: "productId", select: "name images price" },
+            populate: { path: "productId", select: "name images price " },
           },
         })
         .populate({

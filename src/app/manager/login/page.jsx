@@ -103,7 +103,7 @@ export default function Page() {
               <select
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
-                className="w-full p-2 border border-slate-300 rounded-md bg-white/70 focus:ring-2 focus:ring-forest/50 focus:outline-none transition"
+                className="w-full p-2 border border-slate-300 rounded-md bg-white/70 focus:ring-2 focus:ring-green-700/50 focus:outline-none transition"
               >
                 <option value="select">--select your role--</option>
                 <option value="sales">Sales Manager</option>
@@ -122,7 +122,7 @@ export default function Page() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="pl-10 bg-white/70 border border-slate-300 focus:ring-2 focus:ring-forest/50 focus:outline-none transition"
+                className="pl-10 bg-white/70 border border-slate-300 focus:ring-2 focus:ring-green-700/50 focus:outline-none transition"
               />
             </div>
 
@@ -136,7 +136,7 @@ export default function Page() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="pl-10 bg-white/70 border border-slate-300 focus:ring-2 focus:ring-forest/50 focus:outline-none transition"
+                className="pl-10 bg-white/70 border border-slate-300 focus:ring-2 focus:ring-green-700/50 focus:outline-none transition"
               />
             </div>
 
@@ -178,7 +178,7 @@ export default function Page() {
             <div className="mt-4 text-center">
               <Link
                 href="mailto:info@ecotwist.in"
-                className="flex items-center text-zinc-600 gap-2 justify-center hover:text-forest-600 font-medium transition"
+                className="flex items-center text-zinc-600 gap-2 justify-center hover:text-green-600 font-medium transition"
               >
                  Contact Admin
                 <Mail className="w-4 h-4" />

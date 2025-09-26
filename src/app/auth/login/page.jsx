@@ -121,7 +121,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="pl-10 bg-white/70 border border-slate-300 focus:ring-2 focus:ring-forest/50 focus:outline-none transition"
+                className="pl-10 bg-white/70 border border-slate-300 focus:ring-2 focus:ring-green-700/50 focus:outline-none transition"
               />
               <span id="email-description" className="sr-only">
                 Enter your email address
@@ -144,7 +144,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="pl-10 bg-white/70 border border-slate-300 focus:ring-2 focus:ring-forest/50 focus:outline-none transition"
+                className="pl-10 bg-white/70 border border-slate-300 focus:ring-2 focus:ring-green-700/50 focus:outline-none transition"
               />
               <span id="password-description" className="sr-only">
                 Enter your account password
@@ -184,7 +184,7 @@ export default function LoginPage() {
             <div className="mt-4 text-center">
               <Link
                 href="/auth/register"
-                className="flex items-center justify-center gap-1 text-forest hover:text-forest-600 font-medium transition"
+                className="flex items-center justify-center gap-1 text-green-700 hover:text-green-600 font-medium transition"
               >
                 Create new account
                 <ArrowRightCircle className="w-4 h-4" />

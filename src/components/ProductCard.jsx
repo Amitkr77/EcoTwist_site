@@ -45,8 +45,7 @@ function ProductCard({ product, viewMode = "grid" }) {
         })
       );
       setAdded(true);
-      // Auto-redirect to cart after 2 seconds, or keep showing "Go to Cart" button
-      // setTimeout(() => setAdded(false), 3000);
+    
     } catch (error) {
       setLoading(false);
       console.error("Failed to add item to cart", error);
@@ -87,7 +86,7 @@ function ProductCard({ product, viewMode = "grid" }) {
     const token = getAuthToken();
     if (!token) {
       console.warn("No authentication token found");
-      router.push("/login"); // Redirect to login
+      router.push("/login"); 
       return;
     }
 
