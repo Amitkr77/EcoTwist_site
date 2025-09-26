@@ -8,7 +8,6 @@ import { jwtDecode } from "jwt-decode";
 const getAuthToken = () => {
   // First check localStorage
   let token = localStorage.getItem("user-token");
-  console.log(token);
   // If not found in localStorage, check cookies
   if (!token) {
     const cookies = document.cookie.split('; ');
@@ -25,10 +24,8 @@ const getAuthToken = () => {
 
   try {
     const decoded = jwtDecode(token);
-    console.log(decoded);
 
     const currentTime = Date.now() / 1000;
-    console.log(currentTime);
     if (decoded.exp && decoded.exp < currentTime) {
       // Remove token from both localStorage and cookies if expired
       localStorage.removeItem("user-token");
