@@ -39,7 +39,7 @@ function CheckoutPage() {
   });
   const [errors, setErrors] = useState({});
   const [appliedPromo, setAppliedPromo] = useState(null);
-  const [shippingEstimate, setShippingEstimate] = useState(5.99);
+  const [shippingEstimate, setShippingEstimate] = useState(0);
   const [totalWithShipping, setTotalWithShipping] = useState(0);
   const [isPaymentLoading, setIsPaymentLoading] = useState(false);
   useEffect(() => {
@@ -109,7 +109,7 @@ function CheckoutPage() {
   };
 
   const estimateShipping = (totalPrice) => {
-    setShippingEstimate(totalPrice > 499 ? 0 : 69);
+    setShippingEstimate(totalPrice >= 499 ? 0 : 69);
   };
 
   // const applyPromoCode = () => {
