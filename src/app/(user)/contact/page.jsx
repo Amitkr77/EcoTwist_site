@@ -18,12 +18,6 @@ import {
 } from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import {
   Carousel,
   CarouselContent,
   CarouselItem,
@@ -38,7 +32,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   Mail,
   MapPin,
@@ -49,7 +43,6 @@ import {
   Star,
   Leaf,
   Loader2,
-  Phone,
 } from "lucide-react";
 import {
   FaFacebookF,
