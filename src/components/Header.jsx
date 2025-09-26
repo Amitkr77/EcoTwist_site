@@ -108,9 +108,12 @@ export default function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     localStorage.removeItem("user-token");
     localStorage.removeItem("guest-cart");
+    
+    await fetch("/api/user/auth/logout", { method: "POST" }); 
+
     setIsAuthenticated(false);
     toast.success("Logged out successfully!");
     router.push("/login");
