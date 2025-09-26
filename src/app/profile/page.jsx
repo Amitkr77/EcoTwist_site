@@ -77,6 +77,7 @@ import {
 import { useRouter } from "next/navigation";
 import Orders from "@/components/profile/Orders";
 import Link from "next/link";
+import ChangePassword from "@/components/ChangePassword";
 
 // Define the CSS for hiding the scrollbar
 const hideScrollbarStyles = `
@@ -239,7 +240,6 @@ export default function ProfilePage() {
       .catch((err) => toast.error(err || "Failed to set default address"));
   };
 
- 
   const handleRemoveWishlistItem = (productId) => {
     dispatch(removeFromWishlist(productId))
       .unwrap()
@@ -249,11 +249,11 @@ export default function ProfilePage() {
       );
   };
 
-  const handleLogout = async() => {
+  const handleLogout = async () => {
     dispatch(clearUserData());
 
     await fetch("/api/user/auth/logout", { method: "POST" });
-    
+
     toast.success("Logged out successfully");
     router.push("/login");
   };
@@ -509,9 +509,9 @@ export default function ProfilePage() {
                               aria-label="Full Name"
                             />
                           ) : ( */}
-                            <p className="mt-1 text-gray-600 text-sm sm:text-base">
-                              {userInfo.fullName}
-                            </p>
+                          <p className="mt-1 text-gray-600 text-sm sm:text-base">
+                            {userInfo.fullName}
+                          </p>
                           {/* )} */}
                         </div>
                         <div>
@@ -527,9 +527,9 @@ export default function ProfilePage() {
                               aria-label="Email Address"
                             />
                           ) : ( */}
-                            <p className="mt-1 text-gray-600 text-sm sm:text-base">
-                              {userInfo.email}
-                            </p>
+                          <p className="mt-1 text-gray-600 text-sm sm:text-base">
+                            {userInfo.email}
+                          </p>
                           {/* )} */}
                         </div>
                         <div>
@@ -545,9 +545,9 @@ export default function ProfilePage() {
                               aria-label="Phone Number"
                             />
                           ) : ( */}
-                            <p className="mt-1 text-gray-600 text-sm sm:text-base">
-                              {userInfo.phone}
-                            </p>
+                          <p className="mt-1 text-gray-600 text-sm sm:text-base">
+                            {userInfo.phone}
+                          </p>
                           {/* )} */}
                         </div>
                         <div>
@@ -771,9 +771,12 @@ export default function ProfilePage() {
                                       className="w-10 h-10 sm:w-12 sm:h-12 object-cover rounded"
                                     />
                                     <div>
-                                      <p className="font-medium text-sm sm:text-base">
+                                      <Link
+                                        href={`/product-info/${item.productId.slug}--${item.productId.id}`}
+                                        className="font-medium text-sm sm:text-base"
+                                      >
                                         {item.name}
-                                      </p>
+                                      </Link>
                                       <p className="text-xs sm:text-sm text-gray-500">
                                         Qty: {item.quantity}
                                       </p>
@@ -807,9 +810,13 @@ export default function ProfilePage() {
                               <p>Phone: {order.deliveryAddress.phone}</p>
                             </div>
                             <div className="flex flex-wrap gap-2 mt-3 sm:mt-4">
-                              <Button variant="outline" size="sm">
-                                View Invoice
-                              </Button>
+                              <Link
+                                href={`/api/orders/invoice/pdf/${order?.invoice?.invoiceId}`}
+                              >
+                                <Button variant="outline" size="sm">
+                                  View Invoice
+                                </Button>
+                              </Link>
                               {order.status !== "cancelled" && (
                                 <Button variant="outline" size="sm">
                                   Track Order
@@ -976,24 +983,61 @@ export default function ProfilePage() {
                           className="relative overflow-hidden"
                         >
                           <CardContent className="p-3 sm:p-6">
-                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-start">
-                              <div>
-                                <div className="flex items-center mb-2">
-                                  <p className="font-semibold text-base sm:text-lg mr-2">
-                                    {addr.fullName}
-                                  </p>
-                                  {addr.isDefault && <Badge>Default</Badge>}
+                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-start ">
+                              <div className="relative bg-white rounded-lg p-6   shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+                                {/* Subtle gradient border */}
+                                <div className="absolute inset-0 rounded-lg border-2 border-gradient-to-r from-transparent via-teal-200 to-transparent opacity-50" />
+
+                                {/* Content */}
+                                <div className="relative z-10 space-y-5 w-96">
+                                  <div className="flex items-start justify-between">
+                                    <div className="flex-1">
+                                      <span className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
+                                        Name
+                                      </span>
+                                      <h3 className="text-2xl font-bold text-gray-900 font-['Poppins',sans-serif] leading-tight">
+                                        {profile?.fullName}
+                                      </h3>
+                                    </div>
+                                    {addr.isDefault && (
+                                      <span className="inline-flex items-center px-3 py-1 text-xs font-semibold text-teal-600 bg-teal-50 rounded-md">
+                                        Default
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div>
+                                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
+                                      Address
+                                    </span>
+                                    <p className="text-base text-gray-800 font-['Poppins',sans-serif] leading-relaxed">
+                                      {addr.street}, {addr.city}, {addr.state}{" "}
+                                      {addr.postalCode}, {addr.country}
+                                    </p>
+                                  </div>
+                                  <div>
+                                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
+                                      Phone
+                                    </span>
+                                    <p className="text-base text-gray-800 font-['Poppins',sans-serif] leading-relaxed">
+                                      {profile?.phone}
+                                    </p>
+                                  </div>
                                 </div>
-                                <p className="text-gray-600 text-sm sm:text-base">
-                                  {addr.street}, {addr.city}, {addr.state}{" "}
-                                  {addr.postalCode}, {addr.country}
-                                </p>
-                                <p className="text-gray-600 text-sm sm:text-base">
-                                  Phone: {addr.phone}
-                                </p>
                               </div>
+
+                              <style>
+                                {`
+  .border-gradient-to-r {
+    border-image: linear-gradient(to right, transparent, #5eead4, transparent) 1;
+  }
+`}
+                              </style>
                               <div className="flex flex-wrap gap-2 mt-3 sm:mt-0">
-                                <Button variant="outline" size="sm">
+                                <Button
+                                  className=""
+                                  variant="outline"
+                                  size="sm"
+                                >
                                   Edit
                                 </Button>
                                 {!addr.isDefault && (
@@ -1252,12 +1296,6 @@ export default function ProfilePage() {
                       >
                         Account
                       </TabsTrigger>
-                      {/* <TabsTrigger
-                        value="payments"
-                        className="text-sm sm:text-base"
-                      >
-                        Payments
-                      </TabsTrigger> */}
                     </TabsList>
                     <TabsContent value="preferences">
                       <div className="space-y-4 sm:space-y-6">
@@ -1381,101 +1419,44 @@ export default function ProfilePage() {
                             </div>
                           </div>
                         </>
-                        <Button
-                          variant="primary"
-                          className="w-full justify-start text-sm sm:text-base cursor-pointer"
-                        >
-                          <Edit className="w-4 h-4 mr-2" /> Change Password
-                        </Button>
-                        <Button
-                          variant="primary"
-                          className="w-full justify-start text-sm sm:text-base cursor-pointer"
-                        >
-                          <User className="w-4 h-4 mr-2" /> Update Email
-                        </Button>
 
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button
-                              variant="destructive"
-                              className="w-1/5 justify-start text-sm sm:text-base"
-                            >
-                              <Trash2 className="w-4 h-4 mr-2" /> Delete Account
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>
-                                Delete Account?
-                              </AlertDialogTitle>
-                              <AlertDialogDescription>
-                                This action cannot be undone. Are you sure?
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => {
-                                  toast.success("Account deletion requested");
-                                }}
+                        <div className="flex gap-2 items-center mt-10">
+                          <ChangePassword />
+
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="destructive"
+                                className="w-1/5 justify-start text-sm sm:text-base"
                               >
-                                Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                                <Trash2 className="w-4 h-4 mr-2" /> Delete
+                                Account
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                  Delete Account?
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  This action cannot be undone. Are you sure?
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => {
+                                    toast.success("Account deletion requested");
+                                  }}
+                                >
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
                       </div>
                     </TabsContent>
-                    {/* <TabsContent value="payments">
-                      <div className="space-y-4 sm:space-y-6">
-                        <h3 className="text-base sm:text-lg font-semibold">
-                          Saved Payment Methods
-                        </h3>
-                        <Card>
-                          <CardContent className="flex items-center p-3 sm:p-4">
-                            <CreditCard className="w-5 h-5 sm:w-6 sm:h-6 mr-3 sm:mr-4" />
-                            <div>
-                              <p className="font-medium text-sm sm:text-base">
-                                Visa **** 1234
-                              </p>
-                              <p className="text-xs sm:text-sm text-gray-500">
-                                Expires 12/2026
-                              </p>
-                            </div>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="ml-auto text-sm sm:text-base"
-                            >
-                              Remove
-                            </Button>
-                          </CardContent>
-                        </Card>
-                        <Card>
-                          <CardContent className="flex items-center p-3 sm:p-4">
-                            <CreditCard className="w-5 h-5 sm:w-6 sm:h-6 mr-3 sm:mr-4" />
-                            <div>
-                              <p className="font-medium text-sm sm:text-base">
-                                Mastercard **** 5678
-                              </p>
-                              <p className="text-xs sm:text-sm text-gray-500">
-                                Expires 05/2025
-                              </p>
-                            </div>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="ml-auto text-sm sm:text-base"
-                            >
-                              Remove
-                            </Button>
-                          </CardContent>
-                        </Card>
-                        <Button className="w-full text-sm sm:text-base">
-                          <Plus className="w-4 h-4 mr-2" /> Add Payment Method
-                        </Button>
-                      </div>
-                    </TabsContent> */}
                   </Tabs>
                 </CardContent>
               </Card>
