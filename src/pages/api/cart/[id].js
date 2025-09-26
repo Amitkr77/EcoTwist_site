@@ -1,7 +1,10 @@
 import Cart from "@/models/Cart";
 import authMiddleware from "@/lib/authMiddleware";
+import dbConnect from '@/lib/mongodb';
 
 export default async function handler(req, res) {
+    await dbConnect();
+
     const user = await authMiddleware(req, res);
     if (!user) return res.status(401).json({ message: 'Unauthorized' });
 
@@ -10,21 +13,28 @@ export default async function handler(req, res) {
             const { productId, variantSku } = req.query;
 
             if (!productId || !variantSku) {
-                return res.status(400).json({ message: 'Invalid data' });
+                return res.status(400).json({ message: 'Missing productId or variantSku' });
             }
 
-            // Remove item from cart
-            const cart = await Cart.findOneAndUpdate(
-                { userId: user.userId },
+            const cart = await Cart.findOne({ userId: user.userId });
+            if (!cart) {
+                return res.status(404).json({ message: 'Cart not found' });
+            }
+
+            const updatedCart = await Cart.findOneAndUpdate(
+                { userId: user.userId, 'items.productId': productId, 'items.variantSku': variantSku },
                 { $pull: { items: { productId, variantSku } } },
                 { new: true }
-            );
+            ).lean();
 
-            if (!cart || cart.items.length === 0) {
-                return res.status(404).json({ message: 'Item not found in cart or cart is empty' });
+            if (!updatedCart) {
+                return res.status(404).json({ message: 'Item not found in cart' });
             }
 
-            return res.status(200).json({ message: 'Item removed from cart', cart });
+            return res.status(200).json({ 
+                message: 'Item removed from cart', 
+                cart: updatedCart 
+            });
         }
 
         if (req.method === 'PUT') {
@@ -34,23 +44,26 @@ export default async function handler(req, res) {
                 return res.status(400).json({ message: 'Invalid data' });
             }
 
-            // Update item quantity in cart
             const cart = await Cart.findOneAndUpdate(
                 { userId: user.userId, 'items.productId': productId, 'items.variantSku': variantSku },
                 { $set: { 'items.$.quantity': quantity } },
                 { new: true }
-            );
+            ).lean();
 
             if (!cart) {
                 return res.status(404).json({ message: 'Item not found in cart' });
             }
 
-            return res.status(200).json({ message: 'Cart updated successfully', cart });
+            return res.status(200).json({ 
+                message: 'Cart updated successfully', 
+                cart 
+            });
         }
 
         if (req.method === 'GET') {
-            // Get the user's cart
-            const cart = await Cart.findOne({ userId: user.userId }).populate('items.productId');
+            const cart = await Cart.findOne({ userId: user.userId })
+                .populate('items.productId')
+                .lean();
 
             if (!cart || cart.items.length === 0) {
                 return res.status(404).json({ message: 'Cart is empty' });
@@ -59,7 +72,6 @@ export default async function handler(req, res) {
             return res.status(200).json({ cart });
         }
 
-        // Handle unsupported HTTP methods
         return res.status(405).json({ message: 'Method Not Allowed' });
     } catch (error) {
         console.error('Error handling cart:', error);

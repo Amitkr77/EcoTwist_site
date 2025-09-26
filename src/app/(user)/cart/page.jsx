@@ -197,8 +197,8 @@ export default function CartPage() {
         promo.freeShipping
           ? "Free shipping applied! 🎉"
           : `${promo.discount}% discount applied! Save ₹${newDiscount.toFixed(
-            2
-          )}`
+              2
+            )}`
       );
     } else {
       setDiscount(0);
@@ -294,8 +294,8 @@ export default function CartPage() {
           typeof variant?.price === "number"
             ? variant.price
             : typeof product.variants?.[0]?.price === "number"
-              ? product.variants[0].price
-              : 0,
+            ? product.variants[0].price
+            : 0,
         variantName: variant?.name || variant?.sku || "",
         stock: product.stock || 999,
         quantity: item.quantity || 1,
@@ -407,9 +407,9 @@ export default function CartPage() {
   if (enhancedItems.length === 0) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900 pt-20 p-4 md:p-6">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           {/* Header */}
-          <div className="flex items-center mb-6">
+          <div className="flex items-center mb-6 mt-16">
             <Link
               href="/products"
               className="mr-4 text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300"
@@ -851,8 +851,9 @@ export default function CartPage() {
                 Order Summary
               </h3>
               <ChevronDown
-                className={`w-5 h-5 text-gray-600 dark:text-gray-300 transition-transform ${showSummary ? "rotate-180" : ""
-                  }`}
+                className={`w-5 h-5 text-gray-600 dark:text-gray-300 transition-transform ${
+                  showSummary ? "rotate-180" : ""
+                }`}
               />
             </button>
 
@@ -915,39 +916,7 @@ export default function CartPage() {
                     </div>
                   </div>
 
-                  {/* Promo Code */}
-                  {/* {totalPrice > 0 && (
-                    <div className="space-y-3">
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                        <Tag className="w-4 h-4 inline mr-2" />
-                        Promo Code
-                      </label>
-                      <div className="flex gap-2">
-                        <Input
-                          value={promoCode}
-                          onChange={(e) => setPromoCode(e.target.value)}
-                          placeholder="Enter code (SAVE10, FREESHIP)"
-                          className="flex-1 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 focus:ring-green-500 focus:border-green-500"
-                          disabled={status === "loading"}
-                          aria-label="Promo code"
-                        />
-                        <Button
-                          onClick={handleApplyPromo}
-                          variant="outline"
-                          className="border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 flex-shrink-0 px-4"
-                          disabled={status === "loading" || promoCode.trim() === ""}
-                          aria-label="Apply promo code"
-                        >
-                          Apply
-                        </Button>
-                      </div>
-                      {discount > 0 && (
-                        <p className="text-xs text-green-600 dark:text-green-400">
-                          {promoCode.toUpperCase()} applied - Save ₹{discount.toFixed(2)}
-                        </p>
-                      )}
-                    </div>
-                  )} */}
+                 
 
                   {/* Checkout Button */}
                   <Link href="/checkout">
@@ -992,7 +961,8 @@ export default function CartPage() {
                     </h4>
                     <ul className="space-y-1 text-gray-700 dark:text-gray-300 list-disc pl-4">
                       <li>
-                        Items in your cart aren&apos;t reserved checkout soon to avoid stocks out.
+                        Items in your cart aren&apos;t reserved checkout soon to
+                        avoid stocks out.
                       </li>
                       <li>Enjoy free shipping on all orders over ₹499.</li>
                       {isGuestCart && (
@@ -1206,30 +1176,35 @@ export default function CartPage() {
                         }}
                         className={`
                           w-full py-2.5 px-3 rounded-lg text-sm font-medium
-                          border-2 ${showSuccess
-                            ? "border-green-600/30"
-                            : "border-green-500/20"
+                          border-2 ${
+                            showSuccess
+                              ? "border-green-600/30"
+                              : "border-green-500/20"
                           } 
-                          ${showSuccess
-                            ? "bg-green-100"
-                            : isAdding
+                          ${
+                            showSuccess
+                              ? "bg-green-100"
+                              : isAdding
                               ? "bg-green-100/50"
                               : "bg-green-50"
                           } 
-                          ${showSuccess
-                            ? "text-green-700"
-                            : isAdding
+                          ${
+                            showSuccess
+                              ? "text-green-700"
+                              : isAdding
                               ? "text-green-600"
                               : "text-green-700"
                           }
-                          ${isAdding || showSuccess
-                            ? "cursor-not-allowed"
-                            : "hover:bg-green-100 hover:border-green-500/40"
+                          ${
+                            isAdding || showSuccess
+                              ? "cursor-not-allowed"
+                              : "hover:bg-green-100 hover:border-green-500/40"
                           }
                           dark:border-green-400/30 
-                          dark:${showSuccess
-                            ? "bg-green-900/40"
-                            : isAdding
+                          dark:${
+                            showSuccess
+                              ? "bg-green-900/40"
+                              : isAdding
                               ? "bg-green-900/30"
                               : "bg-green-900/20"
                           } 
@@ -1237,7 +1212,8 @@ export default function CartPage() {
                           transition-all duration-200 flex items-center justify-center gap-2
                           focus:ring-2 focus:ring-green-500/30 focus:outline-none
                           group-hover:border-green-500/50
-                          ${isAdding || showSuccess ? "pointer-events-none" : ""
+                          ${
+                            isAdding || showSuccess ? "pointer-events-none" : ""
                           }
                         `}
                         disabled={isAdding || showSuccess}
