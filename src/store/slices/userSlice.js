@@ -97,11 +97,11 @@ export const addAddress = createAsyncThunk(
     try {
       const { token, userId } = getAuthToken();
       const response = await axios.post(
-        `/api/user/address/${userId}`,
+        `/api/address/${userId}`,
         address,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      return response.data.user.addresses;
+      return response.data.address;
     } catch (error) {
       return rejectWithValue(handleApiError(error, "Failed to add address"));
     }
@@ -114,10 +114,10 @@ export const deleteAddress = createAsyncThunk(
     if (!addressId) return rejectWithValue("Invalid addressId");
     try {
       const { token, userId } = getAuthToken();
-      const response = await axios.delete(`/api/user/address/${userId}/${addressId}`, {
+      const response = await axios.delete(`/api/address/${addressId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      return response.data.user.addresses;
+      return response.data.id;
     } catch (error) {
       return rejectWithValue(handleApiError(error, "Failed to delete address"));
     }
@@ -244,11 +244,18 @@ const userSlice = createSlice({
       state.profile = action.payload || {};
     });
     handleAsyncState(builder, addAddress, (state, action) => {
-      state.profile = { ...state.profile, addresses: action.payload || [] };
+      const existing = Array.isArray(state.profile.addresses)
+        ? state.profile.addresses
+        : [];
+      state.profile.addresses = [...existing, action.payload];
     });
+
     handleAsyncState(builder, deleteAddress, (state, action) => {
-      state.profile = { ...state.profile, addresses: action.payload || [] };
+      state.profile.addresses = state.profile.addresses?.filter(
+        (addr) => addr._id !== action.payload
+      );
     });
+
     handleAsyncState(builder, setDefaultAddress, (state, action) => {
       state.profile = { ...state.profile, addresses: action.payload || [] };
     });
