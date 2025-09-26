@@ -20,10 +20,11 @@ export default function Footer() {
     {
       title: "Quick Links",
       links: [
+        { name: "Blog", path: "/blog" },
+        { name: "Shop", path: "/products" },
         { name: "About Us", path: "/about" },
         { name: "Contact Us", path: "/contact" },
-        { name: "Shop", path: "/products" },
-        { name: "Blog", path: "/blog" },
+        { name: "My Account", path: "/profile" },
       ],
     },
     {
