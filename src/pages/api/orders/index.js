@@ -8,6 +8,8 @@ import { v4 as uuidv4 } from 'uuid';
 import mongoose from 'mongoose';
 import { format } from 'date-fns';
 import Invoice from '@/models/Invoice';
+import sendEmail from '@/lib/nodemailer/mail-handler';
+
 
 export default async function handler(req, res) {
     await dbConnect();
@@ -62,10 +64,11 @@ export default async function handler(req, res) {
                 orderItems.push({
                     productId: product._id,
                     variantSku: variant.sku,
-                    name: cartItem.name || product.name, // Use cart name or fallback to product name
-                    price: variant.price, // Use current variant price
+                    name: cartItem.name || product.name,
+                    slug: product.slug,
+                    price: variant.price,
                     quantity: cartItem.quantity,
-                    hsnCode: cartItem.hsnCode || product.hsnCode || 'N/A' // ✅ Include HSN code
+                    hsnCode: cartItem.hsnCode || product.hsnCode || 'N/A'
                 });
             }
 
@@ -73,7 +76,7 @@ export default async function handler(req, res) {
             const newOrder = new Order({
                 orderId,
                 userId: user.userId,
-                items: orderItems, // ✅ Items now include HSN code
+                items: orderItems,
                 totalAmount,
                 deliveryAddress,
                 paymentMethod,
@@ -106,6 +109,103 @@ export default async function handler(req, res) {
                 { userId: user.userId },
                 { $set: { items: [] } }
             );
+
+            // Generate order items table for email
+            const orderItemsTable = orderItems
+                .map(item => `
+                    <tr>
+                        <td style="padding: 10px; text-align: left; color: #333333;">${item.name}</td>
+                        <td style="padding: 10px; text-align: center; color: #333333;">${item.quantity}</td>
+                        <td style="padding: 10px; text-align: right; color: #333333;">₹${item.price.toFixed(2)}</td>
+                        <td style="padding: 10px; text-align: right; color: #333333;">₹${(item.price * item.quantity).toFixed(2)}</td>
+                    </tr>
+                `)
+                .join('');
+
+            // Send email notification
+            try {
+                await sendEmail({
+                    to: `amitroyk99@gmail.com`,
+                    subject: 'EcoTwist - Your Order Confirmation',
+                    html: `
+                        <!DOCTYPE html>
+                        <html lang="en">
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                            <title>Order Confirmation</title>
+                        </head>
+                        <body style="margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; background-color: #f4f4f4;">
+                            <table role="presentation" width="100%" style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                <!-- Header -->
+                                <tr>
+                                    <td style="background-color: #2c3e50; padding: 20px; text-align: center; border-top-left-radius: 8px; border-top-right-radius: 8px;">
+                                        <img src="./logo.png" alt="EcoTwist Logo" style="max-width: 150px;">
+                                    </td>
+                                </tr>
+                                <!-- Body -->
+                                <tr>
+                                    <td style="padding: 30px;">
+                                        <h1 style="color: #2c3e50; font-size: 24px; margin: 0 0 20px;">Order Confirmation</h1>
+                                        <p style="color: #333333; font-size: 16px; line-height: 1.5; margin: 0 0 20px;">
+                                            Dear ${user.name || 'Customer'},<br>
+                                            Thank you for your order! Your order with ID <strong>${orderId}</strong> has been successfully placed.
+                                        </p>
+                                        <!-- Order Summary -->
+                                        <h2 style="color: #2c3e50; font-size: 20px; margin: 20px 0;">Order Summary</h2>
+                                        <table role="presentation" width="100%" style="border-collapse: collapse;">
+                                            <thead>
+                                                <tr style="background-color: #f9f9f9;">
+                                                    <th style="padding: 10px; text-align: left; color: #2c3e50;">Item</th>
+                                                    <th style="padding: 10px; text-align: center; color: #2c3e50;">Quantity</th>
+                                                    <th style="padding: 10px; text-align: right; color: #2c3e50;">Price</th>
+                                                    <th style="padding: 10px; text-align: right; color: #2c3e50;">Total</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                ${orderItemsTable}
+                                            </tbody>
+                                            <tfoot>
+                                                <tr>
+                                                    <td colspan="3" style="padding: 10px; text-align: right; font-weight: bold;">Total Amount:</td>
+                                                    <td style="padding: 10px; text-align: right; font-weight: bold;">$${totalAmount.toFixed(2)}</td>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                        <!-- Order Details -->
+                                        <h2 style="color: #2c3e50; font-size: 20px; margin: 20px 0;">Order Details</h2>
+                                        <p style="color: #333333; font-size: 16px; line-height: 1.5; margin: 0 0 10px;">
+                                            <strong>Order ID:</strong> ${orderId}<br>
+                                            <strong>Delivery Address:</strong> ${deliveryAddress}<br>
+                                            <strong>Payment Method:</strong> ${paymentMethod}<br>
+                                            <strong>Order Date:</strong> ${format(new Date(), 'MMMM dd, yyyy')}
+                                        </p>
+                                        <!-- CTA Button -->
+                                        <p style="text-align: center; margin: 30px 0;">
+                                            <a href="https://ecotwist.in/profile" style="display: inline-block; padding: 12px 24px; background-color: #28a745; color: #ffffff; text-decoration: none; border-radius: 4px; font-size: 16px;">View Order Details</a>
+                                        </p>
+                                    </td>
+                                </tr>
+                                <!-- Footer -->
+                                <tr>
+                                    <td style="background-color: #2c3e50; padding: 20px; text-align: center; color: #ffffff; font-size: 14px; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">
+                                        <p style="margin: 0 0 10px;">&copy; ${new Date().getFullYear()} EcoTwist. All rights reserved.</p>
+                                        <p style="margin: 0;">
+                                            <a href="https://ecotwist.in/contact" style="color: #ffffff; text-decoration: underline;">Contact Us</a> | 
+                                            <a href="https://ecotwist.in/privacy-policy" style="color: #ffffff; text-decoration: underline;">Privacy Policy</a>
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </body>
+                        </html>
+                    `
+                });
+
+            } catch (emailError) {
+                console.error('Email Sending Error:', emailError);
+
+            }
 
             return res.status(201).json({
                 message: 'Order placed successfully',

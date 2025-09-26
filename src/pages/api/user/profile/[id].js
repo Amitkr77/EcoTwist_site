@@ -66,12 +66,12 @@ export default async function handler(req, res) {
             {
               path: "invoice",
               model: "Invoice",
-              select: "invoiceNumber totalAmount status paymentStatus createdAt",
+              select: "invoiceNumber invoiceId shippingFee totalAmount status paymentStatus createdAt",
             },
             {
               path: "items.productId",
               model: "Product",
-              select: "name images hsnCode price category",
+              select: "name images hsnCode price category slug",
             },
           ],
         });
