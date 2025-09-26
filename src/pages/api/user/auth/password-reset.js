@@ -1,5 +1,4 @@
 import jwt from "jsonwebtoken";
-import bcrypt from "bcryptjs";
 import User from "@/models/User.js";
 import dbConnect from "@/lib/mongodb";
 
@@ -32,7 +31,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Invalid or expired token" });
     }
 
-    user.password = await bcrypt.hash(newPassword, 12);
+    user.password = newPassword
     user.otp = null;
     await user.save();
 
