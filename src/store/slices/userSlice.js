@@ -29,7 +29,7 @@ const getAuthToken = () => {
     if (decoded.exp && decoded.exp < currentTime) {
       // Remove token from both localStorage and cookies if expired
       localStorage.removeItem("user-token");
-      document.cookie = "user-token=; Max-Age=0";  // Remove from cookies
+      document.cookie = "user-token=; Max-Age=0"; // Remove from cookies
       throw new Error("Token has expired");
     }
 
@@ -105,12 +105,30 @@ export const addAddress = createAsyncThunk(
   }
 );
 
+export const updateAddress = createAsyncThunk(
+  "user/updateAddress",
+  async ({ addressId, addressData }, { rejectWithValue }) => {
+    if (!addressId || !addressData) return rejectWithValue("Invalid address ID or data");
+    try {
+      const { token } = getAuthToken();
+      const response = await axios.put(
+        `/api/address/${addressId}`,
+        addressData,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      return response.data.address;
+    } catch (error) {
+      return rejectWithValue(handleApiError(error, "Failed to update address"));
+    }
+  }
+);
+
 export const deleteAddress = createAsyncThunk(
   "user/deleteAddress",
   async (addressId, { rejectWithValue }) => {
     if (!addressId) return rejectWithValue("Invalid addressId");
     try {
-      const { token, userId } = getAuthToken();
+      const { token } = getAuthToken();
       const response = await axios.delete(`/api/address/${addressId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -144,7 +162,7 @@ export const addToWishlist = createAsyncThunk(
   async (productId, { rejectWithValue }) => {
     if (!productId) return rejectWithValue("Invalid productId");
     try {
-      const { token, userId } = getAuthToken();
+      const { token } = getAuthToken();
       const response = await axios.post(
         `/api/wishlist`,
         { productId },
@@ -161,7 +179,7 @@ export const fetchWishlist = createAsyncThunk(
   "user/fetchWishlist",
   async (_, { rejectWithValue }) => {
     try {
-      const { token, userId } = getAuthToken();
+      const { token } = getAuthToken();
       const response = await axios.get(`/api/wishlist`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -177,7 +195,7 @@ export const removeFromWishlist = createAsyncThunk(
   async (productId, { rejectWithValue }) => {
     if (!productId) return rejectWithValue("Invalid productId");
     try {
-      const { token, userId } = getAuthToken();
+      const { token } = getAuthToken();
       const response = await axios.delete(`/api/wishlist/${productId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -226,7 +244,7 @@ const userSlice = createSlice({
       state.wishlist = [];
       state.status = "idle";
       state.error = null;
-      localStorage.removeItem("user-token"); 
+      localStorage.removeItem("user-token");
     },
     updateWishlist(state, action) {
       state.wishlist = Array.isArray(action.payload) ? action.payload : state.wishlist;
@@ -246,13 +264,16 @@ const userSlice = createSlice({
         : [];
       state.profile.addresses = [...existing, action.payload];
     });
-
+    handleAsyncState(builder, updateAddress, (state, action) => {
+      state.profile.addresses = state.profile.addresses?.map((addr) =>
+        addr._id === action.payload._id ? action.payload : addr
+      );
+    });
     handleAsyncState(builder, deleteAddress, (state, action) => {
       state.profile.addresses = state.profile.addresses?.filter(
         (addr) => addr._id !== action.payload
       );
     });
-
     handleAsyncState(builder, setDefaultAddress, (state, action) => {
       state.profile = { ...state.profile, addresses: action.payload || [] };
     });
