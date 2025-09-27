@@ -21,12 +21,12 @@ const WriteReviewDialog = ({ productId, userId }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("user-token");
     setIsAuthenticated(!!token);
   }, []);
 
   const handleTriggerClick = () => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("user-token");
     if (!token) {
       alert("Please log in to write a review.");
       return;
