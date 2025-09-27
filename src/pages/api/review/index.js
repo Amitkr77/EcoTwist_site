@@ -1,6 +1,7 @@
 import dbConnect from "@/lib/mongodb";
 import Review from "@/models/Review";
 import Product from "@/models/Product";
+import User from "@/models/User";
 
 export default async function handler(req, res) {
     await dbConnect();
@@ -64,7 +65,7 @@ export default async function handler(req, res) {
             return res.status(500).json({ success: false, message: error.message });
         }
     } else {
-        res.setHeader("Allow", ["POST"]);
+        res.setHeader("Allow", ["POST", "GET"]);
         return res
             .status(405)
             .json({ success: false, message: `Method ${req.method} Not Allowed` });
