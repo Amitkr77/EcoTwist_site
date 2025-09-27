@@ -47,12 +47,12 @@ const RazorpayPayment = ({
 
       // Step 3: Initialize Razorpay payment
       const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, // Use environment variable
-        amount: Math.round(amount * 100), // Amount in paise
-        currency: "INR", // Changed to INR
-        name: "Your Store Name",
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, 
+        amount: Math.round(amount * 100), 
+        currency: "INR", 
+        name: "Ecotwist",
         description: "Order Payment",
-        order_id: orderId, // Include Razorpay order ID
+        order_id: orderId, 
         prefill: {
           name: deliveryAddress.fullName || "",
           email: deliveryAddress.email || "",

@@ -240,13 +240,28 @@ export default function ProfilePage() {
       .catch((err) => toast.error(err || "Failed to set default address"));
   };
 
-  const handleRemoveWishlistItem = (productId) => {
-    dispatch(removeFromWishlist(productId))
-      .unwrap()
-      .then(() => toast.success("Item removed from wishlist"))
-      .catch((err) =>
-        toast.error(err || "Failed to remove item from wishlist")
-      );
+  // const handleRemoveWishlistItem = (productId) => {
+  //   dispatch(removeFromWishlist(productId))
+  //     .unwrap()
+  //     .then(() => toast.success("Item removed from wishlist"))
+  //     .catch((err) =>
+  //       toast.error(err || "Failed to remove item from wishlist")
+  //     );
+  // };
+
+  const handleRemoveWishlistItem = async (productId) => {
+    try {
+      // Dispatch the action to remove from wishlist
+      await dispatch(removeFromWishlist(productId)).unwrap();
+
+      // Show success toast
+      toast.success("Item removed from wishlist");
+      console.log("Product removed from wishlist");
+    } catch (error) {
+      // Show error toast
+      toast.error(error.message || "Failed to remove item from wishlist");
+      console.error("Failed to remove from wishlist:", error);
+    }
   };
 
   const handleLogout = async () => {
@@ -928,7 +943,7 @@ export default function ProfilePage() {
                                     </AlertDialogCancel>
                                     <AlertDialogAction
                                       onClick={() =>
-                                        handleRemoveWishlistItem(item.productId)
+                                        handleRemoveWishlistItem(item.productId._id)
                                       }
                                     >
                                       Remove
