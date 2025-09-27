@@ -4,6 +4,7 @@ import Order from '@/models/Order';
 import Product from '@/models/Product';
 import Cart from '@/models/Cart';
 import dbConnect from '@/lib/mongodb';
+import User from '@/models/User';
 import { v4 as uuidv4 } from 'uuid';
 import mongoose from 'mongoose';
 import { format } from 'date-fns';
@@ -110,6 +111,13 @@ export default async function handler(req, res) {
                 { $set: { items: [] } }
             );
 
+            // Fetch user's email from User model
+            const userData = await User.findById(user.userId).select('email');
+            if (!userData || !userData.email) {
+                console.error('User email not found for userId:', user.userId);
+                return res.status(400).json({ message: 'User email not found' });
+            }
+
             // Generate order items table for email
             const orderItemsTable = orderItems
                 .map(item => `
@@ -125,7 +133,7 @@ export default async function handler(req, res) {
             // Send email notification
             try {
                 await sendEmail({
-                    to: `amitroyk99@gmail.com`,
+                    to: userData.email,
                     subject: 'EcoTwist - Your Order Confirmation',
                     html: `
                         <!DOCTYPE html>
@@ -168,7 +176,7 @@ export default async function handler(req, res) {
                                             <tfoot>
                                                 <tr>
                                                     <td colspan="3" style="padding: 10px; text-align: right; font-weight: bold;">Total Amount:</td>
-                                                    <td style="padding: 10px; text-align: right; font-weight: bold;">$${totalAmount.toFixed(2)}</td>
+                                                    <td style="padding: 10px; text-align: right; font-weight: bold;">₹${totalAmount.toFixed(2)}</td>
                                                 </tr>
                                             </tfoot>
                                         </table>
