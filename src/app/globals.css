@@ -4,16 +4,28 @@
 @custom-variant dark (&:is(.dark *));
 
 
+@theme {
+  /* custom color */
+  --color-primary: #1B4332;
+  --color-secondary: '#2E7D32';
+  --color-accent: '#2D6A4F';
+  --color-background: '#f5f5f5';
+  --color-surface: '#f8f9f4';
+}
+
 /* Animations */
 .transition-opacity {
   transition: opacity 0.3s ease-in-out;
 }
+
 .hover\:opacity-95:hover {
   opacity: 0.95;
 }
+
 .transition-transform {
   transition: transform 0.4s ease-in-out;
 }
+
 .hover\:shadow-lg:hover {
   box-shadow: 0 10px 15px rgba(0, 0, 0, 0.05);
 }
@@ -137,4 +149,3 @@
     @apply bg-background text-foreground;
   }
 }
-

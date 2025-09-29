@@ -11,13 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { addToCart } from "@/store/slices/cartSlice";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -51,9 +45,6 @@ import {
   Save,
   X,
   Trash2,
-  Plus,
-  CreditCard,
-  Star,
   LogOut,
   Home,
   ShoppingCart,
@@ -63,6 +54,7 @@ import {
   Share2,
   View,
   Eye,
+  Leaf,
 } from "lucide-react";
 import { IndianRupee } from "lucide-react";
 import {
@@ -75,9 +67,9 @@ import {
   clearUserData,
 } from "@/store/slices/userSlice";
 import { useRouter } from "next/navigation";
-import Orders from "@/components/profile/Orders";
 import Link from "next/link";
 import ChangePassword from "@/components/ChangePassword";
+import AddressSection from "@/components/profile/Address";
 
 // Define the CSS for hiding the scrollbar
 const hideScrollbarStyles = `
@@ -101,7 +93,6 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState("overview");
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isAddingAddress, setIsAddingAddress] = useState(false);
-  const [isCancelled, setIscancelled] = useState(false);
   const [userInfo, setUserInfo] = useState({
     fullName: "",
     email: "",
@@ -239,15 +230,6 @@ export default function ProfilePage() {
       .then(() => toast.success("Default address set successfully"))
       .catch((err) => toast.error(err || "Failed to set default address"));
   };
-
-  // const handleRemoveWishlistItem = (productId) => {
-  //   dispatch(removeFromWishlist(productId))
-  //     .unwrap()
-  //     .then(() => toast.success("Item removed from wishlist"))
-  //     .catch((err) =>
-  //       toast.error(err || "Failed to remove item from wishlist")
-  //     );
-  // };
 
   const handleRemoveWishlistItem = async (productId) => {
     try {
@@ -389,9 +371,10 @@ export default function ProfilePage() {
                     {userInfo.email}
                   </p>
                   <div className="flex items-center mt-1">
-                    <Star className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-400 mr-1" />
+                    <Leaf className="w-3 h-3 sm:w-4 sm:h-4 text-green-400 mr-1" />
+
                     <span className="text-xs sm:text-sm font-medium">
-                      {membership} Member
+                      Eco Member
                     </span>
                   </div>
                 </>
@@ -943,7 +926,9 @@ export default function ProfilePage() {
                                     </AlertDialogCancel>
                                     <AlertDialogAction
                                       onClick={() =>
-                                        handleRemoveWishlistItem(item.productId._id)
+                                        handleRemoveWishlistItem(
+                                          item.productId._id
+                                        )
                                       }
                                     >
                                       Remove
@@ -969,329 +954,11 @@ export default function ProfilePage() {
             )}
 
             {activeTab === "addresses" && (
-              <Card className="border-none shadow-none">
-                <CardContent className="p-0">
-                  {isLoading ? (
-                    <div className="space-y-4 sm:space-y-6">
-                      {[...Array(2)].map((_, i) => (
-                        <Skeleton key={i} className="h-20 sm:h-24" />
-                      ))}
-                    </div>
-                  ) : addresses.length === 0 && !isAddingAddress ? (
-                    <div className="flex justify-center items-center flex-col gap-2 p-6 sm:p-10 bg-gray-100 rounded-lg sm:rounded-xl">
-                      <MapPin size={32} className="sm:h-10 sm:w-10" />
-                      <h1 className="text-base sm:text-lg">
-                        No addresses saved
-                      </h1>
-                      <Button
-                        onClick={() => setIsAddingAddress(true)}
-                        className="text-sm sm:text-base"
-                      >
-                        Add Address
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="space-y-4 sm:space-y-6">
-                      {addresses.map((addr) => (
-                        <Card
-                          key={addr._id || addr.id}
-                          className="relative overflow-hidden"
-                        >
-                          <CardContent className="p-3 sm:p-6">
-                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-start ">
-                              <div className="relative bg-white rounded-lg p-6   shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-                                {/* Subtle gradient border */}
-                                <div className="absolute inset-0 rounded-lg border-2 border-gradient-to-r from-transparent via-teal-200 to-transparent opacity-50" />
-
-                                {/* Content */}
-                                <div className="relative z-10 space-y-5 w-96">
-                                  <div className="flex items-start justify-between">
-                                    <div className="flex-1">
-                                      <span className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
-                                        Name
-                                      </span>
-                                      <h3 className="text-2xl font-bold text-gray-900 font-['Poppins',sans-serif] leading-tight">
-                                        {profile?.fullName}
-                                      </h3>
-                                    </div>
-                                    {addr.isDefault && (
-                                      <span className="inline-flex items-center px-3 py-1 text-xs font-semibold text-teal-600 bg-teal-50 rounded-md">
-                                        Default
-                                      </span>
-                                    )}
-                                  </div>
-                                  <div>
-                                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
-                                      Address
-                                    </span>
-                                    <p className="text-base text-gray-800 font-['Poppins',sans-serif] leading-relaxed">
-                                      {addr.street}, {addr.city}, {addr.state}{" "}
-                                      {addr.postalCode}, {addr.country}
-                                    </p>
-                                  </div>
-                                  <div>
-                                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
-                                      Phone
-                                    </span>
-                                    <p className="text-base text-gray-800 font-['Poppins',sans-serif] leading-relaxed">
-                                      {profile?.phone}
-                                    </p>
-                                  </div>
-                                </div>
-                              </div>
-
-                              <style>
-                                {`
-  .border-gradient-to-r {
-    border-image: linear-gradient(to right, transparent, #5eead4, transparent) 1;
-  }
-`}
-                              </style>
-                              <div className="flex flex-wrap gap-2 mt-3 sm:mt-0">
-                                <Button
-                                  className=""
-                                  variant="outline"
-                                  size="sm"
-                                >
-                                  Edit
-                                </Button>
-                                {!addr.isDefault && (
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() =>
-                                      handleSetDefaultAddress(
-                                        addr._id || addr.id
-                                      )
-                                    }
-                                  >
-                                    Set Default
-                                  </Button>
-                                )}
-                                <AlertDialog>
-                                  <AlertDialogTrigger asChild>
-                                    <Button variant="destructive" size="sm">
-                                      Delete
-                                    </Button>
-                                  </AlertDialogTrigger>
-                                  <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                      <AlertDialogTitle>
-                                        Delete Address?
-                                      </AlertDialogTitle>
-                                      <AlertDialogDescription>
-                                        Are you sure you want to delete this
-                                        address?
-                                      </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                      <AlertDialogCancel>
-                                        Cancel
-                                      </AlertDialogCancel>
-                                      <AlertDialogAction
-                                        onClick={() =>
-                                          handleDeleteAddress(
-                                            addr._id || addr.id
-                                          )
-                                        }
-                                      >
-                                        Delete
-                                      </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                  </AlertDialogContent>
-                                </AlertDialog>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  )}
-                  {!isAddingAddress ? (
-                    <Button
-                      className="mt-4 sm:mt-6 text-sm sm:text-base"
-                      onClick={() => setIsAddingAddress(true)}
-                    >
-                      <Plus className="w-4 h-4 mr-2" /> Add New Address
-                    </Button>
-                  ) : (
-                    <Card className="mt-4 sm:mt-6">
-                      <CardHeader>
-                        <CardTitle className="text-base sm:text-lg">
-                          Add New Address
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="p-3 sm:p-4">
-                        <div className="space-y-4">
-                          <div>
-                            <Label className="text-sm">Full Name</Label>
-                            <Input
-                              value={newAddress.fullName}
-                              onChange={(e) =>
-                                setNewAddress({
-                                  ...newAddress,
-                                  fullName: e.target.value,
-                                })
-                              }
-                              className="mt-1 text-sm sm:text-base"
-                              aria-label="Full Name"
-                            />
-                            {addressErrors.fullName && (
-                              <p className="text-xs sm:text-sm text-red-500 mt-1">
-                                {addressErrors.fullName}
-                              </p>
-                            )}
-                          </div>
-                          <div>
-                            <Label className="text-sm">Phone</Label>
-                            <Input
-                              value={newAddress.phone}
-                              onChange={(e) =>
-                                setNewAddress({
-                                  ...newAddress,
-                                  phone: e.target.value,
-                                })
-                              }
-                              className="mt-1 text-sm sm:text-base"
-                              aria-label="Phone"
-                            />
-                            {addressErrors.phone && (
-                              <p className="text-xs sm:text-sm text-red-500 mt-1">
-                                {addressErrors.phone}
-                              </p>
-                            )}
-                          </div>
-                          <div>
-                            <Label className="text-sm">Street</Label>
-                            <Input
-                              value={newAddress.street}
-                              onChange={(e) =>
-                                setNewAddress({
-                                  ...newAddress,
-                                  street: e.target.value,
-                                })
-                              }
-                              className="mt-1 text-sm sm:text-base"
-                              aria-label="Street"
-                            />
-                            {addressErrors.street && (
-                              <p className="text-xs sm:text-sm text-red-500 mt-1">
-                                {addressErrors.street}
-                              </p>
-                            )}
-                          </div>
-                          <div>
-                            <Label className="text-sm">City</Label>
-                            <Input
-                              value={newAddress.city}
-                              onChange={(e) =>
-                                setNewAddress({
-                                  ...newAddress,
-                                  city: e.target.value,
-                                })
-                              }
-                              className="mt-1 text-sm sm:text-base"
-                              aria-label="City"
-                            />
-                            {addressErrors.city && (
-                              <p className="text-xs sm:text-sm text-red-500 mt-1">
-                                {addressErrors.city}
-                              </p>
-                            )}
-                          </div>
-                          <div>
-                            <Label className="text-sm">State</Label>
-                            <Input
-                              value={newAddress.state}
-                              onChange={(e) =>
-                                setNewAddress({
-                                  ...newAddress,
-                                  state: e.target.value,
-                                })
-                              }
-                              className="mt-1 text-sm sm:text-base"
-                              aria-label="State"
-                            />
-                            {addressErrors.state && (
-                              <p className="text-xs sm:text-sm text-red-500 mt-1">
-                                {addressErrors.state}
-                              </p>
-                            )}
-                          </div>
-                          <div>
-                            <Label className="text-sm">Postal Code</Label>
-                            <Input
-                              value={newAddress.postalCode}
-                              onChange={(e) =>
-                                setNewAddress({
-                                  ...newAddress,
-                                  postalCode: e.target.value,
-                                })
-                              }
-                              className="mt-1 text-sm sm:text-base"
-                              aria-label="Postal Code"
-                            />
-                            {addressErrors.postalCode && (
-                              <p className="text-xs sm:text-sm text-red-500 mt-1">
-                                {addressErrors.postalCode}
-                              </p>
-                            )}
-                          </div>
-                          <div>
-                            <Label className="text-sm">Country</Label>
-                            <Input
-                              value={newAddress.country}
-                              onChange={(e) =>
-                                setNewAddress({
-                                  ...newAddress,
-                                  country: e.target.value,
-                                })
-                              }
-                              className="mt-1 text-sm sm:text-base"
-                              aria-label="Country"
-                            />
-                            {addressErrors.country && (
-                              <p className="text-xs sm:text-sm text-red-500 mt-1">
-                                {addressErrors.country}
-                              </p>
-                            )}
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <Switch
-                              id="isDefault"
-                              checked={newAddress.isDefault}
-                              onCheckedChange={(checked) =>
-                                setNewAddress({
-                                  ...newAddress,
-                                  isDefault: checked,
-                                })
-                              }
-                            />
-                            <Label htmlFor="isDefault" className="text-sm">
-                              Set as Default
-                            </Label>
-                          </div>
-                          <div className="flex flex-wrap gap-2">
-                            <Button
-                              onClick={handleAddAddress}
-                              className="text-sm sm:text-base"
-                            >
-                              Save Address
-                            </Button>
-                            <Button
-                              variant="outline"
-                              onClick={() => setIsAddingAddress(false)}
-                              className="text-sm sm:text-base"
-                            >
-                              Cancel
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-                </CardContent>
-              </Card>
+              <AddressSection
+                addresses={addresses}
+                isLoading={false}
+                user={userInfo}
+              />
             )}
 
             {activeTab === "settings" && (
