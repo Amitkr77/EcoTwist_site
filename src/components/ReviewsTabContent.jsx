@@ -116,6 +116,18 @@ const ReviewsTabContent = ({ productId, productName, userId }) => {
                     <p className="text-gray-600 dark:text-gray-400 text-sm">
                       {review.body}
                     </p>
+                     {review.photos && review.photos.length > 0 && (
+                      <div className="flex gap-2 mt-2">
+                        {review.photos.map((photo, idx) => (
+                          <img
+                            key={idx}
+                            src={photo}
+                            alt="Review photo"
+                            className="w-20 h-20 object-cover rounded-md border"
+                          />
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
