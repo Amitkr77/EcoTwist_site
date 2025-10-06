@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input"; // Make sure this exists
+import { Input } from "@/components/ui/input"; 
 
 const WriteReviewDialog = ({ productId, userId }) => {
   const [open, setOpen] = useState(false);
@@ -34,6 +34,14 @@ const WriteReviewDialog = ({ productId, userId }) => {
     setOpen(true);
   };
 
+  // Inside WriteReviewDialog.jsx
+
+  const [photos, setPhotos] = useState([]);
+
+  const handlePhotoChange = (e) => {
+    setPhotos([...e.target.files]); // Store selected files
+  };
+
   const handleSubmit = async () => {
     if (!review.trim() || !title.trim() || rating === 0) {
       alert("Please fill in all fields, including title and rating.");
@@ -43,6 +51,27 @@ const WriteReviewDialog = ({ productId, userId }) => {
     try {
       const token = localStorage.getItem("token");
 
+      // ---- 1. Upload photos first (example with Cloudinary) ----
+      const uploadedUrls = [];
+      for (const file of photos) {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("upload_preset", "your_unsigned_preset"); // replace with your preset
+
+        const uploadRes = await fetch(
+          "https://api.cloudinary.com/v1_1/<CLOUD_NAME>/image/upload",
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
+
+        const uploadData = await uploadRes.json();
+        console.log("Cloudinary Upload:", uploadData); 
+        uploadedUrls.push(uploadData.secure_url);
+      }
+
+      // ---- 2. Submit review with photo URLs ----
       const response = await fetch("/api/review", {
         method: "POST",
         headers: {
@@ -55,6 +84,7 @@ const WriteReviewDialog = ({ productId, userId }) => {
           rating,
           title,
           body: review,
+          photos: uploadedUrls,
           status: "published",
         }),
       });
@@ -69,6 +99,7 @@ const WriteReviewDialog = ({ productId, userId }) => {
       setReview("");
       setTitle("");
       setRating(0);
+      setPhotos([]);
       setOpen(false);
     } catch (err) {
       console.error("Submit error:", err);
@@ -135,6 +166,24 @@ const WriteReviewDialog = ({ productId, userId }) => {
             onChange={(e) => setReview(e.target.value)}
             className="w-full border border-gray-300 rounded-md p-2"
           />
+          {/* Photo Upload */}
+          <div>
+            <label className="font-medium">Upload Photos:</label>
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handlePhotoChange}
+              className="mt-1 block w-full text-sm text-gray-500
+               file:mr-4 file:py-2 file:px-4
+               file:rounded-md file:border-0
+               file:text-sm file:font-semibold
+               file:bg-green-50 file:text-green-700
+               hover:file:bg-green-100"
+            />
+          </div>
+          
+          
 
           {/* Submit Button */}
           <Button
