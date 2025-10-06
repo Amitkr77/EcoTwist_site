@@ -9,44 +9,87 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea"; // Replace with your Textarea component
-// import { toast } from "sonner"; // Optional: any toast library
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input"; // Make sure this exists
 
-const WriteReviewDialog = () => {
+const WriteReviewDialog = ({ productId, userId }) => {
   const [open, setOpen] = useState(false);
   const [review, setReview] = useState("");
+  const [title, setTitle] = useState("");
+  const [rating, setRating] = useState(0);
+  const [hoverRating, setHoverRating] = useState(0);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Check token on mount
   useEffect(() => {
-    const token = localStorage.getItem("token"); // Adjust key name if different
+    const token = localStorage.getItem("user-token");
     setIsAuthenticated(!!token);
   }, []);
 
   const handleTriggerClick = () => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("user-token");
     if (!token) {
-      //   toast.warning("Please log in to write a review.");
       alert("Please log in to write a review.");
       return;
     }
     setOpen(true);
   };
 
-  const handleSubmit = () => {
-    if (!review.trim()) {
-      //   toast.error("Review cannot be empty.");
-      alert("Review cannot be empty.");
+  const handleSubmit = async () => {
+    if (!review.trim() || !title.trim() || rating === 0) {
+      alert("Please fill in all fields, including title and rating.");
       return;
     }
 
-    // Example: Submit review via API here
-    // e.g., await fetch('/api/reviews', { method: 'POST', body: JSON.stringify({ review, productId }) })
+    try {
+      const token = localStorage.getItem("token");
 
-    // toast.success("Review submitted successfully!");
-    alert("Review submitted successfully!")
-    setReview("");
-    setOpen(false);
+      const response = await fetch("/api/review", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          product: productId,
+          user: userId,
+          rating,
+          title,
+          body: review,
+          status: "published",
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to submit review");
+      }
+
+      alert("Review submitted successfully!");
+      setReview("");
+      setTitle("");
+      setRating(0);
+      setOpen(false);
+    } catch (err) {
+      console.error("Submit error:", err);
+      alert(err.message);
+    }
+  };
+
+  const renderStars = () => {
+    return [1, 2, 3, 4, 5].map((star) => (
+      <span
+        key={star}
+        onClick={() => setRating(star)}
+        onMouseEnter={() => setHoverRating(star)}
+        onMouseLeave={() => setHoverRating(0)}
+        className={`cursor-pointer text-2xl ${
+          star <= (hoverRating || rating) ? "text-yellow-400" : "text-gray-300"
+        }`}
+      >
+        ★
+      </span>
+    ));
   };
 
   return (
@@ -70,6 +113,21 @@ const WriteReviewDialog = () => {
         </DialogHeader>
 
         <div className="space-y-4">
+          {/* Title Input */}
+          <Input
+            placeholder="Review title (e.g. 'Amazing product!')"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="w-full border border-gray-300 rounded-md p-2"
+          />
+
+          {/* Star Rating */}
+          <div className="flex items-center gap-2">
+            <span className="font-medium">Your Rating:</span>
+            <div className="flex">{renderStars()}</div>
+          </div>
+
+          {/* Review Textarea */}
           <Textarea
             rows={5}
             placeholder="Your honest thoughts help others..."
@@ -77,6 +135,8 @@ const WriteReviewDialog = () => {
             onChange={(e) => setReview(e.target.value)}
             className="w-full border border-gray-300 rounded-md p-2"
           />
+
+          {/* Submit Button */}
           <Button
             onClick={handleSubmit}
             className="bg-green-600 text-white hover:bg-green-700"

@@ -50,7 +50,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { Skeleton } from "@/components/ui/skeleton";
-import WriteReviewDialog from "@/components/WriteReviewDialog";
+import ReviewsTabContent from "@/components/ReviewsTabContent";
 import Head from "next/head";
 import { addToCart, updateCart } from "@/store/slices/cartSlice";
 import {
@@ -89,6 +89,16 @@ export default function ProductPage() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showAllFeatures, setShowAllFeatures] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [userId, setUserId] = useState(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem("user-token");
+    if (token) {
+      const decoded = jwtDecode(token);
+      console.log("decoded", decoded);
+      setUserId(decoded.id); 
+    }
+  }, []);
 
   // Add this utility function
   const truncateDescription = (text, maxLength) => {
@@ -1253,15 +1263,16 @@ export default function ProductPage() {
               </Card>
             </TabsContent>
             <TabsContent value="reviews">
-              <Card className="border-gray-200 dark:border-gray-700 mt-4 shadow-sm bg-white/90 dark:bg-gray-800/90">
-                <CardContent className="p-4 sm:p-6">
-                  <p className="text-gray-700 dark:text-gray-300 text-sm sm:text-base">
-                    No reviews yet. Be the first to share your experience with
-                    the {product.name}!
-                  </p>
-                  <WriteReviewDialog />
-                </CardContent>
-              </Card>
+              {/* <Card className="border-gray-200 dark:border-gray-700 mt-4 shadow-sm bg-white/90 dark:bg-gray-800/90"> */}
+                {/* <CardContent className="p-4 sm:p-6"> */}
+                 
+                  <ReviewsTabContent
+                    productId={product._id}
+                    productName={product.name}
+                    userId={userId}
+                  />
+                {/* </CardContent> */}
+              {/* </Card> */}
             </TabsContent>
           </Tabs>
         </div>
