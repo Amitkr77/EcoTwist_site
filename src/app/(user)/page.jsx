@@ -47,17 +47,16 @@ const testimonials = [
     rating: 4,
   },
   {
-    name: "Anita Desai",
-    role: "Sustainability Advocate",
+    name: "Toushif Akram",
+    role: "Biz Flyer",
     content:
       "Partnering with Ecotwist was seamless. Their commitment to sustainability is inspiring.",
     rating: 5,
   },
   {
-    name: "Anita Desai",
-    role: "Sustainability Advocate",
-    content:
-      "Partnering with Ecotwist was seamless. Their commitment to sustainability is inspiring.",
+    name: "Ashutosh Kumar",
+    role: "TenderDesk",
+    content: "The product quality is excellent! I received a quick response from the team, and the eco-friendly packaging truly reflects their commitment to sustainability. Highly satisfied with both the service and the products!",
     rating: 5,
   },
 ];

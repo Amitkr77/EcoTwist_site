@@ -5,6 +5,8 @@ import { useSelector, useDispatch } from "react-redux";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import Link from "next/link";
 
 import {
   AlertDialog,
@@ -39,9 +41,18 @@ import {
   Home,
   EllipsisIcon,
   Leaf,
+  Eye,
+  Trash2,
+  Share2,
 } from "lucide-react";
 import {
   fetchUserProfile,
+  fetchWishlist,
+  updateAccountInfo,
+  addAddress,
+  deleteAddress,
+  setDefaultAddress,
+  removeFromWishlist,
   clearUserData,
 } from "@/store/slices/userSlice";
 import { useRouter } from "next/navigation";
@@ -83,16 +94,43 @@ export default function ProfilePage() {
     { id: "settings", label: "Settings", icon: Settings },
   ];
 
-  useEffect(() => {
-    if (status === "idle") {
-      dispatch(fetchUserProfile())
-        .unwrap()
-        .catch((err) => {
-          toast.error(err || "Failed to fetch profile");
-        });
-    }
-  }, [status, dispatch]);
+  const handleAddToCart = async (item) => {
+    setLoading(true);
+    try {
+      // Validate item data
+      if (!item?.productId?._id || !item?.productId?.variants?.length) {
+        throw new Error("Invalid product or variant data");
+      }
 
+      const payload = {
+        productId: item.productId._id, // Use _id from productId
+        variantSku: item.productId.variants[0].sku, // Use first variant's SKU
+        quantity: 1,
+      };
+
+      await dispatch(addToCart(payload)).unwrap();
+      toast.success(`${item.name} added to cart!`);
+    } catch (error) {
+      console.error("Failed to add item to cart", error);
+      toast.error(error.message || "Failed to add item to cart");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 1. Fetch profile on mount
+  useEffect(() => {
+    dispatch(fetchUserProfile());
+  }, [dispatch]);
+
+  // 2. Fetch wishlist when profile is ready
+  useEffect(() => {
+    if (profile?._id) {
+      dispatch(fetchWishlist(profile._id));
+    }
+  }, [profile?._id, dispatch]);
+
+  // 3. Set local user info
   useEffect(() => {
     if (profile) {
       setUserInfo({
@@ -103,6 +141,104 @@ export default function ProfilePage() {
       });
     }
   }, [profile]);
+
+  // 4. Optional: Refresh wishlist on tab change
+  useEffect(() => {
+    if (activeTab === "wishlist" && profile?._id) {
+      dispatch(fetchWishlist(profile._id));
+    }
+  }, [activeTab, profile?._id, dispatch]);
+
+  const validateAddress = () => {
+    const errors = {};
+    if (!newAddress.fullName) errors.fullName = "Full name is required";
+    if (!newAddress.phone) errors.phone = "Phone number is required";
+    if (!newAddress.street) errors.street = "Street is required";
+    if (!newAddress.city) errors.city = "City is required";
+    if (!newAddress.state) errors.state = "State is required";
+    if (!newAddress.postalCode) errors.postalCode = "Postal code is required";
+    if (!newAddress.country) errors.country = "Country is required";
+    setAddressErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleEditProfileToggle = () => {
+    setIsEditingProfile(!isEditingProfile);
+  };
+
+  const handleProfileInputChange = (e) => {
+    setUserInfo({ ...userInfo, [e.target.name]: e.target.value });
+  };
+
+  const handleSaveProfile = () => {
+    dispatch(updateAccountInfo(userInfo))
+      .unwrap()
+      .then(() => {
+        toast.success("Profile updated successfully");
+        setIsEditingProfile(false);
+      })
+      .catch((err) => toast.error(err || "Failed to update profile"));
+  };
+
+  const handleAddAddress = () => {
+    if (validateAddress()) {
+      dispatch(addAddress(newAddress))
+        .unwrap()
+        .then(() => {
+          toast.success("Address added successfully");
+          setNewAddress({
+            fullName: "",
+            phone: "",
+            street: "",
+            city: "",
+            state: "",
+            postalCode: "",
+            country: "",
+            isDefault: false,
+          });
+          setIsAddingAddress(false);
+        })
+        .catch((err) => toast.error(err || "Failed to add address"));
+    }
+  };
+
+  const handleDeleteAddress = (id) => {
+    dispatch(deleteAddress(id))
+      .unwrap()
+      .then(() => toast.success("Address deleted successfully"))
+      .catch((err) => toast.error(err || "Failed to delete address"));
+  };
+
+  const handleSetDefaultAddress = (id) => {
+    dispatch(setDefaultAddress(id))
+      .unwrap()
+      .then(() => toast.success("Default address set successfully"))
+      .catch((err) => toast.error(err || "Failed to set default address"));
+  };
+
+  // const handleRemoveWishlistItem = (productId) => {
+  //   dispatch(removeFromWishlist(productId))
+  //     .unwrap()
+  //     .then(() => toast.success("Item removed from wishlist"))
+  //     .catch((err) =>
+  //       toast.error(err || "Failed to remove item from wishlist")
+  //     );
+  // };
+
+  const handleRemoveWishlistItem = async (productId) => {
+    try {
+      // Dispatch the action to remove from wishlist
+      await dispatch(removeFromWishlist(productId)).unwrap();
+
+      // Show success toast
+      toast.success("Item removed from wishlist");
+      console.log("Product removed from wishlist");
+    } catch (error) {
+      // Show error toast
+      toast.error(error.message || "Failed to remove item from wishlist");
+      console.error("Failed to remove from wishlist:", error);
+    }
+  };
 
   const handleLogout = async () => {
     dispatch(clearUserData());
@@ -123,6 +259,7 @@ export default function ProfilePage() {
   const wishlistItems = wishlist || [];
   const isLoading = status === "loading";
 
+  console.log("WishlistItems", wishlistItems);
   return (
     <div className="min-h-screen bg-green-700 flex items-center justify-center p-0 sm:p-4">
       <style jsx>{hideScrollbarStyles}</style>
@@ -356,7 +493,109 @@ export default function ProfilePage() {
             )}
 
             {activeTab === "wishlist" && (
-              <Wishlist wishlistItems={wishlistItems} isLoading={isLoading} />
+               <Card className="border-none shadow-none">
+                <CardContent className="p-0">
+                  {isLoading ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                      {[...Array(4)].map((_, i) => (
+                        <Skeleton key={i} className="h-48 sm:h-64" />
+                      ))}
+                    </div>
+                  ) : wishlistItems.length === 0 ? (
+                    <div className="flex justify-center items-center flex-col gap-2 p-6 sm:p-10 bg-gray-100 rounded-lg sm:rounded-xl">
+                      <Heart size={32} className="sm:h-10 sm:w-10" />
+                      <h1 className="text-base sm:text-lg">
+                        Your wishlist is empty
+                      </h1>
+                      <Button
+                        onClick={handleGoHome}
+                        className="text-sm sm:text-base"
+                      >
+                        Browse Products
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                      {wishlistItems.map((item, index) => (
+                        <Card key={index} className="overflow-hidden">
+                          <CardContent className="p-3 sm:p-4">
+                            <Link
+                              href={`/product-info/${item.productId.slug}--${item.productId._id}`}
+                            >
+                              <img
+                                src={item.imageUrl || "/placeholder.jpg"}
+                                alt={item.name}
+                                className="w-full h-40 sm:h-48 object-cover rounded-lg mb-3 sm:mb-4"
+                              />
+                            </Link>
+                            <p className="font-semibold text-base sm:text-lg mb-1">
+                              {item.name}
+                            </p>
+                            <p className="text-gray-600 mb-3 sm:mb-4 text-sm sm:text-base">
+                              ₹{item.price}
+                            </p>
+                            <div className="flex gap-2 ">
+                              {/* <Button
+                                onClick={handleAddToCart}
+                                disabled={loading}
+                                className="flex-1 text-sm sm:text-base"
+                              >
+                                Add to Cart
+                              </Button> */}
+                              <Link
+                                href={`/product-info/${item.productId.slug}--${item.productId._id}`}
+                                className="w-full gap-2 flex items-center px-4 py-2  bg-green-700 hover:bg-green-400 hover:text-green-800 text-white rounded-4xl text-sm sm:text-base text-center"
+                              >
+                                <Eye className="w-4 h-4" />
+                                view
+                              </Link>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button variant="outline" size="icon">
+                                    <Trash2 className="w-4 h-4 " />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>
+                                      Remove Item?
+                                    </AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Are you sure you want to remove{" "}
+                                      {item.name} from your wishlist?
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>
+                                      Cancel
+                                    </AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() =>
+                                        handleRemoveWishlistItem(
+                                          item.productId._id || item.productId
+                                        )
+                                      }
+                                    >
+                                      Remove
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                  <Button
+                    variant="outline"
+                    className="mt-4 sm:mt-6 text-sm sm:text-base"
+                  >
+                    <Share2 className="w-4 h-4 mr-2" />
+                    Share Wishlist
+                  </Button>
+                </CardContent>
+              </Card>
             )}
 
             {activeTab === "addresses" && (
