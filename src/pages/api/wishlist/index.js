@@ -86,24 +86,62 @@ export default async function handler(req, res) {
             return res.status(200).json({ message: 'Wishlist retrieved', data: { wishlist: { ...wishlist.toObject(), items: formattedItems } } });
         }
 
-        if (req.method === 'DELETE') {
-            const { id } = req.query;
-            if (!id || !mongoose.Types.ObjectId.isValid(id)) {
-                return res.status(400).json({ message: 'Valid Product ID is required' });
-            }
+       if (req.method === "DELETE") {
+         const { id } = req.query;
 
-            const wishlist = await Wishlist.findOneAndUpdate(
-                { userId: user.userId, 'items.productId': id },
-                { $pull: { items: { productId: id } } },
-                { new: true }
-            );
+         if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+           return res
+             .status(400)
+             .json({ message: "Valid Product ID is required" });
+         }
 
-            if (!wishlist) {
-                return res.status(404).json({ message: 'Product not found in your wishlist' });
-            }
+         const wishlist = await Wishlist.findOneAndUpdate(
+           { userId: user.userId, "items.productId": id },
+           { $pull: { items: { productId: id } } },
+           { new: true }
+         ).populate({
+           path: "items.productId",
+           select: "name images variants isActive",
+         });
 
-            return res.status(200).json({ message: 'Product removed from wishlist', data: { wishlist } });
-        }
+         if (!wishlist) {
+           return res
+             .status(404)
+             .json({ message: "Product not found in your wishlist" });
+         }
+
+         const formattedItems = wishlist.items
+           .map((item) => {
+             const product = item.productId;
+             if (!product || !product.isActive) return null;
+
+             const variant = item.variantId
+               ? product.variants.find((v) => v.sku === item.variantId)
+               : product.variants[0];
+
+             const primaryImage = product.images.find((img) => img.isPrimary) ||
+               product.images[0] || { url: "" };
+
+             return {
+               productId: item.productId,
+               variantId: item.variantId,
+               name: item.name,
+               price: variant?.price || item.price,
+               imageUrl: primaryImage.url || item.imageUrl,
+             };
+           })
+           .filter(Boolean);
+
+         return res.status(200).json({
+           message: "Product removed from wishlist",
+           data: {
+             wishlist: {
+               ...wishlist.toObject(),
+               items: formattedItems,
+             },
+           },
+         });
+       }
 
         return res.status(405).json({ message: 'Method Not Allowed' });
     } catch (error) {

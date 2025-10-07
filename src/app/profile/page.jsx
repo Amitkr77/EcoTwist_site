@@ -67,6 +67,7 @@ import {
 import { IndianRupee } from "lucide-react";
 import {
   fetchUserProfile,
+  fetchWishlist,
   updateAccountInfo,
   addAddress,
   deleteAddress,
@@ -152,16 +153,19 @@ export default function ProfilePage() {
     }
   };
 
+  // 1. Fetch profile on mount
   useEffect(() => {
-    if (status === "idle") {
-      dispatch(fetchUserProfile())
-        .unwrap()
-        .catch((err) => {
-          toast.error(err || "Failed to fetch profile");
-        });
-    }
-  }, [status, dispatch]);
+    dispatch(fetchUserProfile());
+  }, [dispatch]);
 
+  // 2. Fetch wishlist when profile is ready
+  useEffect(() => {
+    if (profile?._id) {
+      dispatch(fetchWishlist(profile._id));
+    }
+  }, [profile?._id, dispatch]);
+
+  // 3. Set local user info
   useEffect(() => {
     if (profile) {
       setUserInfo({
@@ -172,6 +176,13 @@ export default function ProfilePage() {
       });
     }
   }, [profile]);
+
+  // 4. Optional: Refresh wishlist on tab change
+  useEffect(() => {
+    if (activeTab === "wishlist" && profile?._id) {
+      dispatch(fetchWishlist(profile._id));
+    }
+  }, [activeTab, profile?._id, dispatch]);
 
   const validateAddress = () => {
     const errors = {};
@@ -291,6 +302,7 @@ export default function ProfilePage() {
   const wishlistItems = wishlist || [];
   const isLoading = status === "loading";
 
+  console.log("WishlistItems", wishlistItems);
   return (
     <div className="min-h-screen bg-green-700 flex items-center justify-center p-0 sm:p-4">
       <style jsx>{hideScrollbarStyles}</style>
@@ -943,7 +955,9 @@ export default function ProfilePage() {
                                     </AlertDialogCancel>
                                     <AlertDialogAction
                                       onClick={() =>
-                                        handleRemoveWishlistItem(item.productId._id)
+                                        handleRemoveWishlistItem(
+                                          item.productId._id || item.productId
+                                        )
                                       }
                                     >
                                       Remove
