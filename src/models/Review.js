@@ -16,10 +16,10 @@ const ReviewSchema = new Schema(
     title: { type: String, trim: true },
     body: { type: String, trim: true },
 
-    //New field for photos
+
     photos: [
       {
-        type: String, // will store image URL (Cloudinary)
+        type: String,
         trim: true,
       },
     ],

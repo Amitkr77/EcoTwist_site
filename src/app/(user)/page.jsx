@@ -18,7 +18,7 @@ import {
   ShoppingBag,
   MessageCircle,
   X,
-  Hand 
+  Hand,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
@@ -29,6 +29,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { motion, AnimatePresence } from "framer-motion";
+import { jwtDecode } from "jwt-decode";
 
 const testimonials = [
   {
@@ -135,6 +136,38 @@ export default function Home() {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
   };
+
+  useEffect(() => {
+    // Helper function to check if the token is expired
+    const isTokenExpired = (token) => {
+      try {
+        console.log("Decoding token:", token);
+        const decodedToken = jwtDecode(token); // Decode the JWT token
+        const expiry = decodedToken.exp; // Get the expiry time from the token payload
+        const isExpired = Date.now() >= expiry * 1000; // Check if token is expired
+        return isExpired;
+      } catch (e) {
+        console.error("Error decoding token:", e);
+        return true;
+      }
+    };
+
+    const checkAndRemoveToken = () => {
+      // Get the token from localStorage
+      const localStorageToken = localStorage.getItem("user-token");
+
+      // Check localStorage token
+      if (localStorageToken) {
+        if (isTokenExpired(localStorageToken)) {
+          localStorage.removeItem("user-token");
+          localStorage.removeItem("user-id");
+        }
+      }
+    };
+
+    // Call the function to check the token on page load
+    checkAndRemoveToken();
+  }, []); // Empty dependency array ensures this runs only once on mount
 
   return (
     <div className="min-h-screen relative">
@@ -445,7 +478,6 @@ export default function Home() {
               >
                 Discover our handpicked selection, crafted to inspire and
                 delight.{" "}
-               
               </motion.p>
             </motion.div>
             <motion.div
@@ -465,7 +497,6 @@ export default function Home() {
                   <MoveRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
                 </Link>
               </Button>
-              
             </motion.div>
           </div>
           {error ? (

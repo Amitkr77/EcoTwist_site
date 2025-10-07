@@ -1,7 +1,15 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Menu, ShoppingCart, User, X, Heart, LogOut,LogIn } from "lucide-react";
+import {
+  Menu,
+  ShoppingCart,
+  User,
+  X,
+  Heart,
+  LogOut,
+  LogIn,
+} from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -61,10 +69,7 @@ export default function Header() {
 
   const cartStatus = useSelector((state) => state.cart.status);
   const cartError = useSelector((state) => state.cart.error);
-  const totalCartItems = useSelector(
-    (state) =>
-      state.cart?.items?.reduce((total, item) => total + item.quantity, 0) || 0
-  );
+  const totalCartItems = useSelector((state) => state.cart?.items?.length || 0);
 
   // Check auth on mount
   useEffect(() => {
@@ -110,8 +115,8 @@ export default function Header() {
   const handleLogout = async () => {
     localStorage.removeItem("user-token");
     localStorage.removeItem("guest-cart");
-    
-    await fetch("/api/user/auth/logout", { method: "POST" }); 
+
+    await fetch("/api/user/auth/logout", { method: "POST" });
 
     setIsAuthenticated(false);
     toast.success("Logged out successfully!");

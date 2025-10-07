@@ -56,7 +56,7 @@ const WriteReviewDialog = ({ productId, userId }) => {
       for (const file of photos) {
         const formData = new FormData();
         formData.append("file", file);
-        formData.append("upload_preset", "your_unsigned_preset"); // replace with your preset
+        formData.append("upload_preset", "your_unsigned_preset"); 
 
         const uploadRes = await fetch(
           "https://api.cloudinary.com/v1_1/<CLOUD_NAME>/image/upload",

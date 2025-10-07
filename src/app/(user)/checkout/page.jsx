@@ -13,13 +13,13 @@ import {
   CheckIcon,
 } from "lucide-react";
 
-import { useToast } from "@/hooks/use-toast"; // Add useToast for feedback
+import { useToast } from "@/hooks/use-toast"; 
 import RazorpayPayment from "@/components/RazorpayPayment";
 function CheckoutPage() {
   const { profile } = useSelector((state) => state.user);
   const dispatch = useDispatch();
   const router = useRouter();
-  const { toast } = useToast(); // Add toast for payment feedback
+  const { toast } = useToast(); 
   const cart = useSelector((state) => state.cart);
   const { status, error } = useSelector((state) => state.orders);
 
@@ -38,21 +38,20 @@ function CheckoutPage() {
     agreeTerms: false,
   });
   const [errors, setErrors] = useState({});
-  const [appliedPromo, setAppliedPromo] = useState(null);
   const [shippingEstimate, setShippingEstimate] = useState(0);
   const [totalWithShipping, setTotalWithShipping] = useState(0);
   const [isPaymentLoading, setIsPaymentLoading] = useState(false);
   useEffect(() => {
     dispatch(clearError());
     calculateTotal();
-  }, [cart, appliedPromo, shippingEstimate, dispatch]);
+  }, [cart, shippingEstimate, dispatch]);
   useEffect(() => {
     // Pre-fill form with user profile data
     if (profile?.address) {
       setFormData((prev) => ({
         ...prev,
         fullName: profile.fullName || "",
-        phone: profile.phone || "",
+        phone: profile.address[0]?.phone || profile.phone,
         street: profile.address[0]?.street || "",
         city: profile.address[0]?.city || "",
         state: profile.address[0]?.state || "",
@@ -112,20 +111,6 @@ function CheckoutPage() {
     setShippingEstimate(totalPrice >= 499 ? 0 : 69);
   };
 
-  // const applyPromoCode = () => {
-  //   const validCodes = {
-  //     SAVE10: { discount: 10 },
-  //     FREESHIP: { discount: 0, freeShipping: true },
-  //   };
-  //   const promo = validCodes[formData.promoCode.toUpperCase()];
-  //   if (promo) {
-  //     setAppliedPromo(promo);
-  //     if (promo.freeShipping) setShippingEstimate(0);
-  //     setErrors({ ...errors, promoCode: "" });
-  //   } else {
-  //     setErrors({ ...errors, promoCode: "Invalid promo code" });
-  //   }
-  // };
 
   const validatePromoCode = (code) => {
     return ["SAVE10", "FREESHIP"].includes(code.toUpperCase());
@@ -230,7 +215,6 @@ function CheckoutPage() {
           imageUrl: item.imageUrl || null,
         })),
         shippingCost: shippingEstimate,
-        discountApplied: appliedPromo ? appliedPromo.discount : 0,
         totalAmount: totalWithShipping,
       };
 

@@ -1,253 +1,207 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { useRouter } from "next/navigation";
-import { Card, CardTitle, CardHeader, CardContent } from "../ui/card";
-import {
-  Select,
-  SelectTrigger,
-  SelectContent,
-  SelectItem,
-  SelectValue,
-} from "../ui/select";
-import { Badge } from "../ui/badge";
-import { Button } from "../ui/button";
-import { Heart, Truck, Package, Eye } from "lucide-react";
+import React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Package, Truck, MapPin, FileText, RotateCcw, XCircle } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { toast } from "sonner";
-import { addToWishlist } from "@/store/slices/userSlice";
+import { Separator } from "@/components/ui/separator";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { useRouter } from "next/navigation";
+import { cn } from "@/lib/utils"; // Assuming shadcn utils for className merging
 
-export default function Orders() {
-  const dispatch = useDispatch();
+export default function Orders({ orders, isLoading }) {
   const router = useRouter();
-  const { orders, status: ordersStatus } = useSelector((state) => state.orders);
-  const {
-    profile,
-    wishlist = [], // Normalize wishlist to empty array
-    status: userStatus,
-    error: userError,
-  } = useSelector((state) => state.user);
-  const { items: cartItems } = useSelector((state) => state.cart);
 
-  const [orderSort, setOrderSort] = useState("date-desc");
-  const [orderFilter, setOrderFilter] = useState("all");
-
-  useEffect(() => {
-    if (userError) toast.error(userError);
-  }, [userError]);
-
-  const handleAddToWishlist = async (product) => {
-    if (!profile?._id) {
-      toast.error("Please log in to add items to your wishlist.");
-      router.push("/login");
-      return;
-    }
-
-    const productId = product._id || product.id;
-
-    if (wishlist.some((item) => item.productId === productId)) {
-      toast.info("This item is already in your wishlist.");
-      return;
-    }
-
-    await dispatch(addToWishlist({ userId: profile._id, productId }));
-    toast.success("Added to wishlist!");
+  const handleGoHome = () => {
+    router.push("/");
   };
 
-  const getStatusColor = (status) =>
-    ({
-      pending: "bg-amber-100 text-amber-800 hover:bg-amber-200",
-      confirmed: "bg-sky-100 text-sky-800 hover:bg-sky-200",
-      shipped: "bg-indigo-100 text-indigo-800 hover:bg-indigo-200",
-      delivered: "bg-green-100 text-green-800 hover:bg-green-200",
-      cancelled: "bg-rose-100 text-rose-800 hover:bg-rose-200",
-    }[status] || "bg-gray-100 text-gray-800 hover:bg-gray-200");
-
-  const filteredOrders = orders
-    ?.filter((order) => orderFilter === "all" || order.status === orderFilter)
-    .sort((a, b) => {
-      const dateA = new Date(a.orderDate);
-      const dateB = new Date(b.orderDate);
-
-      switch (orderSort) {
-        case "date-asc":
-          return dateA - dateB;
-        case "amount-desc":
-          return b.totalAmount - a.totalAmount;
-        case "amount-asc":
-          return a.totalAmount - b.totalAmount;
-        default:
-          return dateB - dateA;
-      }
-    });
-
-  const formatDate = (date) =>
-    new Date(date).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-
-  if (ordersStatus === "loading") {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-600 dark:text-gray-300">Loading orders...</p>
-      </div>
-    );
-  }
+  const handleCancelOrder = (orderId) => {
+    console.log(`Cancel order: ${orderId}`);
+    // Add actual cancel logic here
+  };
 
   return (
-    <div className="p-4 sm:p-6 min-h-screen">
-      <Card className="bg-white dark:bg-gray-800/90 backdrop-blur-sm shadow-xl rounded-2xl border border-gray-200 dark:border-gray-700 transition-all duration-300">
-        <CardHeader className="pb-4">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <CardTitle className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
-              Order History
-            </CardTitle>
-            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-              <Select value={orderFilter} onValueChange={setOrderFilter}>
-                <SelectTrigger className="w-full sm:w-[160px]">
-                  <SelectValue placeholder="All Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="confirmed">Confirmed</SelectItem>
-                  <SelectItem value="shipped">Shipped</SelectItem>
-                  <SelectItem value="delivered">Delivered</SelectItem>
-                  <SelectItem value="cancelled">Cancelled</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={orderSort} onValueChange={setOrderSort}>
-                <SelectTrigger className="w-full sm:w-[160px]">
-                  <SelectValue placeholder="Sort By" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="date-desc">Newest First</SelectItem>
-                  <SelectItem value="date-asc">Oldest First</SelectItem>
-                  <SelectItem value="amount-desc">Highest Amount</SelectItem>
-                  <SelectItem value="amount-asc">Lowest Amount</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+    <Card className="border-none shadow-none bg-transparent max-w-5xl mx-auto">
+      <CardContent className="p-0">
+        {isLoading ? (
+          <div className="space-y-6">
+            {[...Array(4)].map((_, i) => (
+              <Skeleton key={i} className="h-36 sm:h-48 rounded-2xl bg-gray-100" />
+            ))}
           </div>
-        </CardHeader>
-
-        <CardContent className="pt-4">
-          {filteredOrders?.length > 0 ? (
-            <div className="space-y-6">
-              {filteredOrders.map((order) => (
-                <div
-                  key={order._id}
-                  className="border border-gray-200 dark:border-gray-700 rounded-xl p-4 sm:p-6 bg-white/80 dark:bg-gray-800/80 shadow-sm"
+        ) : orders.length === 0 ? (
+          <div className="flex justify-center items-center flex-col gap-6 p-10 sm:p-16 bg-gradient-to-br from-gray-50 to-gray-200 rounded-3xl shadow-lg text-center">
+            <Package size={56} className="text-gray-400 animate-pulse" />
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
+              No Orders Yet
+            </h1>
+            <p className="text-base sm:text-lg text-gray-600 max-w-md">
+              Discover our exclusive collection and place your first order today!
+            </p>
+            <Button
+              onClick={handleGoHome}
+              className="text-lg font-semibold bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary text-white px-6 py-3 rounded-full shadow-md hover:shadow-lg transition-all duration-300"
+            >
+              Explore Now
+            </Button>
+          </div>
+        ) : (
+          <div className="h-[calc(100vh-180px)] pr-4">
+            <div className="space-y-8">
+              {orders.map((order) => (
+                <Card
+                  key={order.orderId}
+                  className="overflow-hidden border border-gray-200 rounded-3xl shadow-md hover:shadow-xl transition-all duration-300 bg-white"
                 >
-                  <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
-                    <div>
-                      <h3 className="text-lg font-semibold">
-                        Order #{order._id}
-                      </h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                        Placed on {formatDate(order.orderDate)}
-                      </p>
-                    </div>
-                    <Badge
-                      className={`${getStatusColor(order.status)} px-3 py-1`}
-                    >
-                      {order.status.charAt(0).toUpperCase() +
-                        order.status.slice(1)}
-                    </Badge>
-                  </div>
-
-                  <div className="space-y-4 mb-6">
-                    {order.items?.map((item) => {
-                      const product = {
-                        ...item.productId,
-                        image:
-                          item.productId?.images?.[0]?.url ||
-                          "/placeholder.svg",
-                      };
-                      const productId = product._id;
-                      const isInWishlist = wishlist.some(
-                        (w) => w.productId === productId
-                      );
-
-                      return (
-                        <div
-                          key={productId}
-                          className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition"
-                        >
-                          <img
-                            src={product.image}
-                            alt={item.name || "Product"}
-                            className="w-16 h-16 object-cover rounded-md border"
-                            onError={(e) =>
-                              (e.currentTarget.src = "/placeholder.svg")
-                            }
-                          />
-                          <div className="flex-1">
-                            <p className="font-medium">{item.name}</p>
-                            <p className="text-sm text-gray-600">
-                              Quantity: {item.quantity}
-                            </p>
-                          </div>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleAddToWishlist(product)}
-                            disabled={userStatus === "loading" || isInWishlist}
-                            className={
-                              isInWishlist
-                                ? "bg-gray-200 dark:bg-gray-600 cursor-not-allowed"
-                                : ""
-                            }
-                          >
-                            <Heart className="w-4 h-4 mr-2" />
-                            {isInWishlist ? "In Wishlist" : "Add to Wishlist"}
-                          </Button>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                    <span className="font-semibold text-lg">
-                      Total: ₹{order.totalAmount.toFixed(2)}
-                    </span>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled
-                        className="cursor-not-allowed"
+                  <CardHeader className="p-5 sm:p-7 bg-gradient-to-r from-gray-50 to-gray-100">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                      <CardTitle className="text-xl sm:text-2xl font-extrabold text-gray-900 tracking-tight">
+                        Order #{order.orderId}
+                      </CardTitle>
+                      <Badge
+                        variant={
+                          order.status === "pending"
+                            ? "secondary"
+                            : order.status === "shipped"
+                            ? "default"
+                            : order.status === "delivered"
+                            ? "success"
+                            : "destructive"
+                        }
+                        className={cn(
+                          "text-sm font-semibold px-4 py-1.5 rounded-full",
+                          order.status === "pending" && "bg-yellow-100 text-yellow-800",
+                          order.status === "shipped" && "bg-blue-100 text-blue-800",
+                          order.status === "delivered" && "bg-green-100 text-green-800",
+                          order.status === "cancelled" && "bg-red-100 text-red-800"
+                        )}
                       >
-                        <Truck className="w-4 h-4 mr-2" />
-                        Track Order
-                      </Button>
-                      <Link href={`/orders/${order._id}`}>
-                        <Button variant="outline" size="sm">
-                          <Eye className="w-4 h-4 mr-2" />
-                          View Details
+                        {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-gray-600 mt-2 font-medium tracking-wide">
+                      {order.formattedDate} • {order.totalItems} {order.totalItems === 1 ? "item" : "items"}
+                    </p>
+                  </CardHeader>
+                  <CardContent className="p-5 sm:p-6">
+                    <Accordion type="single" collapsible className="w-full mb-6">
+                      <AccordionItem value="items" className="border-b-0">
+                        <AccordionTrigger className="text-lg sm:text-xl font-semibold text-gray-800 py-3 ">
+                          <div className="flex items-center gap-2">
+                            <Package size={20} /> Order Items
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="pt-2">
+                          <div className="space-y-5">
+                            {order.items.map((item, index) => (
+                              <div
+                                key={index}
+                                className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-100 pb-5 last:border-b-0 last:pb-0"
+                              >
+                                <div className="flex items-center space-x-4">
+                                  <img
+                                    src={item.productId.images[0]?.url || "/placeholder.jpg"}
+                                    alt={item.name}
+                                    className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-xl shadow-sm border border-gray-100"
+                                  />
+                                  <div>
+                                    <Link
+                                      href={`/product-info/${item.productId.slug}--${item.productId.id}`}
+                                      className="text-lg sm:text-xl font-medium text-gray-900 hover:text-primary transition-colors duration-200"
+                                    >
+                                      {item.name}
+                                    </Link>
+                                    <p className="text-sm text-gray-600 mt-1">
+                                      Quantity: {item.quantity}
+                                    </p>
+                                  </div>
+                                </div>
+                                <p className="text-lg sm:text-xl font-bold text-gray-900 mt-2 sm:mt-0">
+                                  ₹{item.price.toLocaleString("en-IN")}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                      <AccordionItem value="address" className="border-b-0">
+                        <AccordionTrigger className="text-lg sm:text-xl font-semibold text-gray-800 hover:text-primary py-3">
+                          <div className="flex items-center gap-2">
+                            <MapPin size={20} /> Delivery Address
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="pt-2">
+                          <div className="text-sm sm:text-base text-gray-700 space-y-1.5 bg-gray-50 p-4 rounded-xl">
+                            <p className="font-semibold">{order.deliveryAddress.fullName}</p>
+                            <p>{order.deliveryAddress.street}, {order.deliveryAddress.city}</p>
+                            <p>
+                              {order.deliveryAddress.state} {order.deliveryAddress.postalCode}, {order.deliveryAddress.country}
+                            </p>
+                            <p>Phone: {order.deliveryAddress.phone}</p>
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
+                    <div className="flex justify-between items-center font-bold text-xl sm:text-2xl text-gray-900 mt-6">
+                      <span>Total</span>
+                      <span>₹{order.totalAmount.toLocaleString("en-IN")}</span>
+                    </div>
+                    <Separator className="my-6 bg-gray-200" />
+                    <div className="flex flex-wrap gap-3">
+                      <Link href={`/api/orders/invoice/pdf/${order?.invoice?.invoiceId}`}>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-sm font-semibold flex items-center gap-2 border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
+                        >
+                          <FileText size={18} /> View Invoice
                         </Button>
                       </Link>
+                      {order.status !== "cancelled" && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-sm font-semibold flex items-center gap-2 border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
+                        >
+                          <Truck size={18} /> Track Order
+                        </Button>
+                      )}
+                      {order.status !== "cancelled" && (
+                        <Button
+                          onClick={() => handleCancelOrder(order.orderId)}
+                          variant="destructive"
+                          size="sm"
+                          className="text-sm font-semibold flex items-center gap-2 rounded-lg transition-colors"
+                        >
+                          <XCircle size={18} /> Cancel Order
+                        </Button>
+                      )}
+                      {order.status === "delivered" && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-sm font-semibold flex items-center gap-2 border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
+                        >
+                          <RotateCcw size={18} /> Reorder
+                        </Button>
+                      )}
                     </div>
-                  </div>
-                </div>
+                  </CardContent>
+                </Card>
               ))}
             </div>
-          ) : (
-            <div className="text-center py-12">
-              <Package className="w-16 h-16 mx-auto text-gray-600 mb-4" />
-              <p className="text-gray-600 text-lg">
-                No orders match your criteria
-              </p>
-              <Link href="/products">
-                <Button className="mt-4">Start Shopping</Button>
-              </Link>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
