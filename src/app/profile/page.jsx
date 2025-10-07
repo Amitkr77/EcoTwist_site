@@ -1,25 +1,13 @@
 "use client";
 
-import React, { useState, useEffect, use } from "react";
+import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
-import { addToCart } from "@/store/slices/cartSlice";
+import { Card, CardContent } from "@/components/ui/card";
+import Link from "next/link";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,6 +19,7 @@ import {
   AlertDialogTrigger,
   AlertDialogFooter,
 } from "@/components/ui/alert-dialog";
+import Setting from "@/components/profile/Setting";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -48,25 +37,17 @@ import {
   Package,
   User,
   Edit,
-  Save,
-  X,
-  Trash2,
-  Plus,
-  CreditCard,
-  Star,
   LogOut,
   Home,
-  ShoppingCart,
-  Calendar,
-  MoreVert,
   EllipsisIcon,
-  Share2,
-  View,
+  Leaf,
   Eye,
+  Trash2,
+  Share2,
 } from "lucide-react";
-import { IndianRupee } from "lucide-react";
 import {
   fetchUserProfile,
+  fetchWishlist,
   updateAccountInfo,
   addAddress,
   deleteAddress,
@@ -75,9 +56,10 @@ import {
   clearUserData,
 } from "@/store/slices/userSlice";
 import { useRouter } from "next/navigation";
+import AddressSection from "@/components/profile/Address";
 import Orders from "@/components/profile/Orders";
-import Link from "next/link";
-import ChangePassword from "@/components/ChangePassword";
+import Overview from "@/components/profile/Overview";
+import Wishlist from "@/components/profile/Wishlist";
 
 // Define the CSS for hiding the scrollbar
 const hideScrollbarStyles = `
@@ -94,31 +76,15 @@ const hideScrollbarStyles = `
 export default function ProfilePage() {
   const dispatch = useDispatch();
   const router = useRouter();
+  const [activeTab, setActiveTab] = useState("overview");
   const { profile, wishlist, status, error } = useSelector(
     (state) => state.user
   );
-
-  const [activeTab, setActiveTab] = useState("overview");
-  const [isEditingProfile, setIsEditingProfile] = useState(false);
-  const [isAddingAddress, setIsAddingAddress] = useState(false);
-  const [isCancelled, setIscancelled] = useState(false);
   const [userInfo, setUserInfo] = useState({
     fullName: "",
     email: "",
     phone: "",
   });
-  const [newAddress, setNewAddress] = useState({
-    fullName: "",
-    phone: "",
-    street: "",
-    city: "",
-    state: "",
-    postalCode: "",
-    country: "",
-    isDefault: false,
-  });
-  const [addressErrors, setAddressErrors] = useState({});
-  const [loading, setLoading] = useState(false);
 
   const tabs = [
     { id: "overview", label: "Overview", icon: User },
@@ -152,16 +118,19 @@ export default function ProfilePage() {
     }
   };
 
+  // 1. Fetch profile on mount
   useEffect(() => {
-    if (status === "idle") {
-      dispatch(fetchUserProfile())
-        .unwrap()
-        .catch((err) => {
-          toast.error(err || "Failed to fetch profile");
-        });
-    }
-  }, [status, dispatch]);
+    dispatch(fetchUserProfile());
+  }, [dispatch]);
 
+  // 2. Fetch wishlist when profile is ready
+  useEffect(() => {
+    if (profile?._id) {
+      dispatch(fetchWishlist(profile._id));
+    }
+  }, [profile?._id, dispatch]);
+
+  // 3. Set local user info
   useEffect(() => {
     if (profile) {
       setUserInfo({
@@ -172,6 +141,13 @@ export default function ProfilePage() {
       });
     }
   }, [profile]);
+
+  // 4. Optional: Refresh wishlist on tab change
+  useEffect(() => {
+    if (activeTab === "wishlist" && profile?._id) {
+      dispatch(fetchWishlist(profile._id));
+    }
+  }, [activeTab, profile?._id, dispatch]);
 
   const validateAddress = () => {
     const errors = {};
@@ -277,20 +253,13 @@ export default function ProfilePage() {
     router.push("/");
   };
 
-  const getMembershipLevel = (totalSpent) => {
-    if (totalSpent > 10000) return "Platinum";
-    if (totalSpent > 5000) return "Gold";
-    if (totalSpent > 1000) return "Silver";
-    return "Bronze";
-  };
-
-  const membership = getMembershipLevel(profile?.totalSpent || 0);
   const addresses = profile?.address || [];
   const orders = profile?.orders || [];
   const cartItemsCount = profile?.cart?.items?.length || 0;
   const wishlistItems = wishlist || [];
   const isLoading = status === "loading";
 
+  console.log("WishlistItems", wishlistItems);
   return (
     <div className="min-h-screen bg-green-700 flex items-center justify-center p-0 sm:p-4">
       <style jsx>{hideScrollbarStyles}</style>
@@ -317,12 +286,6 @@ export default function ProfilePage() {
               <div className="ml-3">
                 <h2 className="text-base font-semibold">{userInfo.fullName}</h2>
                 <p className="text-xs text-gray-500">{userInfo.email}</p>
-                {/* <div className="flex items-center">
-                    <Star className="w-3 h-3 text-yellow-400 mr-1" />
-                    <span className="text-xs font-medium">
-                      {membership} Member
-                    </span>
-                  </div> */}
               </div>
             </div>
           )}
@@ -362,91 +325,134 @@ export default function ProfilePage() {
         </div>
 
         {/* Desktop Sidebar */}
-        <aside className="hidden sm:block w-64 lg:w-72 bg-gray-50 p-4 sm:p-6 border-r border-gray-200 flex-shrink-0 ">
-          <div className="flex items-center mb-6 sm:mb-8">
-            {isLoading ? (
-              <Skeleton className="w-16 h-16 sm:w-20 sm:h-20 rounded-full" />
-            ) : (
-              <Avatar className="w-16 h-16 sm:w-20 sm:h-20">
-                <AvatarImage src={profile?.profilePicture} alt="User Avatar" />
-                <AvatarFallback>
-                  {userInfo.fullName?.slice(0, 2).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-            )}
-            <div className="ml-3 sm:ml-4">
+        <aside className="hidden sm:flex w-64 lg:w-72 bg-white p-4 sm:p-6 border-r border-gray-200  shadow-sm  flex-col h-full flex-shrink-0">
+          {/* Header Section */}
+          <div className="flex-shrink-0 mb-6 sm:mb-8  ">
+            <div className="flex items-center">
               {isLoading ? (
-                <>
-                  <Skeleton className="h-5 w-28 sm:h-6 sm:w-32 mb-2" />
-                  <Skeleton className="h-4 w-40 sm:w-48" />
-                </>
+                <Skeleton className="w-16 h-16 sm:w-20 sm:h-20 rounded-full" />
               ) : (
-                <>
-                  <h2 className="text-lg sm:text-xl font-semibold">
-                    {userInfo.fullName}
-                  </h2>
-                  <p className="text-xs sm:text-sm text-gray-500">
-                    {userInfo.email}
-                  </p>
-                  <div className="flex items-center mt-1">
-                    <Star className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-400 mr-1" />
-                    <span className="text-xs sm:text-sm font-medium">
-                      {membership} Member
-                    </span>
-                  </div>
-                </>
+                <div className="relative">
+                  <Avatar className="w-16 h-16 sm:w-20 sm:h-20 ring-2 ring-gray-100">
+                    <AvatarImage
+                      src={profile?.profilePicture}
+                      alt="User Avatar"
+                    />
+                    <AvatarFallback className="bg-gradient-to-br from-blue-400 to-indigo-500 text-white">
+                      {userInfo.fullName?.slice(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="absolute -bottom-1 -right-1 rounded-full h-7 w-7 p-0 bg-white border-2 border-gray-200 shadow-md hover:bg-gray-50 hover:border-gray-300 transition-all duration-200"
+                    onClick={() => {
+                      alert("Edit profile picture");
+                    }}
+                  >
+                    <Edit className="h-3 w-3 text-gray-600" />
+                    <span className="sr-only">Edit profile picture</span>
+                  </Button>
+                </div>
               )}
+              <div className="ml-3 sm:ml-4 flex-1 min-w-0">
+                {isLoading ? (
+                  <>
+                    <Skeleton className="h-5 w-28 sm:h-6 sm:w-32 mb-1" />
+                    <Skeleton className="h-4 w-40 sm:w-48 mb-2" />
+                  </>
+                ) : (
+                  <>
+                    <h2 className="text-lg sm:text-xl font-semibold text-gray-900 truncate">
+                      {userInfo.fullName}
+                    </h2>
+                    <p className="text-xs sm:text-sm text-gray-500 truncate mt-1">
+                      {userInfo.email}
+                    </p>
+                    <div className="flex items-center mt-2">
+                      <Leaf className="w-3 h-3 sm:w-4 sm:h-4 text-green-500 mr-1 flex-shrink-0" />
+                      <span className="text-xs sm:text-sm font-medium text-gray-700">
+                        Eco Member
+                      </span>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           </div>
-          <div className="">
-            <Separator className="my-3 sm:my-4" />
-            <ul className="space-y-2 sm:space-y-3">
-              {tabs.map((tab) => (
-                <li key={tab.id}>
-                  <button
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`w-full flex items-center p-2 sm:p-3 rounded-lg sm:rounded-xl text-left transition-colors text-sm sm:text-base font-medium ${
-                      activeTab === tab.id
-                        ? "bg-blue-50 text-blue-600"
-                        : "text-gray-600 hover:bg-gray-100"
-                    }`}
-                    aria-current={activeTab === tab.id ? "page" : undefined}
-                  >
-                    <tab.icon className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3" />
-                    {tab.label}
-                  </button>
-                </li>
-              ))}
-            </ul>
-            <Separator className="my-3 sm:my-4" />
-            <div className="flex flex-col space-y-2">
+
+          {/* Navigation Section */}
+          <div className="flex-1 flex flex-col overflow-hidden ">
+            <Separator className="my-3 sm:my-4 bg-gray-200" />
+            <nav className="flex-1 overflow-y-auto px-1">
+              <ul className="space-y-1 sm:space-y-1.5">
+                {tabs.map((tab) => (
+                  <li key={tab.id}>
+                    <button
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`group w-full flex items-center px-3 py-2.5 sm:px-4 sm:py-3 rounded-lg text-left transition-all duration-200 text-sm sm:text-base font-medium relative overflow-hidden ${
+                        activeTab === tab.id
+                          ? "bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 border-l-3 border-blue-500 shadow-sm"
+                          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 hover:border-l-2 hover:border-gray-200"
+                      }`}
+                      aria-current={activeTab === tab.id ? "page" : undefined}
+                    >
+                      <tab.icon
+                        className={`w-4 h-4 sm:w-5 sm:h-5 mr-3 flex-shrink-0 transition-colors duration-200 ${
+                          activeTab === tab.id
+                            ? "text-blue-600"
+                            : "group-hover:text-gray-700"
+                        }`}
+                      />
+                      <span className="truncate">{tab.label}</span>
+                      {activeTab === tab.id && (
+                        <div className="absolute right-0 top-0 h-full w-1 bg-blue-500" />
+                      )}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          </div>
+
+          {/* Footer Section - Pinned to Bottom */}
+          <div className="flex-shrink-0 mt-auto pt-4 sm:pt-6 ">
+            <Separator className="my-3 sm:my-4 bg-gray-200" />
+            <div className="flex flex-col  space-y-2">
               <Button
-                variant="outline"
+                variant="ghost"
                 onClick={handleGoHome}
-                className="justify-start text-sm sm:text-base"
+                className="justify-start h-11 sm:h-12 text-sm sm:text-base hover:bg-green-50 transition-all duration-200 border border-gray-100 hover:border-gray-200 rounded-xl"
               >
-                <Home className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3" /> Home
+                <Home className="w-4 h-4 sm:w-5 sm:h-5 mr-3 flex-shrink-0" />
+                <span className="flex-1 text-left">Home</span>
               </Button>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button
-                    variant="outline"
-                    className="justify-start text-sm sm:text-base"
+                    variant="ghost"
+                    className="justify-start h-11 sm:h-12 text-sm sm:text-base hover:bg-red-50 hover:text-red-600 transition-all duration-200 border border-gray-100 hover:border-red-200 rounded-xl"
                   >
-                    <LogOut className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3" />{" "}
-                    Log Out
+                    <LogOut className="w-4 h-4 sm:w-5 sm:h-5 mr-3 flex-shrink-0" />
+                    <span className="flex-1 text-left">Log Out</span>
                   </Button>
                 </AlertDialogTrigger>
-                <AlertDialogContent>
+                <AlertDialogContent className="sm:max-w-md">
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Log Out?</AlertDialogTitle>
+                    <AlertDialogTitle className="text-red-600">
+                      Log Out?
+                    </AlertDialogTitle>
                     <AlertDialogDescription>
-                      Are you sure you want to log out?
+                      Are you sure you want to log out? You will need to sign in
+                      again to access your account.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleLogout}>
+                    <AlertDialogAction
+                      onClick={handleLogout}
+                      className="bg-red-600 hover:bg-red-700"
+                    >
                       Log Out
                     </AlertDialogAction>
                   </AlertDialogFooter>
@@ -471,401 +477,23 @@ export default function ProfilePage() {
 
             {/* Existing Tabs Content (Unchanged) */}
             {activeTab === "overview" && (
-              <Card className="border-none shadow-none">
-                <CardContent className="p-0">
-                  {isLoading ? (
-                    <div className="space-y-4">
-                      <Skeleton className="h-6 sm:h-8 w-48 sm:w-64" />
-                      <div className="grid grid-cols-1 gap-4 sm:gap-6">
-                        {[...Array(4)].map((_, i) => (
-                          <Skeleton key={i} className="h-8 sm:h-10" />
-                        ))}
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6">
-                        <h2 className="text-lg sm:text-xl font-semibold">
-                          Personal Information
-                        </h2>
-                        {/* {!isEditingProfile ? (
-                          <Button
-                            variant="outline"
-                            onClick={handleEditProfileToggle}
-                            className="mt-2 sm:mt-0"
-                          >
-                            <Edit className="w-4 h-4 mr-2" /> Edit
-                          </Button>
-                        ) : (
-                          <div className="flex space-x-2 mt-2 sm:mt-0">
-                            <Button
-                              variant="outline"
-                              onClick={handleEditProfileToggle}
-                            >
-                              <X className="w-4 h-4 mr-2" /> Cancel
-                            </Button>
-                            <Button onClick={handleSaveProfile}>
-                              <Save className="w-4 h-4 mr-2" /> Save
-                            </Button>
-                          </div>
-                        )} */}
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                        <div>
-                          <Label className="text-sm font-medium text-gray-700">
-                            Full Name
-                          </Label>
-                          {/* {isEditingProfile ? (
-                            <Input
-                              name="fullName"
-                              value={userInfo.fullName}
-                              onChange={handleProfileInputChange}
-                              className="mt-1 text-sm sm:text-base"
-                              aria-label="Full Name"
-                            />
-                          ) : ( */}
-                          <p className="mt-1 text-gray-600 text-sm sm:text-base">
-                            {userInfo.fullName}
-                          </p>
-                          {/* )} */}
-                        </div>
-                        <div>
-                          <Label className="text-sm font-medium text-gray-700">
-                            Email Address
-                          </Label>
-                          {/* {isEditingProfile ? (
-                            <Input
-                              name="email"
-                              value={userInfo.email}
-                              onChange={handleProfileInputChange}
-                              className="mt-1 text-sm sm:text-base"
-                              aria-label="Email Address"
-                            />
-                          ) : ( */}
-                          <p className="mt-1 text-gray-600 text-sm sm:text-base">
-                            {userInfo.email}
-                          </p>
-                          {/* )} */}
-                        </div>
-                        <div>
-                          <Label className="text-sm font-medium text-gray-700">
-                            Phone Number
-                          </Label>
-                          {/* {isEditingProfile ? (
-                            <Input
-                              name="phone"
-                              value={userInfo.phone}
-                              onChange={handleProfileInputChange}
-                              className="mt-1 text-sm sm:text-base"
-                              aria-label="Phone Number"
-                            />
-                          ) : ( */}
-                          <p className="mt-1 text-gray-600 text-sm sm:text-base">
-                            {userInfo.phone}
-                          </p>
-                          {/* )} */}
-                        </div>
-                        <div>
-                          <Label className="text-sm font-medium text-gray-700">
-                            Joined On
-                          </Label>
-                          <p className="mt-1 text-gray-600 text-sm sm:text-base">
-                            {new Date(profile?.createdAt).toLocaleDateString(
-                              "en-IN",
-                              {
-                                day: "numeric",
-                                month: "long",
-                                year: "numeric",
-                              }
-                            )}
-                          </p>
-                        </div>
-                      </div>
-                    </>
-                  )}
-                  <Separator className="my-6 sm:my-8" />
-                  <div>
-                    <h2 className="text-lg sm:text-xl font-semibold mb-4">
-                      Customer Details
-                    </h2>
-                    {isLoading ? (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {[...Array(4)].map((_, i) => (
-                          <Skeleton key={i} className="h-20 sm:h-24" />
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 cursor-pointer">
-                        <Card
-                          className="bg-blue-50"
-                          onClick={() => setActiveTab("wishlist")}
-                        >
-                          <CardContent className="p-3 sm:p-4">
-                            <p className="text-xs sm:text-sm text-gray-600">
-                              Wishlist Items
-                            </p>
-                            <p className="text-xl sm:text-2xl font-bold">
-                              {wishlistItems.length}
-                            </p>
-                          </CardContent>
-                        </Card>
-
-                        <Link href="/cart">
-                          <Card className="bg-purple-50">
-                            <CardContent className="p-3 sm:p-4">
-                              <p className="text-xs sm:text-sm text-gray-600">
-                                Cart Items
-                              </p>
-                              <p className="text-xl sm:text-2xl font-bold">
-                                {cartItemsCount}
-                              </p>
-                            </CardContent>
-                          </Card>
-                        </Link>
-                        <Card
-                          className="bg-yellow-50"
-                          onClick={() => setActiveTab("orders")}
-                        >
-                          <CardContent className="p-3 sm:p-4">
-                            <p className="text-xs sm:text-sm text-gray-600">
-                              Total Orders
-                            </p>
-                            <p className="text-xl sm:text-2xl font-bold">
-                              {profile.totalOrders || 0}
-                            </p>
-                          </CardContent>
-                        </Card>
-                        <Card className="bg-red-50">
-                          <CardContent className="p-3 sm:p-4">
-                            <p className="text-xs sm:text-sm text-gray-600">
-                              Total Spent
-                            </p>
-                            <p className="text-xl sm:text-2xl font-bold">
-                              ₹{profile.totalSpent || 0}
-                            </p>
-                          </CardContent>
-                        </Card>
-                      </div>
-                    )}
-                  </div>
-                  <Separator className="my-6 sm:my-8" />
-                  <div>
-                    <h2 className="text-lg sm:text-xl font-semibold mb-4">
-                      Recent Orders
-                    </h2>
-                    {isLoading ? (
-                      <Skeleton className="h-24 sm:h-32" />
-                    ) : orders.length === 0 ? (
-                      <div className="flex justify-center items-center flex-col gap-2 p-6 sm:p-10 text-green-700 bg-green-100/50 rounded-lg sm:rounded-xl">
-                        <Package size={32} className="sm:h-10 sm:w-10" />
-                        <h1 className="text-base sm:text-lg">No orders yet</h1>
-                        <Button
-                          onClick={handleGoHome}
-                          className="text-sm sm:text-base"
-                        >
-                          Start Shopping
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        {orders.slice(0, 3).map((order) => (
-                          <Card key={order.orderId} className="overflow-hidden">
-                            <CardContent className="p-3 sm:p-4">
-                              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2">
-                                <p className="font-semibold text-sm sm:text-base">
-                                  {order.orderId}
-                                </p>
-                                <Badge
-                                  variant={
-                                    order.status === "pending"
-                                      ? "secondary"
-                                      : order.status === "shipped"
-                                      ? "default"
-                                      : order.status === "delivered"
-                                      ? "success"
-                                      : "destructive"
-                                  }
-                                  className="mt-2 sm:mt-0"
-                                >
-                                  {order.status.charAt(0).toUpperCase() +
-                                    order.status.slice(1)}
-                                </Badge>
-                              </div>
-                              <p className="text-xs sm:text-sm text-gray-500 flex items-center">
-                                <Calendar className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />{" "}
-                                {order.formattedDate}
-                              </p>
-                              <p className="text-xs sm:text-sm flex items-center mt-1">
-                                <ShoppingCart className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />{" "}
-                                {order.totalItems} items
-                              </p>
-                              <p className="text-base sm:text-lg font-bold flex items-center mt-2">
-                                <IndianRupee className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />{" "}
-                                {order.totalAmount}
-                              </p>
-                            </CardContent>
-                          </Card>
-                        ))}
-                        <Button
-                          variant="link"
-                          onClick={() => setActiveTab("orders")}
-                          className="text-sm sm:text-base"
-                        >
-                          View All Orders
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+              <Overview
+                userInfo={userInfo}
+                profile={profile}
+                orders={orders}
+                isLoading={isLoading}
+                wishlistItems={wishlistItems}
+                cartItemsCount={cartItemsCount}
+                setActiveTab={setActiveTab}
+              />
             )}
 
             {activeTab === "orders" && (
-              <Card className="border-none shadow-none">
-                <CardContent className="p-0">
-                  {isLoading ? (
-                    <div className="space-y-4 sm:space-y-6">
-                      {[...Array(4)].map((_, i) => (
-                        <Skeleton key={i} className="h-24 sm:h-32" />
-                      ))}
-                    </div>
-                  ) : orders.length === 0 ? (
-                    <div className="flex justify-center items-center flex-col gap-2 p-6 sm:p-10 bg-gray-100 rounded-lg sm:rounded-xl">
-                      <Package size={32} className="sm:h-10 sm:w-10" />
-                      <h1 className="text-base sm:text-lg">No orders yet</h1>
-                      <Button
-                        onClick={handleGoHome}
-                        className="text-sm sm:text-base"
-                      >
-                        Start Shopping
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="space-y-4 sm:space-y-6">
-                      {orders.map((order) => (
-                        <Card key={order.orderId} className="overflow-hidden">
-                          <CardHeader className="p-3 sm:p-4">
-                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-                              <CardTitle className="text-base sm:text-lg">
-                                {order.orderId}
-                              </CardTitle>
-                              <Badge
-                                variant={
-                                  order.status === "pending"
-                                    ? "secondary"
-                                    : order.status === "shipped"
-                                    ? "default"
-                                    : order.status === "delivered"
-                                    ? "success"
-                                    : "destructive"
-                                }
-                                className="mt-2 sm:mt-0"
-                              >
-                                {order.status.charAt(0).toUpperCase() +
-                                  order.status.slice(1)}
-                              </Badge>
-                            </div>
-                            <p className="text-xs sm:text-sm text-gray-500">
-                              {order.formattedDate} • {order.totalItems} items
-                            </p>
-                          </CardHeader>
-                          <CardContent className="p-3 sm:p-4">
-                            <div className="space-y-2 mb-4">
-                              {order.items.map((item, index) => (
-                                <div
-                                  key={index}
-                                  className="flex flex-col sm:flex-row justify-between items-start sm:items-center"
-                                >
-                                  <div className="flex items-center space-x-2">
-                                    <img
-                                      src={
-                                        item.productId.images[0]?.url ||
-                                        "/placeholder.jpg"
-                                      }
-                                      alt={item.name}
-                                      className="w-10 h-10 sm:w-12 sm:h-12 object-cover rounded"
-                                    />
-                                    <div>
-                                      <Link
-                                        href={`/product-info/${item.productId.slug}--${item.productId.id}`}
-                                        className="font-medium text-sm sm:text-base"
-                                      >
-                                        {item.name}
-                                      </Link>
-                                      <p className="text-xs sm:text-sm text-gray-500">
-                                        Qty: {item.quantity}
-                                      </p>
-                                    </div>
-                                  </div>
-                                  <p className="mt-2 sm:mt-0 text-sm sm:text-base">
-                                    ₹{item.price}
-                                  </p>
-                                </div>
-                              ))}
-                            </div>
-                            <div className="flex justify-between font-bold text-sm sm:text-base">
-                              <span>Total</span>
-                              <span>₹{order.totalAmount}</span>
-                            </div>
-                            <Separator className="my-3 sm:my-4" />
-                            <div className="text-xs sm:text-sm">
-                              <p className="font-medium mb-2">
-                                Delivery Address
-                              </p>
-                              <p>{order.deliveryAddress.fullName}</p>
-                              <p>
-                                {order.deliveryAddress.street},{" "}
-                                {order.deliveryAddress.city}
-                              </p>
-                              <p>
-                                {order.deliveryAddress.state}{" "}
-                                {order.deliveryAddress.postalCode},{" "}
-                                {order.deliveryAddress.country}
-                              </p>
-                              <p>Phone: {order.deliveryAddress.phone}</p>
-                            </div>
-                            <div className="flex flex-wrap gap-2 mt-3 sm:mt-4">
-                              <Link
-                                href={`/api/orders/invoice/pdf/${order?.invoice?.invoiceId}`}
-                              >
-                                <Button variant="outline" size="sm">
-                                  View Invoice
-                                </Button>
-                              </Link>
-                              {order.status !== "cancelled" && (
-                                <Button variant="outline" size="sm">
-                                  Track Order
-                                </Button>
-                              )}
-                              {order.status !== "cancelled" && (
-                                <Button
-                                  onClick={() =>
-                                    handleCancelorder(order.orderId)
-                                  }
-                                  variant="destructive"
-                                  size="sm"
-                                >
-                                  Cancel Order
-                                </Button>
-                              )}
-
-                              {order.status === "delivered" && (
-                                <Button variant="outline" size="sm">
-                                  Reorder
-                                </Button>
-                              )}
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+              <Orders orders={orders} isLoading={isLoading} />
             )}
 
             {activeTab === "wishlist" && (
-              <Card className="border-none shadow-none">
+               <Card className="border-none shadow-none">
                 <CardContent className="p-0">
                   {isLoading ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
@@ -943,7 +571,9 @@ export default function ProfilePage() {
                                     </AlertDialogCancel>
                                     <AlertDialogAction
                                       onClick={() =>
-                                        handleRemoveWishlistItem(item.productId._id)
+                                        handleRemoveWishlistItem(
+                                          item.productId._id || item.productId
+                                        )
                                       }
                                     >
                                       Remove
@@ -969,512 +599,15 @@ export default function ProfilePage() {
             )}
 
             {activeTab === "addresses" && (
-              <Card className="border-none shadow-none">
-                <CardContent className="p-0">
-                  {isLoading ? (
-                    <div className="space-y-4 sm:space-y-6">
-                      {[...Array(2)].map((_, i) => (
-                        <Skeleton key={i} className="h-20 sm:h-24" />
-                      ))}
-                    </div>
-                  ) : addresses.length === 0 && !isAddingAddress ? (
-                    <div className="flex justify-center items-center flex-col gap-2 p-6 sm:p-10 bg-gray-100 rounded-lg sm:rounded-xl">
-                      <MapPin size={32} className="sm:h-10 sm:w-10" />
-                      <h1 className="text-base sm:text-lg">
-                        No addresses saved
-                      </h1>
-                      <Button
-                        onClick={() => setIsAddingAddress(true)}
-                        className="text-sm sm:text-base"
-                      >
-                        Add Address
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="space-y-4 sm:space-y-6">
-                      {addresses.map((addr) => (
-                        <Card
-                          key={addr._id || addr.id}
-                          className="relative overflow-hidden"
-                        >
-                          <CardContent className="p-3 sm:p-6">
-                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-start ">
-                              <div className="relative bg-white rounded-lg p-6   shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-                                {/* Subtle gradient border */}
-                                <div className="absolute inset-0 rounded-lg border-2 border-gradient-to-r from-transparent via-teal-200 to-transparent opacity-50" />
-
-                                {/* Content */}
-                                <div className="relative z-10 space-y-5 w-96">
-                                  <div className="flex items-start justify-between">
-                                    <div className="flex-1">
-                                      <span className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
-                                        Name
-                                      </span>
-                                      <h3 className="text-2xl font-bold text-gray-900 font-['Poppins',sans-serif] leading-tight">
-                                        {profile?.fullName}
-                                      </h3>
-                                    </div>
-                                    {addr.isDefault && (
-                                      <span className="inline-flex items-center px-3 py-1 text-xs font-semibold text-teal-600 bg-teal-50 rounded-md">
-                                        Default
-                                      </span>
-                                    )}
-                                  </div>
-                                  <div>
-                                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
-                                      Address
-                                    </span>
-                                    <p className="text-base text-gray-800 font-['Poppins',sans-serif] leading-relaxed">
-                                      {addr.street}, {addr.city}, {addr.state}{" "}
-                                      {addr.postalCode}, {addr.country}
-                                    </p>
-                                  </div>
-                                  <div>
-                                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
-                                      Phone
-                                    </span>
-                                    <p className="text-base text-gray-800 font-['Poppins',sans-serif] leading-relaxed">
-                                      {profile?.phone}
-                                    </p>
-                                  </div>
-                                </div>
-                              </div>
-
-                              <style>
-                                {`
-  .border-gradient-to-r {
-    border-image: linear-gradient(to right, transparent, #5eead4, transparent) 1;
-  }
-`}
-                              </style>
-                              <div className="flex flex-wrap gap-2 mt-3 sm:mt-0">
-                                <Button
-                                  className=""
-                                  variant="outline"
-                                  size="sm"
-                                >
-                                  Edit
-                                </Button>
-                                {!addr.isDefault && (
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() =>
-                                      handleSetDefaultAddress(
-                                        addr._id || addr.id
-                                      )
-                                    }
-                                  >
-                                    Set Default
-                                  </Button>
-                                )}
-                                <AlertDialog>
-                                  <AlertDialogTrigger asChild>
-                                    <Button variant="destructive" size="sm">
-                                      Delete
-                                    </Button>
-                                  </AlertDialogTrigger>
-                                  <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                      <AlertDialogTitle>
-                                        Delete Address?
-                                      </AlertDialogTitle>
-                                      <AlertDialogDescription>
-                                        Are you sure you want to delete this
-                                        address?
-                                      </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                      <AlertDialogCancel>
-                                        Cancel
-                                      </AlertDialogCancel>
-                                      <AlertDialogAction
-                                        onClick={() =>
-                                          handleDeleteAddress(
-                                            addr._id || addr.id
-                                          )
-                                        }
-                                      >
-                                        Delete
-                                      </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                  </AlertDialogContent>
-                                </AlertDialog>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  )}
-                  {!isAddingAddress ? (
-                    <Button
-                      className="mt-4 sm:mt-6 text-sm sm:text-base"
-                      onClick={() => setIsAddingAddress(true)}
-                    >
-                      <Plus className="w-4 h-4 mr-2" /> Add New Address
-                    </Button>
-                  ) : (
-                    <Card className="mt-4 sm:mt-6">
-                      <CardHeader>
-                        <CardTitle className="text-base sm:text-lg">
-                          Add New Address
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="p-3 sm:p-4">
-                        <div className="space-y-4">
-                          <div>
-                            <Label className="text-sm">Full Name</Label>
-                            <Input
-                              value={newAddress.fullName}
-                              onChange={(e) =>
-                                setNewAddress({
-                                  ...newAddress,
-                                  fullName: e.target.value,
-                                })
-                              }
-                              className="mt-1 text-sm sm:text-base"
-                              aria-label="Full Name"
-                            />
-                            {addressErrors.fullName && (
-                              <p className="text-xs sm:text-sm text-red-500 mt-1">
-                                {addressErrors.fullName}
-                              </p>
-                            )}
-                          </div>
-                          <div>
-                            <Label className="text-sm">Phone</Label>
-                            <Input
-                              value={newAddress.phone}
-                              onChange={(e) =>
-                                setNewAddress({
-                                  ...newAddress,
-                                  phone: e.target.value,
-                                })
-                              }
-                              className="mt-1 text-sm sm:text-base"
-                              aria-label="Phone"
-                            />
-                            {addressErrors.phone && (
-                              <p className="text-xs sm:text-sm text-red-500 mt-1">
-                                {addressErrors.phone}
-                              </p>
-                            )}
-                          </div>
-                          <div>
-                            <Label className="text-sm">Street</Label>
-                            <Input
-                              value={newAddress.street}
-                              onChange={(e) =>
-                                setNewAddress({
-                                  ...newAddress,
-                                  street: e.target.value,
-                                })
-                              }
-                              className="mt-1 text-sm sm:text-base"
-                              aria-label="Street"
-                            />
-                            {addressErrors.street && (
-                              <p className="text-xs sm:text-sm text-red-500 mt-1">
-                                {addressErrors.street}
-                              </p>
-                            )}
-                          </div>
-                          <div>
-                            <Label className="text-sm">City</Label>
-                            <Input
-                              value={newAddress.city}
-                              onChange={(e) =>
-                                setNewAddress({
-                                  ...newAddress,
-                                  city: e.target.value,
-                                })
-                              }
-                              className="mt-1 text-sm sm:text-base"
-                              aria-label="City"
-                            />
-                            {addressErrors.city && (
-                              <p className="text-xs sm:text-sm text-red-500 mt-1">
-                                {addressErrors.city}
-                              </p>
-                            )}
-                          </div>
-                          <div>
-                            <Label className="text-sm">State</Label>
-                            <Input
-                              value={newAddress.state}
-                              onChange={(e) =>
-                                setNewAddress({
-                                  ...newAddress,
-                                  state: e.target.value,
-                                })
-                              }
-                              className="mt-1 text-sm sm:text-base"
-                              aria-label="State"
-                            />
-                            {addressErrors.state && (
-                              <p className="text-xs sm:text-sm text-red-500 mt-1">
-                                {addressErrors.state}
-                              </p>
-                            )}
-                          </div>
-                          <div>
-                            <Label className="text-sm">Postal Code</Label>
-                            <Input
-                              value={newAddress.postalCode}
-                              onChange={(e) =>
-                                setNewAddress({
-                                  ...newAddress,
-                                  postalCode: e.target.value,
-                                })
-                              }
-                              className="mt-1 text-sm sm:text-base"
-                              aria-label="Postal Code"
-                            />
-                            {addressErrors.postalCode && (
-                              <p className="text-xs sm:text-sm text-red-500 mt-1">
-                                {addressErrors.postalCode}
-                              </p>
-                            )}
-                          </div>
-                          <div>
-                            <Label className="text-sm">Country</Label>
-                            <Input
-                              value={newAddress.country}
-                              onChange={(e) =>
-                                setNewAddress({
-                                  ...newAddress,
-                                  country: e.target.value,
-                                })
-                              }
-                              className="mt-1 text-sm sm:text-base"
-                              aria-label="Country"
-                            />
-                            {addressErrors.country && (
-                              <p className="text-xs sm:text-sm text-red-500 mt-1">
-                                {addressErrors.country}
-                              </p>
-                            )}
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <Switch
-                              id="isDefault"
-                              checked={newAddress.isDefault}
-                              onCheckedChange={(checked) =>
-                                setNewAddress({
-                                  ...newAddress,
-                                  isDefault: checked,
-                                })
-                              }
-                            />
-                            <Label htmlFor="isDefault" className="text-sm">
-                              Set as Default
-                            </Label>
-                          </div>
-                          <div className="flex flex-wrap gap-2">
-                            <Button
-                              onClick={handleAddAddress}
-                              className="text-sm sm:text-base"
-                            >
-                              Save Address
-                            </Button>
-                            <Button
-                              variant="outline"
-                              onClick={() => setIsAddingAddress(false)}
-                              className="text-sm sm:text-base"
-                            >
-                              Cancel
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-                </CardContent>
-              </Card>
+              <AddressSection
+                addresses={addresses}
+                isLoading={false}
+                user={userInfo}
+              />
             )}
 
             {activeTab === "settings" && (
-              <Card className="border-none shadow-none">
-                <CardContent className="p-0">
-                  <Tabs defaultValue="preferences" className="w-full">
-                    <TabsList className="mb-4 sm:mb-6 flex-wrap">
-                      <TabsTrigger
-                        value="preferences"
-                        className="text-sm sm:text-base"
-                      >
-                        Preferences
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="account"
-                        className="text-sm sm:text-base"
-                      >
-                        Account
-                      </TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="preferences">
-                      <div className="space-y-4 sm:space-y-6">
-                        <div className="flex justify-between items-center">
-                          <span className="text-gray-700 text-sm sm:text-base">
-                            Email Notifications
-                          </span>
-                          <Switch />
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-gray-700 text-sm sm:text-base">
-                            SMS Notifications
-                          </span>
-                          <Switch />
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-gray-700 text-sm sm:text-base">
-                            Push Notifications
-                          </span>
-                          <Switch />
-                        </div>
-                      </div>
-                    </TabsContent>
-                    <TabsContent value="account">
-                      <div className="space-y-4 sm:space-y-6">
-                        <>
-                          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6">
-                            <h2 className="text-lg sm:text-xl font-semibold">
-                              Account Information
-                            </h2>
-                            {!isEditingProfile ? (
-                              <Button
-                                variant="outline"
-                                onClick={handleEditProfileToggle}
-                                className="mt-2 sm:mt-0"
-                              >
-                                <Edit className="w-4 h-4 mr-2" /> Update
-                              </Button>
-                            ) : (
-                              <div className="flex space-x-2 mt-2 sm:mt-0">
-                                <Button
-                                  variant="outline"
-                                  onClick={handleEditProfileToggle}
-                                >
-                                  <X className="w-4 h-4 mr-2" /> Cancel
-                                </Button>
-                                <Button onClick={handleSaveProfile}>
-                                  <Save className="w-4 h-4 mr-2" /> Save
-                                </Button>
-                              </div>
-                            )}
-                          </div>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                            <div>
-                              <Label className="text-sm font-medium text-gray-700">
-                                Full Name
-                              </Label>
-                              {isEditingProfile ? (
-                                <Input
-                                  name="fullName"
-                                  value={userInfo.fullName}
-                                  onChange={handleProfileInputChange}
-                                  className="mt-1 text-sm sm:text-base"
-                                  aria-label="Full Name"
-                                />
-                              ) : (
-                                <p className="mt-1 text-gray-600 text-sm sm:text-base">
-                                  {userInfo.fullName}
-                                </p>
-                              )}
-                            </div>
-                            <div>
-                              <Label className="text-sm font-medium text-gray-700">
-                                Email Address
-                              </Label>
-                              {isEditingProfile ? (
-                                <Input
-                                  name="email"
-                                  value={userInfo.email}
-                                  onChange={handleProfileInputChange}
-                                  className="mt-1 text-sm sm:text-base"
-                                  aria-label="Email Address"
-                                />
-                              ) : (
-                                <p className="mt-1 text-gray-600 text-sm sm:text-base">
-                                  {userInfo.email}
-                                </p>
-                              )}
-                            </div>
-                            <div>
-                              <Label className="text-sm font-medium text-gray-700">
-                                Phone Number
-                              </Label>
-                              {isEditingProfile ? (
-                                <Input
-                                  name="phone"
-                                  value={userInfo.phone}
-                                  onChange={handleProfileInputChange}
-                                  className="mt-1 text-sm sm:text-base"
-                                  aria-label="Phone Number"
-                                />
-                              ) : (
-                                <p className="mt-1 text-gray-600 text-sm sm:text-base">
-                                  {userInfo.phone}
-                                </p>
-                              )}
-                            </div>
-                            <div>
-                              <Label className="text-sm font-medium text-gray-700">
-                                Joined On
-                              </Label>
-                              <p className="mt-1 text-gray-600 text-sm sm:text-base">
-                                {new Date(
-                                  profile?.createdAt
-                                ).toLocaleDateString("en-IN", {
-                                  day: "numeric",
-                                  month: "long",
-                                  year: "numeric",
-                                })}
-                              </p>
-                            </div>
-                          </div>
-                        </>
-
-                        <div className="flex gap-2 items-center mt-10">
-                          <ChangePassword />
-
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button
-                                variant="destructive"
-                                className="w-1/5 justify-start text-sm sm:text-base"
-                              >
-                                <Trash2 className="w-4 h-4 mr-2" /> Delete
-                                Account
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>
-                                  Delete Account?
-                                </AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  This action cannot be undone. Are you sure?
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => {
-                                    toast.success("Account deletion requested");
-                                  }}
-                                >
-                                  Delete
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </div>
-                      </div>
-                    </TabsContent>
-                  </Tabs>
-                </CardContent>
-              </Card>
+              <Setting data={userInfo} profileData={profile} />
             )}
           </div>
         </main>

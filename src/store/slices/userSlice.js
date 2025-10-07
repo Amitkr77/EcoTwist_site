@@ -183,8 +183,17 @@ export const fetchWishlist = createAsyncThunk(
       const response = await axios.get(`/api/wishlist`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      return response.data.wishlist.items;
+      const items = response.data.wishlist.items.map(item => ({
+        ...item,
+        productId: typeof item.productId === 'string'
+          ? { _id: item.productId, slug: item.slug || '' }
+          : { _id: item.productId._id, slug: item.productId.slug || '' },
+        variantSku: item.variantSku || item.productId?.variants?.[0]?.sku || '',
+      }));
+      console.log("fetchWishlist response items:", items); // Debug log
+      return items;
     } catch (error) {
+      console.error("API error:", error.response?.data); // Debug log
       return rejectWithValue(handleApiError(error, "Failed to fetch wishlist"));
     }
   }

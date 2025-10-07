@@ -12,10 +12,11 @@ export default async function handler(req, res) {
   const { id } = req.query;
   const userId = user.userId;
 
+
   if (req.method === 'PUT') {
     try {
       const updated = await Address.findOneAndUpdate(
-        { _id: id, userId: user._id },
+        { _id: id, userId: userId },
         req.body,
         { new: true }
       );
@@ -37,22 +38,22 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'POST') {
-      try {
-        const newAddress = await Address.create({ ...req.body, userId });
-  
-        // Optional: unset other default addresses
-        if (newAddress.isDefault) {
-          await Address.updateMany(
-            { userId, _id: { $ne: newAddress._id } },
-            { $set: { isDefault: false } }
-          );
-        }
-  
-        return res.status(201).json({ message: 'Address created', address: newAddress });
-      } catch (error) {
-        return res.status(400).json({ error: error.message });
+    try {
+      const newAddress = await Address.create({ ...req.body, userId });
+
+      // Optional: unset other default addresses
+      if (newAddress.isDefault) {
+        await Address.updateMany(
+          { userId, _id: { $ne: newAddress._id } },
+          { $set: { isDefault: false } }
+        );
       }
+
+      return res.status(201).json({ message: 'Address created', address: newAddress });
+    } catch (error) {
+      return res.status(400).json({ error: error.message });
     }
+  }
 
   if (req.method === 'DELETE') {
     const deleted = await Address.findOneAndDelete({ _id: id, userId: user.userId });
