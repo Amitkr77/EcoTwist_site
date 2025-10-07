@@ -65,7 +65,6 @@ const WriteReviewDialog = ({ productId, userId }) => {
             body: formData,
           }
         );
-
         const uploadData = await uploadRes.json();
         console.log("Cloudinary Upload:", uploadData); 
         uploadedUrls.push(uploadData.secure_url);
