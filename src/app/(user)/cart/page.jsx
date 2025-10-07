@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import { useSelector, useDispatch } from "react-redux";
-import { useEffect, useState, useCallback, useMemo } from "react";
-import { jwtDecode } from "jwt-decode";
+import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import {
   fetchCart,
   updateCart,
@@ -13,6 +12,7 @@ import {
   addToCart,
   setGuestCartFlag,
   refreshCartItems,
+  mergeGuestCart,
 } from "@/store/slices/cartSlice";
 import { fetchProducts } from "@/store/slices/productSlices";
 import { motion, AnimatePresence } from "framer-motion";
@@ -37,7 +37,6 @@ import {
   Tag,
   CheckCircle,
   ChevronDown,
-  ChevronUp,
   ShoppingCart,
 } from "lucide-react";
 import Image from "next/image";
@@ -66,6 +65,7 @@ export default function CartPage() {
   const [initialLoad, setInitialLoad] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const debouncedUpdateRef = useRef();
 
   // Check authentication status
   const checkAuthStatus = useCallback(() => {
@@ -124,87 +124,58 @@ export default function CartPage() {
     const handleStorageChange = (e) => {
       if (e.key === "user-token" && e.newValue) {
         console.log("Token set - Merging guest cart");
-        dispatch(mergeGuestCart());
+        dispatch(mergeGuestCart()); // Now defined
       }
     };
-
     window.addEventListener("storage", handleStorageChange);
-
     return () => window.removeEventListener("storage", handleStorageChange);
   }, [dispatch]);
 
-  // Debounced update for quantity
+  // In useCallback, reuse or recreate only if needed
   const debouncedUpdateCart = useCallback(
     (item, newQuantity) => {
-      const updateFn = (item, newQuantity) => {
-        if (newQuantity >= 0) {
-          if (newQuantity === 0) {
-            dispatch(
-              removeFromCart({
-                productId: item.productId,
-                variantSku: item.variantSku,
-              })
-            )
-              .unwrap()
-              .then(() => {
-                toast.info(`${item.name} removed from cart`);
-                console.log("✅ Item removed successfully");
-              })
-              .catch((err) => {
-                toast.error(err || "Failed to remove from cart");
-                console.error("❌ Remove failed:", err);
-              });
-          } else {
-            dispatch(
-              updateCart({
-                productId: item.productId,
-                variantSku: item.variantSku,
-                quantity: newQuantity,
-              })
-            )
-              .unwrap()
-              .then(() => {
-                toast.success(`Updated quantity for ${item.name}`);
-                console.log("✅ Quantity updated successfully");
-              })
-              .catch((err) => {
-                toast.error(err || "Failed to update cart");
-                console.error("❌ Update failed:", err);
-              });
+      if (!debouncedUpdateRef.current) {
+        const updateFn = (item, newQuantity) => {
+          if (newQuantity >= 0) {
+            if (newQuantity === 0) {
+              dispatch(
+                removeFromCart({
+                  productId: item.productId,
+                  variantSku: item.variantSku,
+                })
+              )
+                .unwrap()
+                .then(() => toast.info(`${item.name} removed from cart`))
+                .catch((err) =>
+                  toast.error(err || "Failed to remove from cart")
+                );
+            } else {
+              dispatch(
+                updateCart({
+                  productId: item.productId,
+                  variantSku: item.variantSku,
+                  quantity: newQuantity,
+                })
+              )
+                .unwrap()
+                .then(() => toast.success(`Updated quantity for ${item.name}`))
+                .catch((err) => toast.error(err || "Failed to update cart"));
+            }
           }
-        }
-      };
-      const debouncedFn = debounce(updateFn, 500);
-      debouncedFn(item, newQuantity);
+        };
+        debouncedUpdateRef.current = debounce(updateFn, 500);
+      }
+      debouncedUpdateRef.current(item, newQuantity);
     },
     [dispatch]
   );
 
-  // Apply promo code (mock logic)
-  const handleApplyPromo = () => {
-    const validCodes = {
-      save10: { discount: 10 },
-      freeship: { discount: 0, freeShipping: true },
+  // Cleanup debounce
+  useEffect(() => {
+    return () => {
+      if (debouncedUpdateRef.current) debouncedUpdateRef.current.cancel();
     };
-    const code = promoCode.toLowerCase().trim();
-    if (validCodes[code]) {
-      const promo = validCodes[code];
-      const newDiscount = promo.discount
-        ? totalPrice * (promo.discount / 100)
-        : 0;
-      setDiscount(newDiscount);
-      toast.success(
-        promo.freeShipping
-          ? "Free shipping applied! 🎉"
-          : `${promo.discount}% discount applied! Save ₹${newDiscount.toFixed(
-              2
-            )}`
-      );
-    } else {
-      setDiscount(0);
-      toast.error("Invalid promo code. Try SAVE10 or FREESHIP");
-    }
-  };
+  }, []);
 
   // Calculate final total
   const shipping = totalPrice >= 499 ? 0 : 69;
@@ -915,8 +886,6 @@ export default function CartPage() {
                       </div>
                     </div>
                   </div>
-
-                 
 
                   {/* Checkout Button */}
                   <Link href="/checkout">

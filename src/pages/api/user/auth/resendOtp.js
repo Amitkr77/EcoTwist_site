@@ -57,7 +57,7 @@ export default async function handler(req, res) {
 
   <footer style="font-size: 12px; text-align: center; color: #aaa; margin-top: 30px;">
     <p>If you did not request this code, please ignore this email or contact our support team.</p>
-    <p>— EcoTwist Team</p>
+    <p>— Ecotwist Team</p>
   </footer>
 </div>
 

@@ -328,10 +328,10 @@ function generateInvoiceHtml(invoice) {
         <!-- Header -->
         <div class="header">
           <div class="logo">
-            <img src="https://ecotwist.in/logo.png" alt="EcoTwist Logo" />
+            <img src="https://ecotwist.in/logo.png" alt="Ecotwist Logo" />
           </div>
           <div class="company-details">
-            <h3>EcoTwist Innovations Pvt. Ltd.</h3>
+            <h3>Ecotwist Innovations Pvt. Ltd.</h3>
             <div>Mauryalok Complex</div>
             <div>Patna, Bihar 800001</div>
             <div>Email: info@ecotwist.in</div>

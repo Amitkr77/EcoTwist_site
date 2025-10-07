@@ -16,15 +16,10 @@ import {
   Search,
   X,
   Mic,
-  Heart,
   Scale,
   Star,
   Clock,
-  Gift,
-  Tag,
-  Filter,
   Zap,
-  Loader2,
 } from "lucide-react";
 
 import { motion, AnimatePresence } from "framer-motion";
@@ -39,6 +34,7 @@ import {
   SheetClose,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import axios from "axios";
 
 export default function ProductsPage() {
   const dispatch = useDispatch();
@@ -47,8 +43,8 @@ export default function ProductsPage() {
   const { status, error, allIds, byId } = useSelector(
     (state) => state.products || {}
   );
+  const wishlist = useSelector((state) => state.user.wishlist || []);
 
-  // ALL HOOKS MUST BE DECLARED BEFORE ANY EARLY RETURNS
   // Core states
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -60,18 +56,14 @@ export default function ProductsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [isFiltering, setIsFiltering] = useState(false);
   const [filterProgress, setFilterProgress] = useState(0);
-  const [wishlist, setWishlist] = useState([]);
   const [recentlyViewed, setRecentlyViewed] = useState([]);
   const [comparedProducts, setComparedProducts] = useState([]);
   const [showCompare, setShowCompare] = useState(false);
   const [activeFilterTab, setActiveFilterTab] = useState("category");
   const [translateX, setTranslateX] = useState(0);
   const [hasMore, setHasMore] = useState(true);
-  const [isLoadingLocalStorage, setIsLoadingLocalStorage] = useState(true);
 
   const observerRef = useRef(null);
-  const touchStartRef = useRef(null);
-  const touchCurrentRef = useRef(null);
 
   // Active filters for chips
   const activeFilters = useMemo(
@@ -206,27 +198,45 @@ export default function ProductsPage() {
     }
   }, [dispatch, status]);
 
-  // Load localStorage data
+  // Load recentlyViewed from localStorage
   useEffect(() => {
     try {
-      const savedWishlist = localStorage.getItem("wishlist");
       const savedViewed = localStorage.getItem("recentlyViewed");
-
-      if (savedWishlist) {
-        const parsed = JSON.parse(savedWishlist);
-        setWishlist(Array.isArray(parsed) ? parsed : []);
-      }
-
       if (savedViewed) {
         const parsed = JSON.parse(savedViewed);
         setRecentlyViewed(Array.isArray(parsed) ? parsed : []);
       }
     } catch (error) {
-      console.error("Error loading localStorage:", error);
-    } finally {
-      setIsLoadingLocalStorage(false);
+      console.error("Error loading recentlyViewed:", error);
     }
   }, []);
+
+  // Migrate existing localStorage wishlist
+  useEffect(() => {
+    const migrateWishlist = async () => {
+      const token = localStorage.getItem("user-token");
+      if (!token) return;
+      const savedWishlist = localStorage.getItem("wishlist");
+      if (savedWishlist) {
+        try {
+          const parsed = JSON.parse(savedWishlist);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            const response = await axios.post(
+              "/api/wishlist/bulk",
+              { productIds: parsed },
+              { headers: { Authorization: `Bearer ${token}` } }
+            );
+            dispatch(updateWishlist(response.data?.wishlist?.items || []));
+            localStorage.removeItem("wishlist");
+          }
+        } catch (error) {
+          console.error("Wishlist migration failed", error);
+          toast.error("Failed to migrate wishlist");
+        }
+      }
+    };
+    migrateWishlist();
+  }, [dispatch]);
 
   // Cleanup debounce
   useEffect(() => {
@@ -388,17 +398,6 @@ export default function ProductsPage() {
     return () => observer.disconnect();
   }, [loadMore, hasMore, isFiltering]);
 
-  // Wishlist functions
-  const toggleWishlist = useCallback((productId) => {
-    setWishlist((prev) => {
-      const newWishlist = prev.includes(productId)
-        ? prev.filter((id) => id !== productId)
-        : [...prev, productId];
-      localStorage.setItem("wishlist", JSON.stringify(newWishlist));
-      return newWishlist;
-    });
-  }, []);
-
   // Recently viewed
   const addToRecentlyViewed = useCallback((product) => {
     setRecentlyViewed((prev) => {
@@ -521,35 +520,6 @@ export default function ProductsPage() {
     }
   }, [handleSearchChange]);
 
-  // Mobile swipe handlers
-  const handleTouchStart = useCallback((e) => {
-    touchStartRef.current = e.touches[0].clientX;
-  }, []);
-
-  const handleTouchMove = useCallback((e) => {
-    if (!touchStartRef.current) return;
-    touchCurrentRef.current = e.touches[0].clientX;
-    const diff = touchStartRef.current - touchCurrentRef.current;
-    setTranslateX(Math.max(-150, Math.min(150, diff)));
-  }, []);
-
-  const handleTouchEnd = useCallback(() => {
-    if (!touchStartRef.current || !touchCurrentRef.current) return;
-    const diff = touchStartRef.current - touchCurrentRef.current;
-    if (Math.abs(diff) > 50) {
-      const newTab = diff > 0 ? "price" : "category";
-      setActiveFilterTab(newTab);
-    }
-    setTranslateX(0);
-    touchStartRef.current = null;
-    touchCurrentRef.current = null;
-  }, []);
-
-  // Mock analytics
-  const trackEvent = useCallback((event, data) => {
-    console.log("Analytics:", { event, ...data });
-  }, []);
-
   // Categories and tags with counts
   const categories = useMemo(() => {
     if (status !== "succeeded" || !allIds?.length) return [];
@@ -626,6 +596,11 @@ export default function ProductsPage() {
             return (a.name || "").localeCompare(b.name || "");
           case "rating":
             return (b.ratingAverage || 0) - (a.ratingAverage || 0);
+          case "newest":
+            return (
+              new Date(b.createdAt || 0).getTime() -
+                new Date(a.createdAt || 0).getTime() || 0
+            );
           default:
             return 0;
         }
@@ -772,7 +747,7 @@ export default function ProductsPage() {
   }, [status, error]);
 
   // EARLY RETURNS - All hooks are now declared above
-  if (status === "loading" || isLoadingLocalStorage) {
+  if (status === "loading") {
     return (
       <main className="pt-20 pb-16 min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
         <motion.div
@@ -892,15 +867,6 @@ export default function ProductsPage() {
                 </motion.div>
               )}
             </AnimatePresence>
-
-            {/* <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="sm:flex hidden  items-center gap-2 bg-white/20 backdrop-blur-sm px-6 py-3 rounded-lg border border-white/30 hover:bg-white/30 transition-all "
-              aria-label="Toggle filters"
-            >
-              <FunnelIcon className="h-5 w-5" />
-              Filters
-            </button> */}
           </div>
         </div>
         {/* Background animations */}
@@ -1047,7 +1013,7 @@ export default function ProductsPage() {
                 </section>
 
                 {/* Tags */}
-                <section>
+                {/* <section>
                   <h4 className="font-medium mb-3 text-gray-700 dark:text-gray-300">
                     Tags ({getTagCount(selectedTag)})
                   </h4>
@@ -1081,7 +1047,7 @@ export default function ProductsPage() {
                       </button>
                     )}
                   </div>
-                </section>
+                </section> */}
 
                 {/* Price Range */}
                 <section>
@@ -1220,6 +1186,7 @@ export default function ProductsPage() {
                       <option value="price-high-low">Price: High to Low</option>
                       <option value="name">Name (A-Z)</option>
                       <option value="rating">Rating</option>
+                      <option value="newest">Newest</option>
                     </select>
                   </label>
                   <motion.button
@@ -1303,30 +1270,9 @@ export default function ProductsPage() {
                           <ProductCard
                             product={product}
                             viewMode={viewMode}
-                            isWishlisted={wishlist.includes(product._id)}
-                            onWishlistToggle={() => toggleWishlist(product._id)}
                             isCompared={comparedProducts.includes(product._id)}
                             onCompareToggle={() => toggleCompare(product._id)}
                           />
-                          {/* Action Buttons */}
-                          <motion.button
-                            initial={{ opacity: 0, scale: 0 }}
-                            whileHover={{ opacity: 1, scale: 1 }}
-                            className="absolute top-3 right-3 p-2 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-full shadow-lg border border-gray-200 dark:border-gray-700 hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 z-10"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleWishlist(product._id);
-                            }}
-                          >
-                            <Heart
-                              className={`h-5 w-5 transition-colors duration-200 ${
-                                wishlist.includes(product._id)
-                                  ? "fill-red-500 text-red-500"
-                                  : "text-gray-600 dark:text-gray-300"
-                              }`}
-                            />
-                          </motion.button>
-
                           <motion.button
                             initial={{ opacity: 0, scale: 0 }}
                             whileHover={{ opacity: 1, scale: 1 }}
@@ -1339,8 +1285,6 @@ export default function ProductsPage() {
                             <Scale className="h-5 w-5 text-gray-600 dark:text-gray-300" />
                           </motion.button>
 
-                          {/* Hover overlay */}
-                          {/* <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div> */}
                         </motion.div>
                       ))}
                     </div>
@@ -1481,51 +1425,6 @@ export default function ProductsPage() {
 
             {/* Right: Filter Tabs and Sort Controls */}
             <div className="flex items-center gap-2">
-              {/* Swipeable Filter Tabs */}
-              {/* <div
-                className="flex overflow-hidden rounded-md border border-gray-300 bg-white dark:bg-gray-700"
-                onTouchStart={handleTouchStart}
-                onTouchMove={handleTouchMove}
-                onTouchEnd={handleTouchEnd}
-                role="tablist"
-                aria-label="Filter tabs"
-              >
-                <motion.div
-                  className="flex"
-                  animate={{ x: translateX }}
-                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                >
-                  <motion.button
-                    onClick={() => setActiveFilterTab("category")}
-                    whileTap={{ scale: 0.95 }}
-                    className={`px-3 py-1.5 text-xs font-medium transition-colors ${
-                      activeFilterTab === "category"
-                        ? "bg-green-600 text-white"
-                        : "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
-                    }`}
-                    role="tab"
-                    aria-selected={activeFilterTab === "category"}
-                    aria-label="Filter by category"
-                  >
-                    Category
-                  </motion.button>
-                  <motion.button
-                    onClick={() => setActiveFilterTab("price")}
-                    whileTap={{ scale: 0.95 }}
-                    className={`px-3 py-1.5 text-xs font-medium transition-colors ${
-                      activeFilterTab === "price"
-                        ? "bg-green-600 text-white"
-                        : "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
-                    }`}
-                    role="tab"
-                    aria-selected={activeFilterTab === "price"}
-                    aria-label="Filter by price"
-                  >
-                    Price
-                  </motion.button>
-                </motion.div>
-              </div> */}
-
               {/* Sort and Filter Controls */}
               <div className="flex items-center gap-4">
                 <select
@@ -1568,29 +1467,9 @@ export default function ProductsPage() {
                   <ProductCard
                     product={product}
                     viewMode="grid"
-                    isWishlisted={wishlist.includes(product._id)}
-                    onWishlistToggle={() => toggleWishlist(product._id)}
                     isCompared={comparedProducts.includes(product._id)}
                     onCompareToggle={() => toggleCompare(product._id)}
                   />
-                  {/* Mobile action buttons */}
-                  <motion.button
-                    initial={{ opacity: 0, scale: 0 }}
-                    whileHover={{ opacity: 1, scale: 1 }}
-                    className="absolute top-2 right-2 p-1.5 bg-white/90 dark:bg-gray-800/90 rounded-full shadow-lg border"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleWishlist(product._id);
-                    }}
-                  >
-                    <Heart
-                      className={`h-4 w-4 transition-colors ${
-                        wishlist.includes(product._id)
-                          ? "fill-red-500 text-red-500"
-                          : "text-gray-600"
-                      }`}
-                    />
-                  </motion.button>
                 </motion.div>
               ))
             ) : (
@@ -1851,7 +1730,7 @@ export default function ProductsPage() {
                   </section>
 
                   {/* Tags */}
-                  <section>
+                  {/* <section>
                     <h4 className="font-medium mb-2 text-gray-700 dark:text-gray-300">
                       Tags
                     </h4>
@@ -1883,7 +1762,7 @@ export default function ProductsPage() {
                         )
                       )}
                     </div>
-                  </section>
+                  </section> */}
 
                   {/* Price Range */}
                   <section>

@@ -102,12 +102,12 @@ export default function Footer() {
               <div className="flex items-center justify-center sm:justify-start gap-3 mb-4">
                 <img
                   src="/logo.png"
-                  alt="EcoTwist Logo"
+                  alt="Ecotwist Logo"
                   className="w-12 h-12 sm:w-14 sm:h-14 object-contain"
                 />
                 <div>
                   <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-                    EcoTwist
+                    Ecotwist
                   </h2>
                   <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                     Innovations Pvt. Ltd.
@@ -228,7 +228,7 @@ export default function Footer() {
                 href="/"
                 className="font-semibold text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 transition-colors"
               >
-                EcoTwist
+                Ecotwist
               </Link>{" "}
               | All rights reserved.
               <span className="block sm:inline">

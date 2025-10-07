@@ -13,7 +13,7 @@ async function sendEmail({ to, subject, html }) {
         });
 
         const mailOptions = {
-            from: `"EcoTwist" <${process.env.EMAIL_SERVER_USER}>`,
+            from: `"Ecotwist" <${process.env.EMAIL_SERVER_USER}>`,
             to,
             subject,
             html,

@@ -95,13 +95,13 @@ export default function SignupPage() {
       <Card className="w-full max-w-md bg-white border border-white/30 shadow-2xl rounded-xl">
         <CardHeader className="text-center space-y-2">
           <div className="flex justify-center mb-2">
-            <img src="/logo.png" alt="EcoTwist Logo" className="h-20" />
+            <img src="/logo.png" alt="Ecotwist Logo" className="h-20" />
           </div>
           <CardTitle className="text-3xl font-bold text-slate-800">
             Create Account
           </CardTitle>
           <CardDescription className="text-slate-600">
-            Join EcoTwist for sustainable shopping
+            Join Ecotwist for sustainable shopping
           </CardDescription>
         </CardHeader>
 

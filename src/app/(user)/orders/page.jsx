@@ -18,7 +18,7 @@ import {
   ShoppingCart,
   Share2,
 } from "lucide-react";
-import Confetti from "react-confetti"; // Install via npm install react-confetti for success animation
+import Confetti from "react-confetti";
 import { downloadLatestInvoice, clearError } from "@/store/slices/ordersSlice";
 
 function OrderConfirmation() {
@@ -37,6 +37,16 @@ function OrderConfirmation() {
     address: true,
     timeline: true,
   });
+
+  const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
+
+  useEffect(() => {
+    const handleResize = () =>
+      setWindowSize({ width: window.innerWidth, height: window.innerHeight });
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const orderId = searchParams.get("orderId");
 
@@ -127,11 +137,19 @@ function OrderConfirmation() {
     );
   }
 
-  const total =
+  // const total =
+  //   order.items?.reduce(
+  //     (sum, item) => sum + (item.price || 0) * item.quantity,
+  //     0
+  //   ) || 0;
+
+  // Update total
+  const subtotal =
     order.items?.reduce(
       (sum, item) => sum + (item.price || 0) * item.quantity,
       0
     ) || 0;
+  const total = subtotal + (order.shippingCost || 0);
 
   // Simulated order timeline for content-rich UX
   const orderTimeline = [
@@ -161,36 +179,13 @@ function OrderConfirmation() {
     },
   ];
 
-  // const handleDownloadInvoice = async () => {
-  //   try {
-  //     const resultAction = await dispatch(
-  //       downloadInvoice(order.invoiceId || order.orderId)
-  //     );
-  //     if (downloadInvoice.fulfilled.match(resultAction)) {
-  //       const link = document.createElement("a");
-  //       link.href = resultAction.payload;
-  //       link.download = `invoice-${order.invoiceId || order.orderId}.pdf`;
-  //       document.body.appendChild(link);
-  //       link.click();
-  //       document.body.removeChild(link);
-  //       window.URL.revokeObjectURL(resultAction.payload);
-  //       // toast.success("Invoice downloaded successfully!");
-  //     } else {
-  //       // toast.error(invoiceError || "Failed to download invoice");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error downloading invoice:", error);
-  //     // toast.error("An error occurred while downloading the invoice");
-  //   }
-  // };
-
   const handleOpenInvoice = async () => {
-    dispatch(clearError()); // Optional: Clear any prior errors
+    dispatch(clearError());
     try {
       const result = await dispatch(downloadLatestInvoice()).unwrap();
 
       // Open the direct API URL in a new tab
-      window.open(result.url, "_blank", "noopener,noreferrer"); // _blank for new tab, secure options
+      window.open(result.url, "_blank", "noopener,noreferrer");
     } catch (error) {
       console.error("Failed to open invoice:", error);
       // Optional: toast.error(error.message);
@@ -203,8 +198,8 @@ function OrderConfirmation() {
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 py-8 px-4 sm:px-6 lg:px-8 relative mt-16">
       {showConfetti && (
         <Confetti
-          width={window.innerWidth}
-          height={window.innerHeight}
+          width={windowSize.width}
+          height={windowSize.height}
           recycle={false}
         />
       )}
@@ -224,29 +219,6 @@ function OrderConfirmation() {
           </p>{" "}
           {/* Content-rich addition */}
         </div>
-        {/* Invoice Download Button */}
-        {/* <div className="mb-6 flex justify-center">
-          <button
-            onClick={handleDownloadInvoice}
-            disabled={invoiceStatus === "loading" || !order.invoiceId}
-            className={`flex items-center px-6 py-3 rounded-md text-white transition-colors ${
-              invoiceStatus === "loading" || !order.invoiceId
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-blue-600 hover:bg-blue-700"
-            }`}
-          >
-            <DownloadIcon className="w-5 h-5 mr-2" />
-            {invoiceStatus === "loading"
-              ? "Downloading..."
-              : "Download Invoice"}
-          </button>
-          {invoiceError && (
-            <p className="mt-2 text-sm text-red-500 flex items-center">
-              <BadgeAlert className="w-4 h-4 mr-1" />
-              {invoiceError}
-            </p>
-          )}
-        </div> */}
         {/* Collapsible Sections for Interactivity */}
         <div className="space-y-4">
           {/* Order Details Section */}

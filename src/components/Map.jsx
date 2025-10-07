@@ -29,7 +29,7 @@ export default function MapView({ center = [25.61015557315347, 85.13411161163609
         attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
       />
       <Marker position={center}>
-        <Popup>EcoTwist Headquarters</Popup>
+        <Popup>Ecotwist Headquarters</Popup>
       </Marker>
     </MapContainer>
   );

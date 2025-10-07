@@ -41,7 +41,7 @@ export default async function handler(req, res) {
     <h2 style="color: #333;">Hello ${firstName},</h2>
 
     <p style="font-size: 16px; color: #555;">
-      Thank you for registering with <strong>EcoTwist</strong>! Please use the following One-Time Password (OTP) to complete your registration:
+      Thank you for registering with <strong>Ecotwist</strong>! Please use the following One-Time Password (OTP) to complete your registration:
     </p>
 
     <div style="text-align: center; margin: 30px 0;">
@@ -62,7 +62,7 @@ export default async function handler(req, res) {
     <hr style="margin: 40px 0; border: none; border-top: 1px solid #eee;" />
 
     <p style="font-size: 12px; color: #aaa; text-align: center;">
-      &copy; ${new Date().getFullYear()} EcoTwist Pvt Ltd. All rights reserved.
+      &copy; ${new Date().getFullYear()} Ecotwist Pvt Ltd. All rights reserved.
     </p>
   </div>
 `

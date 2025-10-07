@@ -36,7 +36,7 @@ const testimonials = [
     name: "Priya Sharma",
     role: "Eco-Entrepreneur",
     content:
-      "EcoTwist's sustainable products and responsive support made our event a hit. Highly recommend!",
+      "Ecotwist's sustainable products and responsive support made our event a hit. Highly recommend!",
     rating: 5,
   },
   {
@@ -50,14 +50,14 @@ const testimonials = [
     name: "Anita Desai",
     role: "Sustainability Advocate",
     content:
-      "Partnering with EcoTwist was seamless. Their commitment to sustainability is inspiring.",
+      "Partnering with Ecotwist was seamless. Their commitment to sustainability is inspiring.",
     rating: 5,
   },
   {
     name: "Anita Desai",
     role: "Sustainability Advocate",
     content:
-      "Partnering with EcoTwist was seamless. Their commitment to sustainability is inspiring.",
+      "Partnering with Ecotwist was seamless. Their commitment to sustainability is inspiring.",
     rating: 5,
   },
 ];
@@ -203,7 +203,7 @@ export default function Home() {
                 <CardContent className="p-6">
                   <div className="flex justify-between items-center mb-4">
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                      EcoTwist Support
+                      Ecotwist Support
                     </h3>
                     <Button
                       variant="ghost"
@@ -317,7 +317,7 @@ export default function Home() {
             className="text-center mb-8 md:mb-12"
           >
             <h2 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-800 mb-6">
-              Why Choose EcoTwist?
+              Why Choose Ecotwist?
             </h2>
             <p className="text-base sm:text-lg lg:text-xl text-slate-600 max-w-2xl mx-auto">
               We combine sustainability with premium quality to deliver gifts
@@ -687,7 +687,7 @@ export default function Home() {
                   Craft
                 </h2>
                 <p className="text-base sm:text-lg text-slate-600 leading-relaxed mb-8">
-                  At <strong>EcoTwist</strong>, sustainability isn&apos;t a
+                  At <strong>Ecotwist</strong>, sustainability isn&apos;t a
                   trend—it’s a mindset. We craft beautiful, intentional gifts
                   from discarded and biodegradable materials, telling stories of
                   care, creativity, and impact.
