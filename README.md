@@ -105,6 +105,6 @@ This project is licensed under the **MIT License** – free to use and modify.
 
 ---
 
-## 🌱 About EcoTwist
-EcoTwist is more than a store – it’s a movement towards **smart, sustainable living**.  
-By choosing EcoTwist, you’re not only buying eco-friendly products but also **contributing to a greener planet**.  
+## 🌱 About Ecotwist
+Ecotwist is more than a store – it’s a movement towards **smart, sustainable living**.  
+By choosing Ecotwist, you’re not only buying eco-friendly products but also **contributing to a greener planet**.  
