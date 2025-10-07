@@ -129,6 +129,20 @@ const loadFromLocalStorage = () => {
   }
 };
 
+// Simple retry wrapper for API calls
+const retryFetch = async (url, options, maxRetries = 3) => {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const res = await fetch(url, options);
+      if (res.ok) return res;
+      if (attempt === maxRetries) throw new Error(await res.text());
+      await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // Backoff
+    } catch (error) {
+      if (attempt === maxRetries) throw error;
+    }
+  }
+};
+
 // Fetch Cart from Backend or LocalStorage
 export const fetchCart = createAsyncThunk(
   "cart/fetchCart",
@@ -158,31 +172,13 @@ export const fetchCart = createAsyncThunk(
       if (process.env.NODE_ENV === "development") {
         console.log("Authenticated user - fetching from API");
       }
-      const res = await fetch("/api/cart", {
+      const res = await retryFetch("/api/cart", {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
-
-      if (!res.ok) {
-        const errorData = await res.text();
-        console.error("API cart fetch failed:", errorData);
-
-        if (res.status === 401) {
-          localStorage.removeItem("user-token");
-          if (localCartItems && localCartItems.length > 0) {
-            if (process.env.NODE_ENV === "development") {
-              console.warn("API failed (401), falling back to local cart");
-            }
-            const enrichedItems = enrichCartItems(localCartItems, byId);
-            return { items: enrichedItems };
-          }
-        }
-
-        return rejectWithValue(`Failed to fetch cart: ${errorData}`);
-      }
 
       const data = await res.json();
       const cartItems = data.cart?.items?.map((item) => ({
@@ -213,8 +209,7 @@ export const fetchCart = createAsyncThunk(
 
       return rejectWithValue(error.message || "Failed to fetch cart");
     }
-  },
-  { retry: 2 }
+  }
 );
 
 // Merge Guest Cart into Auth Cart
@@ -239,24 +234,39 @@ export const mergeGuestCart = createAsyncThunk(
     }
 
     try {
-      // Ideally batch POST to /api/cart/merge, but keeping loop for compatibility
-      for (const item of localCartItems) {
-        const res = await fetch("/api/cart", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
+      // Batch POST to /api/cart/merge (assume API supports it; fallback to loop if not)
+      const res = await retryFetch("/api/cart/merge", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          items: localCartItems.map(item => ({
             productId: normalizeId(item.productId),
             variantSku: item.variantSku,
             quantity: item.quantity || 1,
-          }),
-        });
+          })),
+        }),
+      });
 
-        if (!res.ok) {
-          const errorData = await res.text();
-          console.error("Failed to merge item:", item.productId, errorData);
+      if (!res.ok) {
+        const errorData = await res.text();
+        console.error("Failed to merge cart:", errorData);
+        // Fallback to individual posts if batch fails
+        for (const item of localCartItems) {
+          await retryFetch("/api/cart", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              productId: normalizeId(item.productId),
+              variantSku: item.variantSku,
+              quantity: item.quantity || 1,
+            }),
+          });
         }
       }
 
@@ -266,7 +276,7 @@ export const mergeGuestCart = createAsyncThunk(
       }
 
       const { products: { byId } } = getState();
-      const res = await fetch("/api/cart", {
+      const freshRes = await retryFetch("/api/cart", {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -274,11 +284,11 @@ export const mergeGuestCart = createAsyncThunk(
         },
       });
 
-      if (!res.ok) {
+      if (!freshRes.ok) {
         return rejectWithValue("Failed to refetch cart after merge");
       }
 
-      const data = await res.json();
+      const data = await freshRes.json();
       const cartItems = data.cart?.items?.map((item) => ({
         ...item,
         productId: normalizeId(item.productId),
@@ -292,14 +302,13 @@ export const mergeGuestCart = createAsyncThunk(
       console.error("Error merging guest cart:", error);
       return rejectWithValue(error.message || "Failed to merge guest cart");
     }
-  },
-  { retry: 2 }
+  }
 );
 
 // Add Item to Cart
 export const addToCart = createAsyncThunk(
   "cart/addToCart",
-  async (productData, { rejectWithValue, getState }) => {
+  async (productData, { rejectWithValue, getState, dispatch }) => {
     const token = getAuthToken();
     const { products: { byId } } = getState();
 
@@ -310,25 +319,27 @@ export const addToCart = createAsyncThunk(
 
     if (!id || !productData.variantSku) {
       console.error("Missing required product data:", productData);
-      return rejectWithValue("Missing product information");
+      return rejectWithValue({ message: "Missing product information" });
     }
 
     const product = byId[id];
     if (!product) {
       console.error("Product not found:", id);
-      return rejectWithValue("Product not found in store");
+      return rejectWithValue({ message: "Product not found in store" });
     }
 
     const variant = product.variants?.find((v) => v.sku === productData.variantSku);
     if (!variant) {
       console.error("Variant not found:", productData.variantSku);
-      return rejectWithValue("Variant not found");
+      return rejectWithValue({ message: "Variant not found" });
     }
 
     const quantity = Math.max(1, parseInt(productData.quantity) || 1);
     if (quantity > (product.stock || 999)) {
-      return rejectWithValue("Insufficient stock available");
+      return rejectWithValue({ message: "Insufficient stock available" });
     }
+
+    const tempId = `${id}-${productData.variantSku}-${Date.now()}`;  // Unique temp ID
 
     const cartItem = {
       productId: id,
@@ -340,6 +351,7 @@ export const addToCart = createAsyncThunk(
       price: variant.price || 0,
       variantName: variant.name || variant.sku || "",
       stock: product.stock || 999,
+      tempId,  // Add the temp ID here
     };
 
     if (process.env.NODE_ENV === "development") {
@@ -362,27 +374,28 @@ export const addToCart = createAsyncThunk(
         updatedItems[existingItemIndex] = {
           ...updatedItems[existingItemIndex],
           ...cartItem,
+          tempId,  // Ensure tempId is set
           quantity: updatedItems[existingItemIndex].quantity + cartItem.quantity,
         };
         if (process.env.NODE_ENV === "development") {
           console.log("Updated existing item quantity to:", updatedItems[existingItemIndex].quantity);
         }
       } else {
-        updatedItems = [...localCartItems, cartItem];
+        updatedItems = [...localCartItems, { ...cartItem, tempId }];
         if (process.env.NODE_ENV === "development") {
           console.log("Added new item to cart");
         }
       }
 
       saveToLocalStorage(updatedItems);
-      return { items: updatedItems, tempId: id };
+      return { items: updatedItems, tempId };
     }
 
     try {
       if (process.env.NODE_ENV === "development") {
         console.log("Authenticated user - calling API");
       }
-      const res = await fetch("/api/cart", {
+      const res = await retryFetch("/api/cart", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -394,36 +407,6 @@ export const addToCart = createAsyncThunk(
           quantity,
         }),
       });
-
-      if (!res.ok) {
-        const errorData = await res.text();
-        console.error("API add to cart failed:", errorData);
-
-        if (res.status === 401) {
-          localStorage.removeItem("user-token");
-          const localCartItems = loadFromLocalStorage() || [];
-          const existingItemIndex = localCartItems.findIndex(
-            (item) => normalizeId(item.productId) === id && item.variantSku === cartItem.variantSku
-          );
-
-          let updatedItems;
-          if (existingItemIndex >= 0) {
-            updatedItems = [...localCartItems];
-            updatedItems[existingItemIndex] = {
-              ...updatedItems[existingItemIndex],
-              ...cartItem,
-              quantity: updatedItems[existingItemIndex].quantity + cartItem.quantity,
-            };
-          } else {
-            updatedItems = [...localCartItems, cartItem];
-          }
-
-          saveToLocalStorage(updatedItems);
-          return { items: updatedItems, tempId: id };
-        }
-
-        return rejectWithValue(errorData);
-      }
 
       const data = await res.json();
       const cartItems = data.cart?.items?.map((item) => ({
@@ -437,9 +420,13 @@ export const addToCart = createAsyncThunk(
       const enrichedItems = enrichCartItems(cartItems, byId);
       saveToLocalStorage(enrichedItems);
 
-      return { items: enrichedItems, tempId: id };
+      return { items: enrichedItems, tempId };
     } catch (error) {
       console.error("Network error adding to cart:", error);
+
+      if (error.message?.includes("401")) {  // Handle 401 specifically
+        localStorage.removeItem("user-token");
+      }
 
       const localCartItems = loadFromLocalStorage() || [];
       const existingItemIndex = localCartItems.findIndex(
@@ -452,17 +439,17 @@ export const addToCart = createAsyncThunk(
         updatedItems[existingItemIndex] = {
           ...updatedItems[existingItemIndex],
           ...cartItem,
+          tempId,
           quantity: updatedItems[existingItemIndex].quantity + cartItem.quantity,
         };
       } else {
-        updatedItems = [...localCartItems, cartItem];
+        updatedItems = [...localCartItems, { ...cartItem, tempId }];
       }
 
       saveToLocalStorage(updatedItems);
-      return { items: updatedItems, tempId: id };
+      return { items: updatedItems, tempId };
     }
-  },
-  { retry: 2 }
+  }
 );
 
 // Remove Item from Cart
@@ -472,6 +459,8 @@ export const removeFromCart = createAsyncThunk(
     const id = normalizeId(productId);
     const token = getAuthToken();
     const { products: { byId } } = getState();
+
+    const tempId = `${id}-${variantSku}-${Date.now()}`;  // Unique temp ID for rollback
 
     if (process.env.NODE_ENV === "development") {
       console.log("Removing from cart:", { productId: id, variantSku }, "Token:", !!token);
@@ -491,11 +480,11 @@ export const removeFromCart = createAsyncThunk(
         console.log("Removed item, now", updatedItems.length, "items in cart");
       }
 
-      return { items: updatedItems, tempId: `${id}-${variantSku}` };
+      return { items: updatedItems, tempId };
     }
 
     try {
-      const res = await fetch(
+      const res = await retryFetch(
         `/api/cart/item?productId=${encodeURIComponent(id)}&variantSku=${encodeURIComponent(variantSku)}`,
         {
           method: "DELETE",
@@ -504,24 +493,6 @@ export const removeFromCart = createAsyncThunk(
           },
         }
       );
-
-      if (!res.ok) {
-        const errorData = await res.text();
-        console.error("API remove from cart failed:", errorData);
-
-        if (res.status === 401) {
-          localStorage.removeItem("user-token");
-          const localCartItems = loadFromLocalStorage() || [];
-          const updatedItems = localCartItems.filter(
-            (item) => !(normalizeId(item.productId) === id && item.variantSku === variantSku)
-          );
-
-          saveToLocalStorage(updatedItems);
-          return { items: updatedItems, tempId: `${id}-${variantSku}` };
-        }
-
-        return rejectWithValue(errorData);
-      }
 
       const data = await res.json();
       const cartItems = data.cart?.items?.map((item) => ({
@@ -535,9 +506,13 @@ export const removeFromCart = createAsyncThunk(
       if (process.env.NODE_ENV === "development") {
         console.log("Successfully removed item via API");
       }
-      return { items: enrichedItems, tempId: `${id}-${variantSku}` };
+      return { items: enrichedItems, tempId };
     } catch (error) {
       console.error("Network error removing from cart:", error);
+
+      if (error.message?.includes("401")) {
+        localStorage.removeItem("user-token");
+      }
 
       const localCartItems = loadFromLocalStorage() || [];
       const updatedItems = localCartItems.filter(
@@ -545,10 +520,9 @@ export const removeFromCart = createAsyncThunk(
       );
 
       saveToLocalStorage(updatedItems);
-      return { items: updatedItems, tempId: `${id}-${variantSku}` };
+      return rejectWithValue({ message: error.message || "Failed to remove item", tempId });
     }
-  },
-  { retry: 2 }
+  }
 );
 
 // Update Cart Item Quantity
@@ -559,13 +533,15 @@ export const updateCart = createAsyncThunk(
     const token = getAuthToken();
     const { products: { byId } } = getState();
 
+    const tempId = `${id}-${variantSku}-${Date.now()}`;  // Unique temp ID
+
     if (process.env.NODE_ENV === "development") {
       console.log("Updating cart quantity:", { productId: id, variantSku, quantity }, "Token:", !!token);
     }
 
     const qty = parseInt(quantity);
     if (isNaN(qty) || qty < 0) {
-      return rejectWithValue("Invalid quantity");
+      return rejectWithValue({ message: "Invalid quantity" });
     }
 
     if (qty === 0) {
@@ -574,7 +550,7 @@ export const updateCart = createAsyncThunk(
 
     const product = byId[id];
     if (product && qty > (product.stock || 999)) {
-      return rejectWithValue("Quantity exceeds available stock");
+      return rejectWithValue({ message: "Quantity exceeds available stock" });
     }
 
     if (!token) {
@@ -585,7 +561,7 @@ export const updateCart = createAsyncThunk(
       const updatedItems = localCartItems
         .map((item) => {
           if (normalizeId(item.productId) === id && item.variantSku === variantSku) {
-            return { ...item, quantity: qty };
+            return { ...item, quantity: qty, tempId };
           }
           return item;
         })
@@ -596,11 +572,11 @@ export const updateCart = createAsyncThunk(
         console.log("Updated quantity, now", updatedItems.length, "items");
       }
 
-      return { items: updatedItems, tempId: `${id}-${variantSku}` };
+      return { items: updatedItems, tempId };
     }
 
     try {
-      const res = await fetch(`/api/cart/${encodeURIComponent(id)}`, {
+      const res = await retryFetch(`/api/cart/${encodeURIComponent(id)}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -608,29 +584,6 @@ export const updateCart = createAsyncThunk(
         },
         body: JSON.stringify({ productId: id, variantSku, quantity: qty }),
       });
-
-      if (!res.ok) {
-        const errorData = await res.text();
-        console.error("API update cart failed:", errorData);
-
-        if (res.status === 401) {
-          localStorage.removeItem("user-token");
-          const localCartItems = loadFromLocalStorage() || [];
-          const updatedItems = localCartItems
-            .map((item) => {
-              if (normalizeId(item.productId) === id && item.variantSku === variantSku) {
-                return { ...item, quantity: qty };
-              }
-              return item;
-            })
-            .filter((item) => item.quantity > 0);
-
-          saveToLocalStorage(updatedItems);
-          return { items: updatedItems, tempId: `${id}-${variantSku}` };
-        }
-
-        return rejectWithValue(errorData);
-      }
 
       const data = await res.json();
       const cartItems = data.cart?.items?.map((item) => ({
@@ -644,25 +597,28 @@ export const updateCart = createAsyncThunk(
       if (process.env.NODE_ENV === "development") {
         console.log("Successfully updated quantity via API");
       }
-      return { items: enrichedItems, tempId: `${id}-${variantSku}` };
+      return { items: enrichedItems, tempId };
     } catch (error) {
       console.error("Network error updating cart:", error);
+
+      if (error.message?.includes("401")) {
+        localStorage.removeItem("user-token");
+      }
 
       const localCartItems = loadFromLocalStorage() || [];
       const updatedItems = localCartItems
         .map((item) => {
           if (normalizeId(item.productId) === id && item.variantSku === variantSku) {
-            return { ...item, quantity: qty };
+            return { ...item, quantity: qty, tempId };
           }
           return item;
         })
         .filter((item) => item.quantity > 0);
 
       saveToLocalStorage(updatedItems);
-      return { items: updatedItems, tempId: `${id}-${variantSku}` };
+      return rejectWithValue({ message: error.message || "Failed to update item", tempId });
     }
-  },
-  { retry: 2 }
+  }
 );
 
 // Clear Cart
@@ -684,24 +640,12 @@ export const clearCart = createAsyncThunk(
     }
 
     try {
-      const res = await fetch("/api/cart", {
+      const res = await retryFetch("/api/cart", {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-
-      if (!res.ok) {
-        const errorData = await res.text();
-        console.error("API clear cart failed:", errorData);
-
-        if (res.status === 401) {
-          localStorage.removeItem("user-token");
-        }
-
-        localStorage.removeItem("guest-cart");
-        return { items: [] };
-      }
 
       const data = await res.json();
       if (process.env.NODE_ENV === "development") {
@@ -712,11 +656,13 @@ export const clearCart = createAsyncThunk(
       return data.cart || { items: [] };
     } catch (error) {
       console.error("Network error clearing cart:", error);
+      if (error.message?.includes("401")) {
+        localStorage.removeItem("user-token");
+      }
       localStorage.removeItem("guest-cart");
       return { items: [] };
     }
-  },
-  { retry: 2 }
+  }
 );
 
 const cartSlice = createSlice({
@@ -739,8 +685,8 @@ const cartSlice = createSlice({
       state.isGuestCart = action.payload;
     },
     refreshCartItems: (state, action) => {
-      const { items, byId } = action.payload;
-      state.items = enrichCartItems(items || [], byId || {});
+      const { items } = action.payload;
+      state.items = items || [];  // Assume pre-enriched in component
       state.totalPrice = state.items.reduce(
         (total, item) => total + (item.price || 0) * (item.quantity || 0),
         0
@@ -799,7 +745,7 @@ const cartSlice = createSlice({
             productId: id,
             variantSku,
             quantity: quantity || 1,
-            tempId: action.payload?.tempId,
+            tempId: action.meta.requestId,  // Use requestId as temp fallback
           });
         }
         state.totalPrice = state.items.reduce(
@@ -831,11 +777,11 @@ const cartSlice = createSlice({
       })
       .addCase(addToCart.rejected, (state, action) => {
         state.status = "failed";
-        state.error = action.payload || "Failed to add to cart";
-        state.isGuestCart = !getAuthToken();
-        // Rollback optimistic
+        state.error = action.payload?.message || "Failed to add to cart";
         const tempId = action.payload?.tempId;
-        state.items = state.items.filter((item) => item.tempId !== tempId);
+        if (tempId) {
+          state.items = state.items.filter((item) => item.tempId !== tempId);
+        }
         state.totalPrice = state.items.reduce(
           (total, item) => total + (typeof item.price === "number" ? item.price : 0) * (item.quantity || 0),
           0
@@ -881,9 +827,14 @@ const cartSlice = createSlice({
       })
       .addCase(removeFromCart.rejected, (state, action) => {
         state.status = "failed";
-        state.error = action.payload || "Failed to remove item";
+        state.error = action.payload?.message || "Failed to remove item";
+        const tempId = action.payload?.tempId;
+        if (tempId) {
+          // Re-add the item on rollback (reverse the pending filter)
+          // Note: This is simplified; in practice, refetch on reject
+          dispatch(fetchCart());
+        }
         state.isGuestCart = !getAuthToken();
-        // Rollback: refetch or keep local
         console.error("Remove from cart failed:", action.payload);
       })
       // Update Cart
@@ -923,9 +874,13 @@ const cartSlice = createSlice({
       })
       .addCase(updateCart.rejected, (state, action) => {
         state.status = "failed";
-        state.error = action.payload || "Failed to update item";
+        state.error = action.payload?.message || "Failed to update item";
+        const tempId = action.payload?.tempId;
+        if (tempId) {
+          // Rollback by refetching or reversing
+          dispatch(fetchCart());
+        }
         state.isGuestCart = !getAuthToken();
-        // Rollback: refetch or keep local
         console.error("Update cart failed:", action.payload);
       })
       // Clear Cart
