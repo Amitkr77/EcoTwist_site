@@ -5,6 +5,8 @@ import { useSelector, useDispatch } from "react-redux";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import Link from "next/link";
 
 import {
   AlertDialog,
@@ -39,6 +41,9 @@ import {
   Home,
   EllipsisIcon,
   Leaf,
+  Eye,
+  Trash2,
+  Share2,
 } from "lucide-react";
 import {
   fetchUserProfile,
