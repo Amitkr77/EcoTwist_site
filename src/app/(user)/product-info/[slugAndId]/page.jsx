@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+
 import { Badge } from "@/components/ui/badge";
 import {
   Accordion,
@@ -96,7 +97,7 @@ export default function ProductPage() {
     if (token) {
       const decoded = jwtDecode(token);
       console.log("decoded", decoded);
-      setUserId(decoded.id); 
+      setUserId(decoded.id);
     }
   }, []);
 
@@ -216,19 +217,20 @@ export default function ProductPage() {
     }
   }
   const handleAddToCart = async () => {
+    if (!isAvailable) return;
     setLoading(true);
     try {
       await dispatch(
         addToCart({
           productId: product._id,
-          variantSku: product.variants[0].sku,
-          quantity: 1,
+          variantSku: selectedVariant?.sku || product.variants[0].sku,
+          quantity: quantity, 
         })
       );
-      // setAdded(true);
+      toast.success(`${quantity} item(s) added to your cart!`);
     } catch (error) {
-      setLoading(false);
       console.error("Failed to add item to cart", error);
+      toast.error("Failed to add item to cart");
     } finally {
       setLoading(false);
     }
@@ -827,7 +829,7 @@ export default function ProductPage() {
                     <motion.div className="flex-1 relative group">
                       <Button
                         onClick={handleAddToCart}
-                        disabled={loading}
+                        disabled={loading || !isAvailable}
                         size="lg"
                         className={`w-full relative overflow-hidden rounded-xl text-base lg:text-lg font-bold py-4 px-6 shadow-lg transition-all duration-300 ${
                           isAvailable
@@ -1264,14 +1266,14 @@ export default function ProductPage() {
             </TabsContent>
             <TabsContent value="reviews">
               {/* <Card className="border-gray-200 dark:border-gray-700 mt-4 shadow-sm bg-white/90 dark:bg-gray-800/90"> */}
-                {/* <CardContent className="p-4 sm:p-6"> */}
-                 
-                  <ReviewsTabContent
-                    productId={product._id}
-                    productName={product.name}
-                    userId={userId}
-                  />
-                {/* </CardContent> */}
+              {/* <CardContent className="p-4 sm:p-6"> */}
+
+              <ReviewsTabContent
+                productId={product._id}
+                productName={product.name}
+                userId={userId}
+              />
+              {/* </CardContent> */}
               {/* </Card> */}
             </TabsContent>
           </Tabs>
