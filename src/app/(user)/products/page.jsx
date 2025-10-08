@@ -11,6 +11,8 @@ import { useSelector, useDispatch } from "react-redux";
 import { useRouter, useSearchParams } from "next/navigation";
 import ProductCard from "@/components/ProductCard";
 import { fetchProducts } from "@/store/slices/productSlices";
+import { FiDollarSign, FiStar, FiClock, FiGift } from "react-icons/fi";
+
 import {
   FunnelIcon,
   Search,
@@ -707,12 +709,12 @@ export default function ProductsPage() {
 
   // Presets
   const presets = [
-    { label: "Budget Friendly", icon: "💰", filters: { maxPrice: 500 } },
-    { label: "Best Sellers", icon: "⭐", filters: { sort: "rating" } },
-    { label: "New Arrivals", icon: "🆕", filters: { sort: "newest" } },
+    { label: "Budget Friendly", icon: <FiDollarSign />, filters: { maxPrice: 500 } },
+    { label: "Best Sellers", icon: <FiStar />, filters: { sort: "rating" } },
+    { label: "New Arrivals", icon: <FiClock/>, filters: { sort: "newest" } },
     {
       label: "Eco Gifts",
-      icon: "🎁",
+      icon: <FiGift/>,
       filters: { category: "gifts", tags: ["eco-friendly"] },
     },
   ];
