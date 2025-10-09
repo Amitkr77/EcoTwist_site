@@ -339,13 +339,14 @@ export const addToCart = createAsyncThunk(
       return rejectWithValue({ message: "Insufficient stock available" });
     }
 
-    const tempId = `${id}-${productData.variantSku}-${Date.now()}`;  // Unique temp ID
+    const tempId = `${id}-${productData.variantSku}-${Date.now()}`;
 
     const cartItem = {
       productId: id,
       variantSku: productData.variantSku,
       quantity,
       name: product.name || "Unnamed Product",
+      slug: product.slug,
       description: product.description || "",
       images: product.images?.map((img) => img.url) || ["/product_image.png"],
       price: variant.price || 0,

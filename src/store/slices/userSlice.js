@@ -29,7 +29,7 @@ const getAuthToken = () => {
     if (decoded.exp && decoded.exp < currentTime) {
       // Remove token from both localStorage and cookies if expired
       localStorage.removeItem("user-token");
-      document.cookie = "user-token=; Max-Age=0"; // Remove from cookies
+      document.cookie = "user-token=; Max-Age=0"; 
       throw new Error("Token has expired");
     }
 
@@ -190,10 +190,10 @@ export const fetchWishlist = createAsyncThunk(
           : { _id: item.productId._id, slug: item.productId.slug || '' },
         variantSku: item.variantSku || item.productId?.variants?.[0]?.sku || '',
       }));
-      console.log("fetchWishlist response items:", items); // Debug log
+      console.log("fetchWishlist response items:", items); 
       return items;
     } catch (error) {
-      console.error("API error:", error.response?.data); // Debug log
+      console.error("API error:", error.response?.data); 
       return rejectWithValue(handleApiError(error, "Failed to fetch wishlist"));
     }
   }
