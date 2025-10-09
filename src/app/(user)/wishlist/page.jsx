@@ -5,7 +5,6 @@ import { useSelector, useDispatch } from "react-redux";
 import { useRouter } from "next/navigation";
 import { fetchUserProfile, removeFromWishlist } from "@/store/slices/userSlice";
 import { addToCart } from "@/store/slices/cartSlice"; // Assumed cartSlice
-import ProductCard from "@/components/ProductCard";
 import { FunnelIcon, Heart, Trash2, ShoppingCart } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -26,10 +25,11 @@ export default function WishlistPage() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [viewMode, setViewMode] = useState("grid");
   const [showFilters, setShowFilters] = useState(false);
+  console.log(wishlist);
 
   // Fetch user profile and wishlist
   useEffect(() => {
-    const userId = localStorage.getItem("user-id"); // Assumed storage
+    const userId = localStorage.getItem("user-id");
     if (userId && status === "idle") {
       dispatch(fetchUserProfile(userId));
     }
@@ -62,12 +62,21 @@ export default function WishlistPage() {
     }
   }, [selectedCategory, categories]);
 
+  // Normalize product data from wishlist or products store
+  const normalizedWishlist = useMemo(() => {
+    if (!wishlist) return [];
+    return wishlist.map((item) => {
+      const id = typeof item.productId === "string" ? item.productId : item.productId?._id;
+      const storedProduct = id ? byId[id] : null;
+      return storedProduct || (typeof item.productId === "object" ? { ...item, ...item.productId } : item);
+    });
+  }, [wishlist, byId]);
+
   // Filter and sort wishlist items
   const filteredWishlist = useMemo(() => {
-    if (productStatus !== "succeeded" || !wishlist || !allIds) return [];
+    if (productStatus !== "succeeded" && !normalizedWishlist.length) return [];
 
-    return wishlist
-      .map((item) => byId[item.productId] || item) // Handle cases where product details are in wishlist
+    return normalizedWishlist
       .filter((product) => {
         if (!product) return false;
         const matchesCategory =
@@ -76,10 +85,10 @@ export default function WishlistPage() {
         return matchesCategory;
       })
       .sort((a, b) => {
-        const aPrice = Math.min(
+        const aPrice = a.price || Math.min(
           ...(a.variants?.map((v) => v.price || 0) || [0])
         );
-        const bPrice = Math.min(
+        const bPrice = b.price || Math.min(
           ...(b.variants?.map((v) => v.price || 0) || [0])
         );
         switch (sortOption) {
@@ -88,16 +97,15 @@ export default function WishlistPage() {
           case "price-high-low":
             return bPrice - aPrice;
           case "name":
-            return a.name?.localeCompare(b.name || "") || 0;
+            return (a.name || "").localeCompare(b.name || "");
           case "rating":
             return (b.ratingAverage || 0) - (a.ratingAverage || 0);
           case "added":
-            return 0; // Maintain order from wishlist
           default:
-            return 0;
+            return 0; // Maintain original order
         }
       });
-  }, [wishlist, selectedCategory, sortOption, productStatus, allIds, byId]);
+  }, [normalizedWishlist, selectedCategory, sortOption, productStatus]);
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -109,15 +117,21 @@ export default function WishlistPage() {
   );
 
   const handlePageChange = (page) => {
+    if (page < 1 || page > totalPages) return;
     setCurrentPage(page);
     document
       .querySelector("#wishlist-grid")
       ?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const handleRemoveFromWishlist = (productId) => {
+  const getProductId = (product) => {
+    return product._id || (product.productId?._id) || product.productId || product.id;
+  };
+
+  const handleRemoveFromWishlist = (product) => {
     const userId = localStorage.getItem("user-id");
-    if (userId) {
+    const productId = getProductId(product);
+    if (userId && productId) {
       dispatch(removeFromWishlist({ userId, productId }))
         .unwrap()
         .then(() => toast.success("Removed from wishlist"))
@@ -125,9 +139,10 @@ export default function WishlistPage() {
     }
   };
 
-  const handleAddToCart = (productId) => {
+  const handleAddToCart = (product) => {
     const userId = localStorage.getItem("user-id");
-    if (userId) {
+    const productId = getProductId(product);
+    if (userId && productId) {
       dispatch(addToCart({ userId, productId, quantity: 1 }))
         .unwrap()
         .then(() => toast.success("Added to cart"))
@@ -308,7 +323,7 @@ export default function WishlistPage() {
                   <span className="text-green-600 dark:text-green-400">
                     {filteredWishlist.length}
                   </span>{" "}
-                  of {wishlist.length} wishlist items
+                  of {wishlist?.length || 0} wishlist items
                 </div>
                 <div className="flex items-center gap-4">
                   <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
@@ -348,34 +363,58 @@ export default function WishlistPage() {
                     >
                       {paginatedWishlist.map((product, index) => (
                         <motion.div
-                          key={product._id || product.productId}
+                          key={getProductId(product)}
                           initial={{ opacity: 0, y: 50 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: index * 0.05 }}
                           whileHover={{ y: -10, scale: 1.02 }}
                           className={`group relative overflow-hidden rounded-xl shadow-md bg-white dark:bg-gray-800 transition-all duration-300 ${
-                            viewMode === "list" ? "flex gap-4 p-4" : ""
+                            viewMode === "list" ? "flex gap-4 p-4" : "p-4"
                           }`}
                         >
-                          <ProductCard product={product} viewMode={viewMode} />
+                          {viewMode === "grid" ? (
+                            <>
+                              <img
+                                src={product.imageUrl || (product.images?.[0]?.url)}
+                                alt={product.name}
+                                className="w-full h-48 object-cover rounded-md mb-2"
+                              />
+                              <h3 className="font-semibold text-gray-800 dark:text-gray-100">
+                                {product.name}
+                              </h3>
+                              <p className="text-green-600 dark:text-green-400">
+                                ₹{product.price || (product.variants?.[0]?.price) || "N/A"}
+                              </p>
+                            </>
+                          ) : (
+                            <>
+                              <div className="flex-shrink-0">
+                                <img
+                                  src={product.imageUrl || (product.images?.[0]?.url)}
+                                  alt={product.name}
+                                  className="w-32 h-32 object-cover rounded-md"
+                                />
+                              </div>
+                              <div className="flex-grow">
+                                <h3 className="font-semibold text-gray-800 dark:text-gray-100">
+                                  {product.name}
+                                </h3>
+                                <p className="text-green-600 dark:text-green-400">
+                                  ₹{product.price || (product.variants?.[0]?.price) || "N/A"}
+                                </p>
+                              </div>
+                            </>
+                          )}
                           <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                             <button
-                              onClick={() =>
-                                handleAddToCart(
-                                  product._id || product.productId
-                                )
-                              }
+                              onClick={() => handleAddToCart(product)}
                               className="p-2 bg-green-600 dark:bg-green-500 text-white rounded-full hover:bg-green-700 dark:hover:bg-green-600"
                               aria-label="Add to cart"
                             >
                               <ShoppingCart className="h-4 w-4" />
                             </button>
                             <button
-                              onClick={() =>
-                                handleRemoveFromWishlist(
-                                  product._id || product.productId
-                                )
-                              }
+                              onClick={() => handleRemoveFromWishlist(product)}
                               className="p-2 bg-red-600 dark:bg-red-500 text-white rounded-full hover:bg-red-700 dark:hover:bg-red-600"
                               aria-label="Remove from wishlist"
                             >
@@ -485,27 +524,33 @@ export default function WishlistPage() {
           <div id="wishlist-grid" className="grid grid-cols-2 gap-4 mb-12">
             {paginatedWishlist.map((product, index) => (
               <motion.div
-                key={product._id || product.productId}
+                key={getProductId(product)}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: index * 0.05 }}
-                className="group relative"
+                className="group relative overflow-hidden rounded-xl shadow-md bg-white dark:bg-gray-800 transition-all duration-300 p-4"
               >
-                <ProductCard product={product} viewMode="grid" />
+                <img
+                  src={product.imageUrl || (product.images?.[0]?.url)}
+                  alt={product.name}
+                  className="w-full h-48 object-cover rounded-md mb-2"
+                />
+                <h3 className="font-semibold text-gray-800 dark:text-gray-100">
+                  {product.name}
+                </h3>
+                <p className="text-green-600 dark:text-green-400">
+                  ₹{product.price || (product.variants?.[0]?.price) || "N/A"}
+                </p>
                 <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button
-                    onClick={() =>
-                      handleAddToCart(product._id || product.productId)
-                    }
+                    onClick={() => handleAddToCart(product)}
                     className="p-2 bg-green-600 dark:bg-green-500 text-white rounded-full hover:bg-green-700 dark:hover:bg-green-600"
                     aria-label="Add to cart"
                   >
                     <ShoppingCart className="h-4 w-4" />
                   </button>
                   <button
-                    onClick={() =>
-                      handleRemoveFromWishlist(product._id || product.productId)
-                    }
+                    onClick={() => handleRemoveFromWishlist(product)}
                     className="p-2 bg-red-600 dark:bg-red-500 text-white rounded-full hover:bg-red-700 dark:hover:bg-red-600"
                     aria-label="Remove from wishlist"
                   >

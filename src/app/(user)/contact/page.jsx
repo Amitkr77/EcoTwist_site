@@ -81,7 +81,7 @@ const testimonials = [
     name: "Priya Sharma",
     role: "Eco-Entrepreneur",
     content:
-      "EcoTwist's sustainable products and responsive support made our event a hit. Highly recommend!",
+      "Ecotwist's sustainable products and responsive support made our event a hit. Highly recommend!",
     rating: 5,
   },
   {
@@ -92,17 +92,17 @@ const testimonials = [
     rating: 4,
   },
   {
-    name: "Anita Desai",
-    role: "Sustainability Advocate",
+    name: "Tousif Akram",
+    role: "Biz Flyer",
     content:
-      "Partnering with EcoTwist was seamless. Their commitment to sustainability is inspiring.",
+      "Partnering with Ecotwist was seamless. Their commitment to sustainability is inspiring.",
     rating: 5,
   },
   {
-    name: "Anita Desai",
-    role: "Sustainability Advocate",
+    name: "Ashutosh Kumar",
+    role: "TenderDesk",
     content:
-      "Partnering with EcoTwist was seamless. Their commitment to sustainability is inspiring.",
+      "The product quality is excellent! I received a quick response from the team, and the eco-friendly packaging truly reflects their commitment to sustainability. Highly satisfied with both the service and the products!",
     rating: 5,
   },
 ];
@@ -232,7 +232,7 @@ export default function ContactPage() {
             transition={{ delay: 0.2, duration: 0.6 }}
             className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6"
           >
-            Connect with EcoTwist
+            Connect with Ecotwist
           </motion.h1>
           <motion.p
             initial={{ y: 20, opacity: 0 }}

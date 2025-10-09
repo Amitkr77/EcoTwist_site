@@ -76,13 +76,13 @@ export default function Page() {
       <Card className="w-full max-w-md bg-white backdrop-blur-lg shadow-2xl rounded-xl border border-white/30">
         <CardHeader className="text-center space-y-1">
           <div className="flex justify-center mb-2">
-            <img src="/logo.png" alt="EcoTwist Logo" className="h-20" />
+            <img src="/logo.png" alt="Ecotwist Logo" className="h-20" />
           </div>
           <CardTitle className="text-3xl font-bold text-slate-800">
             Admin Dashboard
           </CardTitle>
           {/* <CardDescription className="text-slate-600 hidden">
-            Sign in to your EcoTwist account
+            Sign in to your Ecotwist account
           </CardDescription> */}
         </CardHeader>
 
@@ -94,7 +94,7 @@ export default function Page() {
               </div>
               <div className="relative flex justify-center text-sm">
                 <span className="bg-white/80 px-3 text-slate-500">
-                  Sign in to your EcoTwist account
+                  Sign in to your Ecotwist account
                 </span>
               </div>
             </div>

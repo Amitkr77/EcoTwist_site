@@ -33,7 +33,7 @@ export default function Page() {
             <span className="text-green-800 bg-white/45 px-2">Sustainable Future</span>
           </h1>
           <p className="text-base sm:text-lg md:text-2xl max-w-2xl mx-auto leading-relaxed text-white/90">
-            At <strong>EcoTwist Innovations</strong>, we transform waste into
+            At <strong>Ecotwist Innovations</strong>, we transform waste into
             beautiful, meaningful creations — designed with purpose, driven by
             sustainability.
           </p>

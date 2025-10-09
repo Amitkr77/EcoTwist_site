@@ -13,13 +13,13 @@ import {
   CheckIcon,
 } from "lucide-react";
 
-import { useToast } from "@/hooks/use-toast"; 
+import { useToast } from "@/hooks/use-toast";
 import RazorpayPayment from "@/components/RazorpayPayment";
 function CheckoutPage() {
   const { profile } = useSelector((state) => state.user);
   const dispatch = useDispatch();
   const router = useRouter();
-  const { toast } = useToast(); 
+  const { toast } = useToast();
   const cart = useSelector((state) => state.cart);
   const { status, error } = useSelector((state) => state.orders);
 
@@ -41,10 +41,12 @@ function CheckoutPage() {
   const [shippingEstimate, setShippingEstimate] = useState(0);
   const [totalWithShipping, setTotalWithShipping] = useState(0);
   const [isPaymentLoading, setIsPaymentLoading] = useState(false);
+
   useEffect(() => {
     dispatch(clearError());
     calculateTotal();
-  }, [cart, shippingEstimate, dispatch]);
+  }, [cart, dispatch]);
+
   useEffect(() => {
     // Pre-fill form with user profile data
     if (profile?.address) {
@@ -59,14 +61,14 @@ function CheckoutPage() {
         country: profile.address[0]?.country || "",
       }));
     }
+    calculateTotal();
   }, [profile]);
 
   const calculateTotal = () => {
-    let subtotal = cart.totalPrice;
-    if (appliedPromo) {
-      subtotal -= subtotal * (appliedPromo.discount / 100);
-    }
-    setTotalWithShipping(subtotal + shippingEstimate);
+    const subtotal = cart.totalPrice;
+    const estimatedShipping = subtotal >= 499 ? 0 : 69;
+    setShippingEstimate(estimatedShipping);
+    setTotalWithShipping(subtotal + estimatedShipping);
   };
 
   const validateStep = (step) => {
@@ -102,15 +104,14 @@ function CheckoutPage() {
       [name]: type === "checkbox" ? checked : value,
     }));
     setErrors((prevErrors) => ({ ...prevErrors, [name]: "" }));
-    if (name === "postalCode" && value.trim()) {
-      estimateShipping(cart.totalPrice);
-    }
+    // if (name === "postalCode" && value.trim()) {
+    //   estimateShipping(cart.totalPrice);
+    // }
   };
 
-  const estimateShipping = (totalPrice) => {
-    setShippingEstimate(totalPrice >= 499 ? 0 : 69);
-  };
-
+  // const estimateShipping = (totalPrice) => {
+  //   setShippingEstimate(totalPrice >= 499 ? 0 : 69);
+  // };
 
   const validatePromoCode = (code) => {
     return ["SAVE10", "FREESHIP"].includes(code.toUpperCase());
@@ -144,7 +145,6 @@ function CheckoutPage() {
           imageUrl: item.imageUrl || null,
         })),
         shippingCost: shippingEstimate,
-        discountApplied: appliedPromo ? appliedPromo.discount : 0,
         totalAmount: totalWithShipping,
         paymentMethod: "online", // Override to ensure online
         paymentId, // Include paymentId in order data
@@ -152,7 +152,7 @@ function CheckoutPage() {
 
       const result = await dispatch(placeOrder(orderData));
       if (placeOrder.fulfilled.match(result)) {
-        const orderId = result.payload.data._id; 
+        const orderId = result.payload.data._id;
         await dispatch(clearCart());
         toast({
           title: "Payment Successful!",
@@ -198,7 +198,6 @@ function CheckoutPage() {
     }
 
     if (formData.paymentMethod === "online") {
-     
       return;
     }
 
@@ -329,15 +328,7 @@ function CheckoutPage() {
               <span>Subtotal</span>
               <span>₹{cart.totalPrice.toFixed(2)}</span>
             </div>
-            {appliedPromo && (
-              <div className="flex justify-between mb-1 text-green-600">
-                <span>Discount ({appliedPromo.discount}%)</span>
-                <span>
-                  -₹
-                  {(cart.totalPrice * (appliedPromo.discount / 100)).toFixed(2)}
-                </span>
-              </div>
-            )}
+
             <div className="flex justify-between mb-1">
               <span>Shipping</span>
               <span>

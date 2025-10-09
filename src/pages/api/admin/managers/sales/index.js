@@ -51,7 +51,7 @@ export default async function handler(req, res) {
     <h2 style="color: #333;">Hello ${name},</h2>
 
     <p style="font-size: 16px; color: #555;">
-      <strong>Congratulations!</strong> 💐 on being appointed as ${capitalized} Manager of <strong>EcoTwist</strong> Below are the login credentials and steps to login:
+      <strong>Congratulations!</strong> 💐 on being appointed as ${capitalized} Manager of <strong>Ecotwist</strong> Below are the login credentials and steps to login:
     </p>
 
     <p style="font-size: 16px; color: #555;">
@@ -79,7 +79,7 @@ export default async function handler(req, res) {
     <hr style="margin: 40px 0; border: none; border-top: 1px solid #eee;" />
 
     <p style="font-size: 12px; color: #aaa; text-align: center;">
-      &copy; ${new Date().getFullYear()} EcoTwist Pvt Ltd. All rights reserved.
+      &copy; ${new Date().getFullYear()} Ecotwist Pvt Ltd. All rights reserved.
     </p>
   </div>
 `

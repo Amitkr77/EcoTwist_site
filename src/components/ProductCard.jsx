@@ -3,20 +3,14 @@
 import { useDispatch, useSelector } from "react-redux";
 import { useState, useCallback } from "react";
 import { addToCart } from "@/store/slices/cartSlice";
+import { updateWishlist } from "@/store/slices/userSlice";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  ShoppingCart,
-  Heart,
-  Loader2,
-  ShoppingBag,
-} from "lucide-react";
+import { ShoppingCart, Heart, Loader2, ShoppingBag } from "lucide-react";
 import Image from "next/image";
 import axios from "axios";
 import Link from "next/link";
-import { updateWishlist } from "@/store/slices/userSlice";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-
 
 function ProductCard({ product, viewMode = "grid" }) {
   const dispatch = useDispatch();
@@ -40,15 +34,15 @@ function ProductCard({ product, viewMode = "grid" }) {
       await dispatch(
         addToCart({
           productId: product._id,
-          variantSku: product.variants[0].sku,
+          variantSku: product.variants[0]?.sku || "",
           quantity: 1,
         })
-      );
+      ).unwrap();
       setAdded(true);
-    
+      toast.success("Added to cart");
     } catch (error) {
-      setLoading(false);
       console.error("Failed to add item to cart", error);
+      toast.error("Failed to add item to cart");
     } finally {
       setLoading(false);
     }
@@ -82,51 +76,60 @@ function ProductCard({ product, viewMode = "grid" }) {
     return localStorage.getItem("user-token") || "";
   };
 
-  const handleToggleWishlist = useCallback(async () => {
-    const token = getAuthToken();
-    if (!token) {
-      console.warn("No authentication token found");
-      router.push("/login"); 
-      return;
-    }
-
-    setWishlistLoading(true);
-    try {
-      let response;
-      if (isInWishlist) {
-        response = await axios.delete(`/api/wishlist/${product._id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-      } else {
-        response = await axios.post(
-          "/api/wishlist",
-          { productId: product._id },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+  const handleToggleWishlist = useCallback(
+    async (e) => {
+      e.stopPropagation(); // Prevent triggering Link navigation
+      const token = getAuthToken();
+      if (!token) {
+        toast.error("Please log in to manage your wishlist");
+        router.push("/login");
+        return;
       }
 
-      if (response.status === 200 || response.status === 201) {
-        dispatch(updateWishlist(response.data?.wishlist?.items || []));
+      setWishlistLoading(true);
+      try {
+        let response;
+        if (isInWishlist) {
+          response = await axios.delete(`/api/wishlist/${product._id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+        } else {
+          response = await axios.post(
+            "/api/wishlist",
+            { productId: product._id },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+        }
+
+        if (response.status === 200 || response.status === 201 || response.status === 204) {
+          // Handle varied response structures
+          const updatedWishlist = response.data?.wishlist?.items || response.data?.items || response.data || [];
+          dispatch(updateWishlist(updatedWishlist));
+          toast.success(isInWishlist ? "Removed from wishlist" : "Added to wishlist");
+        } else {
+          throw new Error(`Unexpected response status: ${response.status}`);
+        }
+      } catch (error) {
+        console.error("Failed to toggle wishlist", error);
+        const message =
+          error.response?.data?.message ||
+          (isInWishlist ? "Failed to remove from wishlist" : "Failed to add to wishlist");
+        toast.error(message);
+      } finally {
+        setWishlistLoading(false);
       }
-    } catch (error) {
-      console.error("Failed to toggle wishlist", error);
-      toast.error(error.response?.data?.message || "Failed to update wishlist");
-    } finally {
-      setWishlistLoading(false);
-    }
-  }, [product._id, dispatch, isInWishlist, router]);
+    },
+    [product._id, dispatch, isInWishlist, router]
+  );
 
   const categories = Array.isArray(product.categories)
-    ? product.categories[0].split(" ")[1] ||
-      product.categories[0] ||
-      "No categories"
+    ? product.categories[0]?.split(" ")[1] || product.categories[0] || "No categories"
     : product.categories || "No categories";
 
   const price = product.variants?.[0]?.price
     ? `₹${product.variants[0].price.toFixed(2)}`
     : "Price unavailable";
 
-  // Responsive image dimensions
   const imageDimensions = {
     width: viewMode === "list" ? 160 : 320,
     height: viewMode === "list" ? 160 : 240,
@@ -189,10 +192,8 @@ function ProductCard({ product, viewMode = "grid" }) {
           </div>
         </Link>
 
-        {/* Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent rounded-2xl pointer-events-none" />
 
-        {/* Wishlist Button */}
         <motion.button
           className="
             absolute top-2 right-2 p-1.5 sm:p-2 bg-white/90 
@@ -200,25 +201,28 @@ function ProductCard({ product, viewMode = "grid" }) {
             focus:ring-2 focus:ring-rose-500/50 z-10
             shadow-md hover:shadow-lg
           "
-          aria-label="Add to wishlist"
+          aria-label={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
           onClick={handleToggleWishlist}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
           disabled={wishlistLoading}
         >
-          <Heart
-            className={`
-              w-3.5 h-3.5 sm:w-4 sm:h-4 transition-all duration-200
-              ${
-                isInWishlist
-                  ? "text-rose-500 fill-rose-500"
-                  : "text-gray-600 hover:text-rose-500"
-              }
-            `}
-          />
+          {wishlistLoading ? (
+            <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" />
+          ) : (
+            <Heart
+              className={`
+                w-3.5 h-3.5 sm:w-4 sm:h-4 transition-all duration-200
+                ${
+                  isInWishlist
+                    ? "text-rose-500 fill-rose-500"
+                    : "text-gray-600 hover:text-rose-500"
+                }
+              `}
+            />
+          )}
         </motion.button>
 
-        {/* Image Navigation - Only show on hover for larger screens */}
         <div className="absolute inset-0 flex items-center justify-between px-2 pointer-events-none">
           <motion.button
             className="
@@ -245,7 +249,6 @@ function ProductCard({ product, viewMode = "grid" }) {
               />
             </svg>
           </motion.button>
-
           <motion.button
             className="
               pointer-events-auto p-1.5 sm:p-2 bg-white/80 hover:bg-white/95 
@@ -274,7 +277,6 @@ function ProductCard({ product, viewMode = "grid" }) {
         </div>
       </div>
 
-      {/* Content Container */}
       <div
         className={`
           p-3 sm:p-3 lg:p-4 flex-1 flex flex-col
@@ -286,9 +288,7 @@ function ProductCard({ product, viewMode = "grid" }) {
           min-h-[100px] sm:min-h-[140px]
         `}
       >
-        {/* Header Section - Product Name and Categories */}
-        <div className="flex  sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-3 mb-1 sm:mb-3">
-          {/* Product Name */}
+        <div className="flex sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-3 mb-1 sm:mb-3">
           <div className="flex-1 min-h-[2rem] sm:min-h-[2.25rem] md:min-h-[2.5rem]">
             <h3
               className="
@@ -306,8 +306,6 @@ function ProductCard({ product, viewMode = "grid" }) {
               {product?.name || "Unnamed Product"}
             </h3>
           </div>
-
-          {/* Categories Badge */}
           <div className="flex-shrink-0">
             <span
               className="
@@ -321,7 +319,6 @@ function ProductCard({ product, viewMode = "grid" }) {
           </div>
         </div>
 
-        {/* Description (List view only) */}
         {viewMode === "list" && (
           <div className="min-h-[2rem] sm:min-h-[3rem] mb-2 sm:mb-3">
             <p
@@ -335,15 +332,11 @@ function ProductCard({ product, viewMode = "grid" }) {
           </div>
         )}
 
-        {/* Price and Action Section */}
         <div
           className={`
-            flex w-full items-center justify-between  ${
-              viewMode === "list" ? "mt-auto" : ""
-            }
+            flex w-full items-center justify-between ${viewMode === "list" ? "mt-auto" : ""}
           `}
         >
-          {/* Price */}
           <div className="flex-shrink-0">
             <span className="text-xs text-gray-500 block mb-0.5 sm:mb-1 ">
               Price
@@ -358,8 +351,6 @@ function ProductCard({ product, viewMode = "grid" }) {
               {price}
             </span>
           </div>
-
-          {/* Add to Cart Button */}
           <motion.button
             onClick={handleAddToCart}
             disabled={loading}
