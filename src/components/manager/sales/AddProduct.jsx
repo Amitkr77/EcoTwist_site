@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useParams } from "next/navigation";
 import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 export default function AddProductForm() {
   const [isLoading, setIsLoading] = useState(false);
@@ -43,6 +44,7 @@ export default function AddProductForm() {
     },
   });
   const params = useParams();
+  const router = useRouter();
   const productId = params?.id;
     useEffect(() => {
       if (!productId) return;
@@ -273,8 +275,17 @@ export default function AddProductForm() {
       );
 
       if (response.ok) {
-        toast.success("Product added successfully!");
-        reset();
+        toast.success(
+          isEditMode
+            ? "Product updated successfully!"
+            : "Product added successfully!"
+        );
+
+        if (isEditMode) {
+          router.push("/manager/sales?section=product-catalog");
+        } else {
+          reset();
+        }
       } else {
         const error = await response.json();
         toast.error(`Error: ${error.message}`);
