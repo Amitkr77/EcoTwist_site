@@ -224,7 +224,7 @@ export default function ProductPage() {
         addToCart({
           productId: product._id,
           variantSku: selectedVariant?.sku || product.variants[0].sku,
-          quantity: quantity, 
+          quantity: quantity,
         })
       );
       toast.success(`${quantity} item(s) added to your cart!`);
@@ -701,15 +701,15 @@ export default function ProductPage() {
                                         </div>
                                         {/* Selection indicator for non-color options */}
                                         <div
-                                          className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white dark:border-gray-800 transition-all duration-200 ${
+                                          className={`absolute bottom-1 right-1 w-4 h-4 rounded-full border-2 border-white dark:border-gray-800 transition-all duration-200 ${
                                             isSelected
-                                              ? "bg-indigo-500 opacity-100"
+                                              ? "bg-indigo-500 opacity-100 flex justify-center items-center"
                                               : "bg-transparent opacity-0 group-hover:opacity-100"
                                           }`}
                                         >
                                           {isSelected && (
                                             <svg
-                                              className="w-2 h-2 text-white mt-0.5 ml-0.5"
+                                              className="w-2 h-2 text-white "
                                               fill="currentColor"
                                               viewBox="0 0 8 8"
                                             >
@@ -726,7 +726,7 @@ export default function ProductPage() {
                                         isSelected
                                           ? "scale-110 opacity-50"
                                           : "scale-0 opacity-0"
-                                      } bg-indigo-500 blur-sm`}
+                                      } bg-white `}
                                     ></div>
                                   </Label>
 
@@ -909,9 +909,6 @@ export default function ProductPage() {
         <div className="mt-8 sm:mt-10 lg:mt-12">
           <Card className="border border-gray-200/60 dark:border-gray-700/60 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
             <CardContent className="p-6 lg:p-8 relative">
-              {/* Decorative Background Pattern */}
-              <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/30 via-white/50 to-emerald-50/30 dark:from-indigo-900/10 dark:via-gray-800/50 dark:to-emerald-900/10 opacity-80"></div>
-
               {/* Section Header */}
               <div className="relative mb-6 lg:mb-8">
                 <div className="flex items-center gap-3 mb-4">
@@ -1150,9 +1147,7 @@ export default function ProductPage() {
                   {/* Call to Action */}
                   {isExpanded && (
                     <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.6 }}
+                     
                       className="pt-6 border-t border-gray-100/50 dark:border-gray-700/50 mt-8"
                     >
                       <div className="text-center">
@@ -1324,7 +1319,7 @@ export default function ProductPage() {
                           className="mt-2 w-full border-gray-500 dark:border-gray-600 text-gray-600 dark:text-gray-300 text-sm sm:text-base"
                         >
                           <Link
-                            href={`/product-info/${related._id}`}
+                            href={`/product-info/${related.slug}--${related._id}`}
                             aria-label={`View ${related.name}`}
                           >
                             View Product

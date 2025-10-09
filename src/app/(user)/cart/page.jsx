@@ -40,7 +40,7 @@ import {
   ShoppingCart,
 } from "lucide-react";
 import Image from "next/image";
-import { toast } from "sonner";
+import { toast, ToastContainer } from "sonner";
 import debounce from "lodash/debounce";
 
 export default function CartPage() {
@@ -58,8 +58,6 @@ export default function CartPage() {
     allIds = [],
     status: productStatus,
   } = useSelector((state) => state.products || {});
-  const [promoCode, setPromoCode] = useState("");
-  const [discount, setDiscount] = useState(0);
   const [isClearing, setIsClearing] = useState(false);
   const [showSummary, setShowSummary] = useState(true);
   const [initialLoad, setInitialLoad] = useState(true);
@@ -179,7 +177,7 @@ export default function CartPage() {
 
   // Calculate final total
   const shipping = totalPrice >= 499 ? 0 : 69;
-  const finalTotal = Math.max(0, totalPrice - discount + shipping).toFixed(2);
+  const finalTotal = Math.max(0, totalPrice + shipping).toFixed(2);
 
   // Handle clear cart
   const handleClearCart = () => {
@@ -441,7 +439,7 @@ export default function CartPage() {
                         className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600"
                       >
                         <Link
-                          href={`/product-info/${product._id}`}
+                          href={`/product-info/${product.slug}--${product._id}`}
                           className="block"
                         >
                           <Image
@@ -586,7 +584,7 @@ export default function CartPage() {
                     {/* Product Image and Details */}
                     <div className="flex items-start gap-4 w-full lg:w-auto flex-1">
                       <Link
-                        href={`/product-info/${item.productId}`}
+                        href={`/product-info/${item.slug}--${item.productId}`}
                         className="relative  flex-shrink-0"
                       >
                         {Array.isArray(item.images) && item.images[0] ? (
@@ -606,7 +604,7 @@ export default function CartPage() {
 
                       <div className="flex-1 min-w-0">
                         <Link
-                          href={`/product-info/${item.productId}`}
+                          href={`/product-info/${item.slug}--${item.productId}`}
                           className="text-base lg:text-lg font-semibold text-gray-900 dark:text-gray-100 hover:text-green-600 dark:hover:text-green-400 line-clamp-1 transition-colors"
                         >
                           {item.name || "Product"}
@@ -866,15 +864,6 @@ export default function CartPage() {
                       </span>
                     </div>
 
-                    {discount > 0 && (
-                      <div className="flex justify-between py-2 text-green-600 dark:text-green-400">
-                        <span>Discount Applied</span>
-                        <span className="font-semibold">
-                          -₹{discount.toFixed(2)}
-                        </span>
-                      </div>
-                    )}
-
                     <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
                       <div className="flex justify-between items-center">
                         <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
@@ -971,11 +960,6 @@ export default function CartPage() {
                   ₹{finalTotal}
                 </span>
               </div>
-              {discount > 0 && (
-                <span className="text-xs text-green-600 dark:text-green-400">
-                  {promoCode.toUpperCase()} applied (-₹{discount.toFixed(2)})
-                </span>
-              )}
             </div>
 
             <Link href="/checkout">

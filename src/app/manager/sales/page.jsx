@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import "../../scroll.css";
 import {
   Card,
@@ -178,8 +179,15 @@ const salesData = [
 ];
 
 const SalesManagerDashboard = () => {
-  const [activeSection, setActiveSection] = useState("dashboard");
-  const [expandedItems, setExpandedItems] = useState(null);
+  const searchParams = useSearchParams();
+  const [expandedItems, setExpandedItems] = useState("");
+  const router = useRouter();
+
+  const sectionFromUrl = searchParams.get("section");
+
+  const [activeSection, setActiveSection] = useState(
+    sectionFromUrl || "dashboard"
+  );
 
   const toggleExpanded = (itemId) => {
     setExpandedItems((prev) => (prev === itemId ? null : itemId));
@@ -187,6 +195,7 @@ const SalesManagerDashboard = () => {
 
   const handleSectionChange = (sectionId) => {
     setActiveSection(sectionId);
+    router.replace(`/manager/sales?section=${sectionId}`, { shallow: true });
   };
 
   const renderDashboardOverview = () => (

@@ -56,7 +56,8 @@ const testimonials = [
   {
     name: "Ashutosh Kumar",
     role: "TenderDesk",
-    content: "The product quality is excellent! I received a quick response from the team, and the eco-friendly packaging truly reflects their commitment to sustainability. Highly satisfied with both the service and the products!",
+    content:
+      "The product quality is excellent! I received a quick response from the team, and the eco-friendly packaging truly reflects their commitment to sustainability. Highly satisfied with both the service and the products!",
     rating: 5,
   },
 ];
@@ -592,7 +593,9 @@ export default function Home() {
                                     variant="outline"
                                     className="w-full mt-4 text-base text-green-600 dark:text-green-400 border-green-600 dark:border-green-400 hover:bg-green-600 hover:text-white dark:hover:bg-green-600 dark:hover:text-white rounded-md transition-colors duration-300 flex items-center justify-center gap-2"
                                   >
-                                    <Link href={`/product-info/${product._id}`}>
+                                    <Link
+                                      href={`/product-info/${product.slug}--${product._id}`}
+                                    >
                                       <ShoppingBag className="w-4 h-4" />
                                       View Product
                                     </Link>
