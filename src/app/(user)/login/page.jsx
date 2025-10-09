@@ -51,130 +51,133 @@ export default function LoginPage() {
   const [resetLoading, setResetLoading] = useState(false);
 
   // Validate single field
-  const validateField = (name) => {
+  const validateField = (name, value) => {
     const newErrors = { ...errors };
+
     if (name === "email") {
-      if (!formData.email) newErrors.email = "Email is required.";
-      else if (!EMAIL_REGEX.test(formData.email))
+      if (!value) newErrors.email = "Email is required.";
+      else if (!EMAIL_REGEX.test(value))
         newErrors.email = "Please enter a valid email.";
       else newErrors.email = "";
-    } else if (name === "password") {
-      if (!formData.password) newErrors.password = "Password is required.";
-      else if (formData.password.length < 6)
+    }
+
+    if (name === "password") {
+      if (!value) newErrors.password = "Password is required.";
+      else if (value.length < 6)
         newErrors.password = "Password must be at least 6 characters.";
       else newErrors.password = "";
     }
+
     setErrors(newErrors);
   };
+
 
   // Validate form inputs
-  const validateForm = useCallback(() => {
-    const newErrors = { email: "", password: "", general: "" };
-    if (!formData.email) {
-      newErrors.email = "Email is required.";
-    } else if (!EMAIL_REGEX.test(formData.email)) {
-      newErrors.email = "Please enter a valid email.";
-    }
-    if (!formData.password) {
-      newErrors.password = "Password is required.";
-    } else if (formData.password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters.";
-    }
-    setErrors(newErrors);
-    return !newErrors.email && !newErrors.password;
-  }, [formData]);
+  const validateForm = useCallback(
+    (data = formData) => {
+      const newErrors = { email: "", password: "", general: "" };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value.trim() }));
-    setErrors((prev) => ({ ...prev, general: "", [name]: "" }));
-    validateField(name);
-  };
+      if (!data.email) {
+        newErrors.email = "Email is required.";
+      } else if (!EMAIL_REGEX.test(data.email)) {
+        newErrors.email = "Please enter a valid email.";
+      }
+
+      if (!data.password) {
+        newErrors.password = "Password is required.";
+      } else if (data.password.length < 6) {
+        newErrors.password = "Password must be at least 6 characters.";
+      }
+
+      setErrors(newErrors);
+      return !newErrors.email && !newErrors.password;
+    },
+    [formData]
+  );
+
+
+ const handleChange = (e) => {
+   const { name, value } = e.target;
+
+   setFormData((prev) => ({ ...prev, [name]: value }));
+   setErrors((prev) => ({ ...prev, general: "", [name]: "" }));
+   validateField(name, value);
+ };
+
 
   // Enhanced handleSubmit with cart merge
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!validateForm()) return;
+ const handleSubmit = async (e) => {
+   e.preventDefault();
 
-    setIsLoading(true);
-    setErrors((prev) => ({ ...prev, general: "" }));
+   const trimmedData = {
+     email: formData.email.trim(),
+     password: formData.password.trim(),
+   };
 
-    try {
-      console.log("Sending login request with:", formData); // Debug log
-      const res = await fetch(API_ENDPOINTS.LOGIN, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-        credentials: "include", // Ensure cookies are sent
-      });
+   // Validate with trimmed data
+   const isValid = validateForm(trimmedData);
+   if (!isValid) return;
 
-      const data = await res.json();
+   setIsLoading(true);
+   setErrors((prev) => ({ ...prev, general: "" }));
 
-      if (res.ok) {
-        // Store the token
-        localStorage.setItem("user-token", data.token);
+   try {
+     const res = await fetch(API_ENDPOINTS.LOGIN, {
+       method: "POST",
+       headers: { "Content-Type": "application/json" },
+       body: JSON.stringify(trimmedData),
+       credentials: "include",
+     });
 
-        // Decode token to get user ID
-        // try {
-        //   const decoded = jwtDecode(data.token);
-        //   const userId = decoded?.id || decoded?.sub || decoded?.userId;
-        //   if (userId) {
-        //     localStorage.setItem("user-id", userId);
-        //   } else {
-        //     console.error("No userId found in token:", decoded);
-        //   }
-        // } catch (decodeError) {
-        //   console.error("Failed to decode token:", decodeError);
-        // }
+     const data = await res.json();
 
-        // Check if there's a guest cart to merge
-        const guestCart = localStorage.getItem("guest-cart");
-        if (guestCart) {
-          console.log("🛒 Guest cart detected, merging with auth cart...");
-          try {
-            await dispatch(mergeGuestCart()).unwrap();
-            console.log("✅ Guest cart merged successfully");
-            const mergedCart = localStorage.getItem("guest-cart");
-            if (
-              !mergedCart ||
-              mergedCart === '{"cart":{"items":[]},"timestamp":0}'
-            ) {
-              toast.success("Your cart has been transferred!", {
-                duration: 3000,
-              });
-            }
-          } catch (mergeError) {
-            console.error("❌ Failed to merge guest cart:", mergeError);
-            toast.error(
-              "Login successful, but some cart items couldn't be transferred. Please add them again.",
-              { duration: 5000 }
-            );
-          }
-        } else {
-          toast.success("Welcome back! Logging you in...", { duration: 2000 });
-        }
+     if (res.ok) {
+       localStorage.setItem("user-token", data.token);
 
-        // Redirect after a short delay
-        setTimeout(() => {
-          window.location.href = "/";
-        }, 1500);
+       const guestCart = localStorage.getItem("guest-cart");
+       if (guestCart) {
+         try {
+           await dispatch(mergeGuestCart()).unwrap();
+           const mergedCart = localStorage.getItem("guest-cart");
+           if (
+             !mergedCart ||
+             mergedCart === '{"cart":{"items":[]},"timestamp":0}'
+           ) {
+             toast.success("Your cart has been transferred!", {
+               duration: 3000,
+             });
+           }
+         } catch (mergeError) {
+           console.error("Failed to merge guest cart:", mergeError);
+           toast.error(
+             "Login successful, but some cart items couldn't be transferred.",
+             { duration: 5000 }
+           );
+         }
+       } else {
+         toast.success("Welcome back! Logging you in...", { duration: 2000 });
+       }
 
-      } else {
-        setErrors((prev) => ({
-          ...prev,
-          general: data.error || "Login failed. Please check your credentials.",
-        }));
-      }
-    } catch (err) {
-      console.error("Login error:", err);
-      setErrors((prev) => ({
-        ...prev,
-        general: "Network error. Please check your connection and try again.",
-      }));
-    } finally {
-      setIsLoading(false);
-    }
-  };
+       setTimeout(() => {
+         window.location.href = "/";
+       }, 1500);
+     } else {
+       setErrors((prev) => ({
+         ...prev,
+         general: data.error || "Login failed. Please check your credentials.",
+       }));
+     }
+   } catch (err) {
+     console.error("Login error:", err);
+     setErrors((prev) => ({
+       ...prev,
+       general: "Network error. Please check your connection and try again.",
+     }));
+   } finally {
+     setIsLoading(false);
+   }
+ };
+
 
   const handleForgotPassword = async (e) => {
     e.preventDefault();
