@@ -16,9 +16,10 @@ function ProductCard({ product, viewMode = "grid" }) {
   const dispatch = useDispatch();
   const router = useRouter();
   const wishlist = useSelector((state) => state.user.wishlist || []);
+  const cartItems = useSelector((state) => state.cart.items || []); 
   const isInWishlist = wishlist.some((item) => item.productId === product._id);
+  const isInCart = cartItems.some((item) => item.productId === product._id); 
   const [loading, setLoading] = useState(false);
-  const [added, setAdded] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [wishlistLoading, setWishlistLoading] = useState(false);
   const [imageError, setImageError] = useState(false);
@@ -38,7 +39,6 @@ function ProductCard({ product, viewMode = "grid" }) {
           quantity: 1,
         })
       ).unwrap();
-      setAdded(true);
       toast.success("Added to cart");
     } catch (error) {
       console.error("Failed to add item to cart", error);
@@ -78,7 +78,7 @@ function ProductCard({ product, viewMode = "grid" }) {
 
   const handleToggleWishlist = useCallback(
     async (e) => {
-      e.stopPropagation(); // Prevent triggering Link navigation
+      e.stopPropagation();
       const token = getAuthToken();
       if (!token) {
         toast.error("Please log in to manage your wishlist");
@@ -102,7 +102,6 @@ function ProductCard({ product, viewMode = "grid" }) {
         }
 
         if (response.status === 200 || response.status === 201 || response.status === 204) {
-          // Handle varied response structures
           const updatedWishlist = response.data?.wishlist?.items || response.data?.items || response.data || [];
           dispatch(updateWishlist(updatedWishlist));
           toast.success(isInWishlist ? "Removed from wishlist" : "Added to wishlist");
@@ -352,7 +351,7 @@ function ProductCard({ product, viewMode = "grid" }) {
             </span>
           </div>
           <motion.button
-            onClick={handleAddToCart}
+            onClick={isInCart ? handleGoToCart : handleAddToCart}
             disabled={loading}
             className={`
               flex items-center justify-center gap-1.5 sm:gap-2 
@@ -363,14 +362,14 @@ function ProductCard({ product, viewMode = "grid" }) {
               ${
                 loading
                   ? "bg-gray-400 cursor-not-allowed"
-                  : added
+                  : isInCart
                   ? "bg-green-500 hover:bg-green-600"
                   : "bg-indigo-600 hover:bg-indigo-700"
               }
             `}
             whileTap={{ scale: loading ? 1 : 0.95 }}
             aria-label={
-              loading ? "Adding to cart" : added ? "Go to cart" : "Add to cart"
+              loading ? "Adding to cart" : isInCart ? "Go to cart" : "Add to cart"
             }
           >
             <AnimatePresence mode="wait">
@@ -386,14 +385,13 @@ function ProductCard({ product, viewMode = "grid" }) {
                   <span className="hidden xs:inline">Adding...</span>
                   <span className="xs:hidden">...</span>
                 </motion.span>
-              ) : added ? (
+              ) : isInCart ? (
                 <motion.span
                   key="added"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="flex items-center gap-1.5 sm:gap-2 cursor-pointer"
-                  onClick={handleGoToCart}
+                  className="flex items-center gap-1.5 sm:gap-2"
                 >
                   <ShoppingBag className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
                   <span className="hidden xs:inline">Go to Cart</span>
