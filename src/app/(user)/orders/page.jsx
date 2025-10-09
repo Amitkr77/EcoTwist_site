@@ -73,7 +73,7 @@ function OrderConfirmation() {
         });
 
         if (!response.ok) {
-          throw new Error(`Failed to fetch order: ${response.status}`);
+          throw new Error("Order not found.");
         }
 
         const orderData = await response.json();
@@ -116,11 +116,11 @@ function OrderConfirmation() {
 
   if (error || !order) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 mt-20 py-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-md text-center">
           <BadgeAlert className="w-16 h-16 text-red-500 mx-auto mb-4" />
           <h2 className="text-2xl font-bold mb-4 text-gray-800">
-            Order Not Found
+            Something Went Wrong!
           </h2>
           <p className="text-gray-600 mb-6">
             {error ||
@@ -128,7 +128,7 @@ function OrderConfirmation() {
           </p>
           <Link
             href="/cart"
-            className="inline-block bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+            className="inline-block bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
           >
             Return to Cart
           </Link>
