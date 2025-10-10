@@ -3,25 +3,27 @@
 import { useDispatch, useSelector } from "react-redux";
 import { useState, useCallback } from "react";
 import { addToCart } from "@/store/slices/cartSlice";
-import { updateWishlist } from "@/store/slices/userSlice";
+import { addToWishlist, removeFromWishlist } from "@/store/slices/userSlice";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingCart, Heart, Loader2, ShoppingBag } from "lucide-react";
 import Image from "next/image";
-import axios from "axios";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import { debounce } from "lodash";
 
 function ProductCard({ product, viewMode = "grid" }) {
   const dispatch = useDispatch();
   const router = useRouter();
   const wishlist = useSelector((state) => state.user.wishlist || []);
-  const cartItems = useSelector((state) => state.cart.items || []); 
-  const isInWishlist = wishlist.some((item) => item.productId === product._id);
-  const isInCart = cartItems.some((item) => item.productId === product._id); 
+  const cartItems = useSelector((state) => state.cart.items || []);
+  const isInWishlist = wishlist.some(
+    (item) => (item.productId?._id || item.productId) === product._id
+  );
+  const isInCart = cartItems.some((item) => item.productId === product._id);
   const [loading, setLoading] = useState(false);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [wishlistLoading, setWishlistLoading] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [imageError, setImageError] = useState(false);
 
   const images =
@@ -41,8 +43,10 @@ function ProductCard({ product, viewMode = "grid" }) {
       ).unwrap();
       toast.success("Added to cart");
     } catch (error) {
-      console.error("Failed to add item to cart", error);
-      toast.error("Failed to add item to cart");
+      console.error("Failed to add item to cart:", error);
+      toast.error(
+        error.message || error.payload || "Failed to add item to cart"
+      );
     } finally {
       setLoading(false);
     }
@@ -72,57 +76,40 @@ function ProductCard({ product, viewMode = "grid" }) {
     [images.length]
   );
 
-  const getAuthToken = () => {
-    return localStorage.getItem("user-token") || "";
-  };
-
   const handleToggleWishlist = useCallback(
-    async (e) => {
+    debounce(async (e) => {
       e.stopPropagation();
-      const token = getAuthToken();
-      if (!token) {
-        toast.error("Please log in to manage your wishlist");
-        router.push("/login");
-        return;
-      }
-
       setWishlistLoading(true);
       try {
-        let response;
         if (isInWishlist) {
-          response = await axios.delete(`/api/wishlist/${product._id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+          await dispatch(removeFromWishlist(product._id)).unwrap();
+          toast.success("Removed from wishlist");
         } else {
-          response = await axios.post(
-            "/api/wishlist",
-            { productId: product._id },
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
-        }
-
-        if (response.status === 200 || response.status === 201 || response.status === 204) {
-          const updatedWishlist = response.data?.wishlist?.items || response.data?.items || response.data || [];
-          dispatch(updateWishlist(updatedWishlist));
-          toast.success(isInWishlist ? "Removed from wishlist" : "Added to wishlist");
-        } else {
-          throw new Error(`Unexpected response status: ${response.status}`);
+          await dispatch(addToWishlist(product._id)).unwrap();
+          toast.success("Added to wishlist");
         }
       } catch (error) {
-        console.error("Failed to toggle wishlist", error);
-        const message =
-          error.response?.data?.message ||
-          (isInWishlist ? "Failed to remove from wishlist" : "Failed to add to wishlist");
-        toast.error(message);
+        console.error("Failed to toggle wishlist:", {
+          message: error.message,
+          payload: error.payload,
+        });
+        toast.error(
+          error.payload ||
+            (isInWishlist
+              ? "Failed to remove from wishlist"
+              : "Failed to add to wishlist")
+        );
       } finally {
         setWishlistLoading(false);
       }
-    },
-    [product._id, dispatch, isInWishlist, router]
+    }, 300),
+    [dispatch, isInWishlist, product._id]
   );
 
   const categories = Array.isArray(product.categories)
-    ? product.categories[0]?.split(" ")[1] || product.categories[0] || "No categories"
+    ? product.categories[0]?.split(" ")[1] ||
+      product.categories[0] ||
+      "No categories"
     : product.categories || "No categories";
 
   const price = product.variants?.[0]?.price
@@ -222,58 +209,60 @@ function ProductCard({ product, viewMode = "grid" }) {
           )}
         </motion.button>
 
-        <div className="absolute inset-0 flex items-center justify-between px-2 pointer-events-none">
-          <motion.button
-            className="
-              pointer-events-auto p-1.5 sm:p-2 bg-white/80 hover:bg-white/95 
-              rounded-full transition-all duration-200 opacity-0 group-hover:opacity-100
-              focus:ring-2 focus:ring-indigo-500/50 shadow-md
-              hidden sm:flex
-            "
-            onClick={handlePrevImage}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <svg
-              className="w-3 h-3 sm:w-4 sm:h-4 text-gray-700"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+        {images.length > 1 && (
+          <div className="absolute inset-0 flex items-center justify-between px-2 pointer-events-none">
+            <motion.button
+              className="
+                pointer-events-auto p-1.5 sm:p-2 bg-white/80 hover:bg-white/95 
+                rounded-full transition-all duration-200 opacity-0 group-hover:opacity-100
+                focus:ring-2 focus:ring-indigo-500/50 shadow-md
+                hidden sm:flex
+              "
+              onClick={handlePrevImage}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-          </motion.button>
-          <motion.button
-            className="
-              pointer-events-auto p-1.5 sm:p-2 bg-white/80 hover:bg-white/95 
-              rounded-full transition-all duration-200 opacity-0 group-hover:opacity-100
-              focus:ring-2 focus:ring-indigo-500/50 shadow-md
-              hidden sm:flex
-            "
-            onClick={handleNextImage}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <svg
-              className="w-3 h-3 sm:w-4 sm:h-4 text-gray-700"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+              <svg
+                className="w-3 h-3 sm:w-4 sm:h-4 text-gray-700"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+            </motion.button>
+            <motion.button
+              className="
+                pointer-events-auto p-1.5 sm:p-2 bg-white/80 hover:bg-white/95 
+                rounded-full transition-all duration-200 opacity-0 group-hover:opacity-100
+                focus:ring-2 focus:ring-indigo-500/50 shadow-md
+                hidden sm:flex
+              "
+              onClick={handleNextImage}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5l7 7-7 7"
-              />
-            </svg>
-          </motion.button>
-        </div>
+              <svg
+                className="w-3 h-3 sm:w-4 sm:h-4 text-gray-700"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            </motion.button>
+          </div>
+        )}
       </div>
 
       <div
@@ -333,7 +322,9 @@ function ProductCard({ product, viewMode = "grid" }) {
 
         <div
           className={`
-            flex w-full items-center justify-between ${viewMode === "list" ? "mt-auto" : ""}
+            flex w-full items-center justify-between ${
+              viewMode === "list" ? "mt-auto" : ""
+            }
           `}
         >
           <div className="flex-shrink-0">
@@ -369,7 +360,11 @@ function ProductCard({ product, viewMode = "grid" }) {
             `}
             whileTap={{ scale: loading ? 1 : 0.95 }}
             aria-label={
-              loading ? "Adding to cart" : isInCart ? "Go to cart" : "Add to cart"
+              loading
+                ? "Adding to cart"
+                : isInCart
+                ? "Go to cart"
+                : "Add to cart"
             }
           >
             <AnimatePresence mode="wait">
