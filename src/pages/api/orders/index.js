@@ -536,7 +536,7 @@ export default async function handler(req, res) {
 
                 <!-- CTA Button -->
                 <div class="cta">
-                    <a href="https://ecotwist.in/view-order?orderId=${orderId}" class="cta-button">Track Your Order</a>
+                    <a href="https://ecotwist.in/orders/view-order?orderId=${orderId}" class="cta-button">Track Your Order</a>
                 </div>
             </td>
         </tr>
