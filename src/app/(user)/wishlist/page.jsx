@@ -3,8 +3,8 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useRouter } from "next/navigation";
-import { fetchUserProfile, fetchWishlist, removeFromWishlist } from "@/store/slices/userSlice";
-import { addToCart } from "@/store/slices/cartSlice";
+import { fetchUserProfile, removeFromWishlist } from "@/store/slices/userSlice";
+import { addToCart, fetchCart } from "@/store/slices/cartSlice";
 import { FunnelIcon, Heart, Trash2, ShoppingCart, Eye } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -14,17 +14,21 @@ import Link from "next/link";
 export default function WishlistPage() {
   const dispatch = useDispatch();
   const router = useRouter();
-  const { profile, wishlist, status, error } = useSelector((state) => state.user || {});
-  const { allIds, byId, status: productStatus } = useSelector((state) => state.products || {});
+  const { profile, wishlist, status, error } = useSelector(
+    (state) => state.user || {}
+  );
+  const {
+    allIds,
+    byId,
+    status: productStatus,
+  } = useSelector((state) => state.products || {});
   const [sortOption, setSortOption] = useState("added");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState("grid");
   const [currentPage, setCurrentPage] = useState(1);
-  const [actionLoading, setActionLoading] = useState({}); // Track loading state for actions
+  const [actionLoading, setActionLoading] = useState({});
   const itemsPerPage = 12;
-
-  
 
   // Fetch user profile and wishlist
   useEffect(() => {
@@ -45,9 +49,17 @@ export default function WishlistPage() {
   const normalizedWishlist = useMemo(() => {
     if (!wishlist) return [];
     return wishlist.map((item) => {
-      const id = typeof item.productId === "string" ? item.productId : item.productId?._id;
+      const id =
+        typeof item.productId === "string"
+          ? item.productId
+          : item.productId?._id;
       const storedProduct = id ? byId[id] : null;
-      return storedProduct || (typeof item.productId === "object" ? { ...item, ...item.productId } : item);
+      return (
+        storedProduct ||
+        (typeof item.productId === "object"
+          ? { ...item, ...item.productId }
+          : item)
+      );
     });
   }, [wishlist, byId]);
 
@@ -57,11 +69,16 @@ export default function WishlistPage() {
     return normalizedWishlist
       .filter((product) => {
         if (!product) return false;
-        return selectedCategory === "all" || product.categories?.includes(selectedCategory);
+        return (
+          selectedCategory === "all" ||
+          product.categories?.includes(selectedCategory)
+        );
       })
       .sort((a, b) => {
-        const aPrice = a.price || Math.min(...(a.variants?.map((v) => v.price || 0) || [0]));
-        const bPrice = b.price || Math.min(...(b.variants?.map((v) => v.price || 0) || [0]));
+        const aPrice =
+          a.price || Math.min(...(a.variants?.map((v) => v.price || 0) || [0]));
+        const bPrice =
+          b.price || Math.min(...(b.variants?.map((v) => v.price || 0) || [0]));
         switch (sortOption) {
           case "price-low-high":
             return aPrice - bPrice;
@@ -88,11 +105,15 @@ export default function WishlistPage() {
   const handlePageChange = (page) => {
     if (page < 1 || page > totalPages) return;
     setCurrentPage(page);
-    document.querySelector("#wishlist-grid")?.scrollIntoView({ behavior: "smooth" });
+    document
+      .querySelector("#wishlist-grid")
+      ?.scrollIntoView({ behavior: "smooth" });
   };
 
   const getProductId = (product) => {
-    return product._id || product.productId?._id || product.productId || product.id;
+    return (
+      product._id || product.productId?._id || product.productId || product.id
+    );
   };
 
   const handleRemoveFromWishlist = async (product) => {
@@ -113,17 +134,57 @@ export default function WishlistPage() {
 
   const handleAddToCart = async (product) => {
     const productId = getProductId(product);
-    if (productId) {
-      setActionLoading((prev) => ({ ...prev, [productId]: true }));
-      try {
-        await dispatch(addToCart({ productId, quantity: 1 })).unwrap();
-        toast.success("Added to cart");
-      } catch (err) {
-        toast.error(err || "Failed to add to cart");
-        console.error("Failed to add to cart:", err);
-      } finally {
-        setActionLoading((prev) => ({ ...prev, [productId]: false }));
-      }
+    const variantSku = product.variants?.[0]?.sku || "";
+
+    if (!productId) {
+      console.error("Invalid product ID:", { product });
+      toast.error("Unable to add to cart: Invalid product ID");
+      return;
+    }
+
+    if (!variantSku) {
+      console.error("No valid variant found for product:", {
+        productId,
+        variants: product.variants,
+      });
+      toast.error("Unable to add to cart: No valid variant available");
+      return;
+    }
+
+    // Verify product exists in store
+    const storedProduct = byId[productId];
+    if (!storedProduct) {
+      console.error("Product not found in store:", { productId });
+      toast.error("Unable to add to cart: Product not found");
+      return;
+    }
+
+    // Verify variant exists
+    const variant = storedProduct.variants?.find((v) => v.sku === variantSku);
+    if (!variant) {
+      console.error("Variant not found in store:", { productId, variantSku });
+      toast.error("Unable to add to cart: Variant not found");
+      return;
+    }
+
+    setActionLoading((prev) => ({ ...prev, [productId]: true }));
+    try {
+      await dispatch(
+        addToCart({
+          productId,
+          variantSku,
+          quantity: 1,
+        })
+      ).unwrap();
+      await dispatch(fetchCart()).unwrap();
+      toast.success("Added to cart");
+    } catch (error) {
+      console.error("Failed to add item to cart:", error);
+      toast.error(
+        error.payload?.message || error.message || "Failed to add item to cart"
+      );
+    } finally {
+      setActionLoading((prev) => ({ ...prev, [productId]: false }));
     }
   };
 
@@ -147,9 +208,15 @@ export default function WishlistPage() {
   if (status === "loading" && !wishlist.length) {
     return (
       <main className="pt-20 pb-16 min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-center"
+        >
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 dark:border-indigo-400 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-300 text-lg">Loading your wishlist...</p>
+          <p className="text-gray-600 dark:text-gray-300 text-lg">
+            Loading your wishlist...
+          </p>
         </motion.div>
       </main>
     );
@@ -159,8 +226,12 @@ export default function WishlistPage() {
     return (
       <main className="pt-20 pb-16 min-h-screen bg-gradient-to-br from-red-50 to-pink-100 dark:from-red-900 dark:to-pink-900 flex items-center justify-center">
         <div className="text-center p-8">
-          <h2 className="text-2xl font-bold text-red-600 dark:text-red-400 mb-4">Oops! Something went wrong.</h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-4">{error || "Unknown error"}</p>
+          <h2 className="text-2xl font-bold text-red-600 dark:text-red-400 mb-4">
+            Oops! Something went wrong.
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
+            {error || "Unknown error"}
+          </p>
           <button
             onClick={() => dispatch(fetchUserProfile())}
             className="bg-red-600 dark:bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-700 dark:hover:bg-red-600 transition-colors"
@@ -209,12 +280,15 @@ export default function WishlistPage() {
         {/* Desktop Layout */}
         <div className="hidden lg:block">
           <div className="flex gap-8">
-          
             {/* Main Content */}
             <div className="flex-1">
               <div className="flex justify-between items-center mb-8">
                 <div className="text-sm text-gray-600 dark:text-gray-400 font-medium">
-                  Showing <span className="text-green-600 dark:text-green-400">{filteredWishlist.length}</span> of {wishlist?.length || 0} wishlist items
+                  Showing{" "}
+                  <span className="text-green-600 dark:text-green-400">
+                    {filteredWishlist.length}
+                  </span>{" "}
+                  of {wishlist?.length || 0} wishlist items
                 </div>
                 <div className="flex items-center gap-4">
                   <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
@@ -263,21 +337,38 @@ export default function WishlistPage() {
                             viewMode === "list" ? "flex gap-4 p-4" : "p-4"
                           }`}
                         >
-                          <Link href={`/product-info/${product.slug}--${getProductId(product)}`} className="block">
+                          <Link
+                            href={`/product-info/${
+                              product.slug
+                            }--${getProductId(product)}`}
+                            className="block"
+                          >
                             <img
-                              src={product.imageUrl || product.images?.[0]?.url || "/placeholder.jpg"}
+                              src={
+                                product.imageUrl ||
+                                product.images?.[0]?.url ||
+                                "/placeholder.jpg"
+                              }
                               alt={product.name || "Product image"}
                               className="w-full h-48 object-cover rounded-md mb-2"
                             />
-                            <h3 className="font-semibold text-gray-800 dark:text-gray-100">{product.name || "Unnamed Product"}</h3>
+                            <h3 className="font-semibold text-gray-800 dark:text-gray-100">
+                              {product.name || "Unnamed Product"}
+                            </h3>
                             <p className="text-green-600 dark:text-green-400">
-                              ₹{product.price || product.variants?.[0]?.price || "N/A"}
+                              ₹
+                              {product.price ||
+                                product.variants?.[0]?.price ||
+                                "N/A"}
                             </p>
                           </Link>
                           <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                             <button
                               onClick={() => handleAddToCart(product)}
-                              disabled={actionLoading[getProductId(product)] || status === "loading"}
+                              disabled={
+                                actionLoading[getProductId(product)] ||
+                                status === "loading"
+                              }
                               className="p-2 bg-green-600 dark:bg-green-500 text-white rounded-full hover:bg-green-700 dark:hover:bg-green-600 disabled:opacity-50"
                               aria-label={`Add ${product.name} to cart`}
                             >
@@ -285,7 +376,10 @@ export default function WishlistPage() {
                             </button>
                             <button
                               onClick={() => handleRemoveFromWishlist(product)}
-                              disabled={actionLoading[getProductId(product)] || status === "loading"}
+                              disabled={
+                                actionLoading[getProductId(product)] ||
+                                status === "loading"
+                              }
                               className="p-2 bg-red-600 dark:bg-red-500 text-white rounded-full hover:bg-red-700 dark:hover:bg-red-600 disabled:opacity-50"
                               aria-label={`Remove ${product.name} from wishlist`}
                             >
@@ -306,8 +400,12 @@ export default function WishlistPage() {
                     <div className="inline-block p-8 bg-gray-100 dark:bg-gray-700 rounded-full mb-6">
                       <Heart className="h-12 w-12 text-gray-400 dark:text-gray-300" />
                     </div>
-                    <h3 className="text-2xl font-semibold text-gray-800 dark:text-gray-100 mb-2">Your Wishlist is Empty</h3>
-                    <p className="text-gray-600 dark:text-gray-400 mb-6">Add some eco-friendly products to your wishlist!</p>
+                    <h3 className="text-2xl font-semibold text-gray-800 dark:text-gray-100 mb-2">
+                      Your Wishlist is Empty
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-400 mb-6">
+                      Add some eco-friendly products to your wishlist!
+                    </p>
                     <button
                       onClick={() => router.push("/products")}
                       className="bg-green-600 dark:bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-700 dark:hover:bg-green-600 transition-colors"
@@ -329,20 +427,22 @@ export default function WishlistPage() {
                   >
                     Previous
                   </button>
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                    <button
-                      key={page}
-                      onClick={() => handlePageChange(page)}
-                      className={`px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded ${
-                        currentPage === page
-                          ? "bg-green-600 text-white dark:bg-green-500"
-                          : "hover:bg-gray-50 dark:hover:bg-gray-700"
-                      }`}
-                      aria-label={`Go to page ${page}`}
-                    >
-                      {page}
-                    </button>
-                  ))}
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (page) => (
+                      <button
+                        key={page}
+                        onClick={() => handlePageChange(page)}
+                        className={`px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded ${
+                          currentPage === page
+                            ? "bg-green-600 text-white dark:bg-green-500"
+                            : "hover:bg-gray-50 dark:hover:bg-gray-700"
+                        }`}
+                        aria-label={`Go to page ${page}`}
+                      >
+                        {page}
+                      </button>
+                    )
+                  )}
                   <button
                     onClick={() => handlePageChange(currentPage + 1)}
                     disabled={currentPage === totalPages}
@@ -395,13 +495,24 @@ export default function WishlistPage() {
                 transition={{ delay: index * 0.05 }}
                 className="group relative overflow-hidden rounded-xl shadow-md bg-white dark:bg-gray-800 transition-all duration-300 p-4"
               >
-                <Link href={`/product-info/${product.slug}--${getProductId(product)}`} className="block">
+                <Link
+                  href={`/product-info/${product.slug}--${getProductId(
+                    product
+                  )}`}
+                  className="block"
+                >
                   <img
-                    src={product.imageUrl || product.images?.[0]?.url || "/placeholder.jpg"}
+                    src={
+                      product.imageUrl ||
+                      product.images?.[0]?.url ||
+                      "/placeholder.jpg"
+                    }
                     alt={product.name || "Product image"}
                     className="w-full h-48 object-cover rounded-md mb-2"
                   />
-                  <h3 className="font-semibold text-gray-800 dark:text-gray-100">{product.name || "Unnamed Product"}</h3>
+                  <h3 className="font-semibold text-gray-800 dark:text-gray-100">
+                    {product.name || "Unnamed Product"}
+                  </h3>
                   <p className="text-green-600 dark:text-green-400">
                     ₹{product.price || product.variants?.[0]?.price || "N/A"}
                   </p>
@@ -409,7 +520,10 @@ export default function WishlistPage() {
                 <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button
                     onClick={() => handleAddToCart(product)}
-                    disabled={actionLoading[getProductId(product)] || status === "loading"}
+                    disabled={
+                      actionLoading[getProductId(product)] ||
+                      status === "loading"
+                    }
                     className="p-2 bg-green-600 dark:bg-green-500 text-white rounded-full hover:bg-green-700 dark:hover:bg-green-600 disabled:opacity-50"
                     aria-label={`Add ${product.name} to cart`}
                   >
@@ -417,7 +531,10 @@ export default function WishlistPage() {
                   </button>
                   <button
                     onClick={() => handleRemoveFromWishlist(product)}
-                    disabled={actionLoading[getProductId(product)] || status === "loading"}
+                    disabled={
+                      actionLoading[getProductId(product)] ||
+                      status === "loading"
+                    }
                     className="p-2 bg-red-600 dark:bg-red-500 text-white rounded-full hover:bg-red-700 dark:hover:bg-red-600 disabled:opacity-50"
                     aria-label={`Remove ${product.name} from wishlist`}
                   >
@@ -438,7 +555,9 @@ export default function WishlistPage() {
               >
                 1
               </button>
-              {currentPage > 2 && <span className="text-gray-600 dark:text-gray-400">...</span>}
+              {currentPage > 2 && (
+                <span className="text-gray-600 dark:text-gray-400">...</span>
+              )}
               <button
                 onClick={() => handlePageChange(currentPage)}
                 className="px-4 py-2 bg-green-600 dark:bg-green-500 text-white rounded-lg"
@@ -446,7 +565,9 @@ export default function WishlistPage() {
               >
                 {currentPage}
               </button>
-              {currentPage < totalPages - 1 && <span className="text-gray-600 dark:text-gray-400">...</span>}
+              {currentPage < totalPages - 1 && (
+                <span className="text-gray-600 dark:text-gray-400">...</span>
+              )}
               <button
                 onClick={() => handlePageChange(totalPages)}
                 disabled={currentPage === totalPages}
@@ -478,7 +599,9 @@ export default function WishlistPage() {
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                  <h3 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">Filters</h3>
+                  <h3 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">
+                    Filters
+                  </h3>
                   <button
                     onClick={() => setShowFilters(false)}
                     className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
@@ -489,7 +612,9 @@ export default function WishlistPage() {
                 </div>
                 <div className="p-6 space-y-6">
                   <div>
-                    <h4 className="font-medium mb-3 text-gray-700 dark:text-gray-300">Categories</h4>
+                    <h4 className="font-medium mb-3 text-gray-700 dark:text-gray-300">
+                      Categories
+                    </h4>
                     <div>
                       {["all", ...categories].map((cat) => (
                         <button
@@ -503,7 +628,9 @@ export default function WishlistPage() {
                               ? "bg-green-100 dark:bg-green-900"
                               : "hover:bg-gray-100 dark:hover:bg-gray-700"
                           }`}
-                          aria-label={`Filter by ${cat === "all" ? "All Categories" : cat}`}
+                          aria-label={`Filter by ${
+                            cat === "all" ? "All Categories" : cat
+                          }`}
                         >
                           {cat === "all" ? "All" : cat}
                         </button>
@@ -511,7 +638,9 @@ export default function WishlistPage() {
                     </div>
                   </div>
                   <div>
-                    <h4 className="font-medium mb-3 text-gray-700 dark:text-gray-300">View Mode</h4>
+                    <h4 className="font-medium mb-3 text-gray-700 dark:text-gray-300">
+                      View Mode
+                    </h4>
                     <div className="flex gap-2">
                       <button
                         onClick={() => {

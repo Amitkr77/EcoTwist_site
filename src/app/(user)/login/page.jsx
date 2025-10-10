@@ -23,8 +23,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import toast from "react-hot-toast";
-import { mergeGuestCart, fetchCart } from "@/store/slices/cartSlice";
-import { jwtDecode } from "jwt-decode";
+import { mergeGuestCart } from "@/store/slices/cartSlice";
+import { useSearchParams } from "next/navigation";
 
 // Constants for API endpoints
 const API_ENDPOINTS = {
@@ -49,6 +49,8 @@ export default function LoginPage() {
   const [resetEmail, setResetEmail] = useState("");
   const [resetMessage, setResetMessage] = useState("");
   const [resetLoading, setResetLoading] = useState(false);
+  const searchParams = useSearchParams();
+  const returnUrl = searchParams.get("returnUrl") || "/";
 
   // Validate single field
   const validateField = (name, value) => {
@@ -70,7 +72,6 @@ export default function LoginPage() {
 
     setErrors(newErrors);
   };
-
 
   // Validate form inputs
   const validateForm = useCallback(
@@ -95,89 +96,91 @@ export default function LoginPage() {
     [formData]
   );
 
+  const handleChange = (e) => {
+    const { name, value } = e.target;
 
- const handleChange = (e) => {
-   const { name, value } = e.target;
-
-   setFormData((prev) => ({ ...prev, [name]: value }));
-   setErrors((prev) => ({ ...prev, general: "", [name]: "" }));
-   validateField(name, value);
- };
-
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, general: "", [name]: "" }));
+    validateField(name, value);
+  };
 
   // Enhanced handleSubmit with cart merge
- const handleSubmit = async (e) => {
-   e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-   const trimmedData = {
-     email: formData.email.trim(),
-     password: formData.password.trim(),
-   };
+    const trimmedData = {
+      email: formData.email.trim(),
+      password: formData.password.trim(),
+    };
 
-   // Validate with trimmed data
-   const isValid = validateForm(trimmedData);
-   if (!isValid) return;
+    // Validate with trimmed data
+    const isValid = validateForm(trimmedData);
+    if (!isValid) return;
 
-   setIsLoading(true);
-   setErrors((prev) => ({ ...prev, general: "" }));
+    setIsLoading(true);
+    setErrors((prev) => ({ ...prev, general: "" }));
 
-   try {
-     const res = await fetch(API_ENDPOINTS.LOGIN, {
-       method: "POST",
-       headers: { "Content-Type": "application/json" },
-       body: JSON.stringify(trimmedData),
-       credentials: "include",
-     });
+    try {
+      const res = await fetch(API_ENDPOINTS.LOGIN, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(trimmedData),
+        credentials: "include",
+      });
 
-     const data = await res.json();
+      const data = await res.json();
 
-     if (res.ok) {
-       localStorage.setItem("user-token", data.token);
+      if (res.ok) {
+        localStorage.setItem("user-token", data.token);
 
-       const guestCart = localStorage.getItem("guest-cart");
-       if (guestCart) {
-         try {
-           await dispatch(mergeGuestCart()).unwrap();
-           const mergedCart = localStorage.getItem("guest-cart");
-           if (
-             !mergedCart ||
-             mergedCart === '{"cart":{"items":[]},"timestamp":0}'
-           ) {
-             toast.success("Your cart has been transferred!", {
-               duration: 3000,
-             });
-           }
-         } catch (mergeError) {
-           console.error("Failed to merge guest cart:", mergeError);
-           toast.error(
-             "Login successful, but some cart items couldn't be transferred.",
-             { duration: 5000 }
-           );
-         }
-       } else {
-         toast.success("Welcome back! Logging you in...", { duration: 2000 });
-       }
+        const guestCart = localStorage.getItem("guest-cart");
+        if (guestCart) {
+          try {
+            await dispatch(mergeGuestCart()).unwrap();
+            const mergedCart = localStorage.getItem("guest-cart");
+            if (
+              !mergedCart ||
+              mergedCart === '{"cart":{"items":[]},"timestamp":0}'
+            ) {
+              toast.success("Your cart has been transferred!", {
+                duration: 3000,
+              });
+            }
+          } catch (mergeError) {
+            console.error("Failed to merge guest cart:", mergeError);
+            toast.error(
+              "Login successful, but some cart items couldn't be transferred.",
+              { duration: 5000 }
+            );
+          }
+        } else {
+          toast.success("Welcome back! Logging you in...", { duration: 2000 });
+        }
 
-       setTimeout(() => {
-         window.location.href = "/";
-       }, 1500);
-     } else {
-       setErrors((prev) => ({
-         ...prev,
-         general: data.error || "Login failed. Please check your credentials.",
-       }));
-     }
-   } catch (err) {
-     console.error("Login error:", err);
-     setErrors((prev) => ({
-       ...prev,
-       general: "Network error. Please check your connection and try again.",
-     }));
-   } finally {
-     setIsLoading(false);
-   }
- };
-
+        setTimeout(() => {
+          // Validate returnUrl to prevent open redirect attacks
+          let target = decodeURIComponent(returnUrl);
+          if (!target.startsWith("/")) {
+            target = "/"; 
+          }
+          window.location.href = target; 
+        }, 1000);
+      } else {
+        setErrors((prev) => ({
+          ...prev,
+          general: data.error || "Login failed. Please check your credentials.",
+        }));
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      setErrors((prev) => ({
+        ...prev,
+        general: "Network error. Please check your connection and try again.",
+      }));
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleForgotPassword = async (e) => {
     e.preventDefault();

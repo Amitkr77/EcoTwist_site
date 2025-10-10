@@ -185,7 +185,6 @@ export default function ProductsPage() {
       const savedViewed = localStorage.getItem("recentlyViewed");
       if (savedViewed) {
         const parsed = JSON.parse(savedViewed);
-        setRecentlyViewed(Array.isArray(parsed) ? parsed : []);
       }
     } catch (error) {
       console.error("Error loading recentlyViewed:", error);
