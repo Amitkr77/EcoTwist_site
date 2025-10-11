@@ -786,7 +786,7 @@ export default function ProductsPage() {
 
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Filter Progress Bar */}
-        <AnimatePresence>
+        {/* <AnimatePresence>
           {isFiltering && (
             <motion.div
               initial={{ opacity: 0 }}
@@ -808,7 +808,7 @@ export default function ProductsPage() {
               </div>
             </motion.div>
           )}
-        </AnimatePresence>
+        </AnimatePresence> */}
 
         {/* Active Filter Chips */}
         <AnimatePresence>

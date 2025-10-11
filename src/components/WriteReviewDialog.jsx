@@ -49,20 +49,34 @@ const WriteReviewForm = ({ productId, userId }) => {
       setIsSubmitting(true);
       const token = localStorage.getItem("user-token");
 
-      // Upload photos to Cloudinary
-      const uploadedUrls = [];
-      for (const file of photos) {
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("upload_preset", "your_unsigned_preset");
+      const handleImageUpload = async (photos) => {
+        try {
+          const uploadedUrls = [];
 
-        const uploadRes = await fetch(
-          "https://api.cloudinary.com/v1_1/<CLOUD_NAME>/image/upload",
-          { method: "POST", body: formData }
-        );
-        const uploadData = await uploadRes.json();
-        uploadedUrls.push(uploadData.secure_url);
-      }
+          for (const file of photos) {
+            const formData = new FormData();
+            formData.append("file", file);
+
+            const res = await fetch("/api/review/uploadImage", {
+              method: "POST",
+              body: formData,
+            });
+
+            if (!res.ok) {
+              throw new Error("Upload failed");
+            }
+
+            const data = await res.json();
+            uploadedUrls.push(data.url); 
+          }
+          return uploadedUrls;
+        } catch (error) {
+          console.error("Image upload error:", error);
+          return [];
+        }
+      };
+
+      const uploadedUrls = await handleImageUpload(photos);
 
       // Submit review
       const response = await fetch("/api/review", {
@@ -83,7 +97,8 @@ const WriteReviewForm = ({ productId, userId }) => {
       });
 
       const data = await response.json();
-      if (!response.ok) throw new Error(data.message || "Failed to submit review");
+      if (!response.ok)
+        throw new Error(data.message || "Failed to submit review");
 
       // Reset form
       setReview("");
@@ -180,10 +195,7 @@ const WriteReviewForm = ({ productId, userId }) => {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex justify-end gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setShowLoginPopup(false)}
-            >
+            <Button variant="outline" onClick={() => setShowLoginPopup(false)}>
               Cancel
             </Button>
             <Button
