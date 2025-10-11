@@ -259,7 +259,6 @@ export default function ProfilePage() {
   const wishlistItems = wishlist || [];
   const isLoading = status === "loading";
 
-  console.log("WishlistItems", wishlistItems);
   return (
     <div className="min-h-screen bg-green-700 flex items-center justify-center p-0 sm:p-4">
       <style jsx>{hideScrollbarStyles}</style>

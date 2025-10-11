@@ -29,7 +29,7 @@ const getAuthToken = () => {
     if (decoded.exp && decoded.exp < currentTime) {
       // Remove token from both localStorage and cookies if expired
       localStorage.removeItem("user-token");
-      document.cookie = "user-token=; Max-Age=0"; // Remove from cookies
+      document.cookie = "user-token=; Max-Age=0";
       throw new Error("Token has expired");
     }
 
@@ -159,17 +159,37 @@ export const setDefaultAddress = createAsyncThunk(
 
 export const addToWishlist = createAsyncThunk(
   "user/addToWishlist",
-  async (productId, { rejectWithValue }) => {
+  async (productId, { rejectWithValue, dispatch, getState }) => {
     if (!productId) return rejectWithValue("Invalid productId");
     try {
       const { token } = getAuthToken();
+      // Optimistic update
+      const currentWishlist = getState().user.wishlist || [];
+      dispatch(updateWishlist([...currentWishlist, { productId, variantSku: "" }]));
+
+      // Make API call to add to wishlist
       const response = await axios.post(
         `/api/wishlist`,
         { productId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      return response.data.wishlist.items;
+
+      // Log the response for debugging
+      console.log("Add to wishlist response:", response.data);
+
+      // Fetch updated wishlist to confirm
+      const updatedWishlist = await dispatch(fetchWishlist()).unwrap();
+      return updatedWishlist;
     } catch (error) {
+      // Log detailed error for debugging
+      console.error("Add to wishlist error:", {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+      });
+
+      // Revert optimistic update on failure
+      dispatch(fetchWishlist());
       return rejectWithValue(handleApiError(error, "Failed to add to wishlist"));
     }
   }
@@ -183,17 +203,26 @@ export const fetchWishlist = createAsyncThunk(
       const response = await axios.get(`/api/wishlist`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const items = response.data.wishlist.items.map(item => ({
+
+      // Log the response for debugging
+      console.log("Fetch wishlist response:", response.data);
+
+      // Access the nested structure
+      const items = response.data.data.wishlist.items.map(item => ({
         ...item,
         productId: typeof item.productId === 'string'
           ? { _id: item.productId, slug: item.slug || '' }
           : { _id: item.productId._id, slug: item.productId.slug || '' },
         variantSku: item.variantSku || item.productId?.variants?.[0]?.sku || '',
       }));
-      console.log("fetchWishlist response items:", items); // Debug log
+
       return items;
     } catch (error) {
-      console.error("API error:", error.response?.data); // Debug log
+      console.error("Fetch wishlist error:", {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+      });
       return rejectWithValue(handleApiError(error, "Failed to fetch wishlist"));
     }
   }

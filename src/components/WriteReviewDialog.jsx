@@ -1,76 +1,70 @@
 "use client";
 import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+
+// optional: using shadcn/ui Dialog
 import {
   Dialog,
-  DialogTrigger,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input"; 
 
-const WriteReviewDialog = ({ productId, userId }) => {
-  const [open, setOpen] = useState(false);
+const WriteReviewForm = ({ productId, userId }) => {
   const [review, setReview] = useState("");
   const [title, setTitle] = useState("");
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
+  const [photos, setPhotos] = useState([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showLoginPopup, setShowLoginPopup] = useState(false); // 👈 New state
 
   useEffect(() => {
     const token = localStorage.getItem("user-token");
     setIsAuthenticated(!!token);
   }, []);
 
-  const handleTriggerClick = () => {
-    const token = localStorage.getItem("user-token");
-    if (!token) {
-      alert("Please log in to write a review.");
-      return;
-    }
-    setOpen(true);
-  };
-
-  // Inside WriteReviewDialog.jsx
-
-  const [photos, setPhotos] = useState([]);
-
   const handlePhotoChange = (e) => {
-    setPhotos([...e.target.files]); // Store selected files
+    setPhotos([...e.target.files]);
   };
 
   const handleSubmit = async () => {
+    //  If not logged in, show login popup instead of static message
+    if (!isAuthenticated) {
+      setShowLoginPopup(true);
+      return;
+    }
+
     if (!review.trim() || !title.trim() || rating === 0) {
-      alert("Please fill in all fields, including title and rating.");
+      console.log("Please fill in all fields, including title and rating.");
       return;
     }
 
     try {
-      const token = localStorage.getItem("token");
+      setIsSubmitting(true);
+      const token = localStorage.getItem("user-token");
 
-      // ---- 1. Upload photos first (example with Cloudinary) ----
+      // Upload photos to Cloudinary
       const uploadedUrls = [];
       for (const file of photos) {
         const formData = new FormData();
         formData.append("file", file);
-        formData.append("upload_preset", "your_unsigned_preset"); 
+        formData.append("upload_preset", "your_unsigned_preset");
 
         const uploadRes = await fetch(
           "https://api.cloudinary.com/v1_1/<CLOUD_NAME>/image/upload",
-          {
-            method: "POST",
-            body: formData,
-          }
+          { method: "POST", body: formData }
         );
         const uploadData = await uploadRes.json();
-        console.log("Cloudinary Upload:", uploadData); 
         uploadedUrls.push(uploadData.secure_url);
       }
 
-      // ---- 2. Submit review with photo URLs ----
+      // Submit review
       const response = await fetch("/api/review", {
         method: "POST",
         headers: {
@@ -89,25 +83,22 @@ const WriteReviewDialog = ({ productId, userId }) => {
       });
 
       const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "Failed to submit review");
 
-      if (!response.ok) {
-        throw new Error(data.message || "Failed to submit review");
-      }
-
-      alert("Review submitted successfully!");
+      // Reset form
       setReview("");
       setTitle("");
       setRating(0);
       setPhotos([]);
-      setOpen(false);
     } catch (err) {
       console.error("Submit error:", err);
-      alert(err.message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const renderStars = () => {
-    return [1, 2, 3, 4, 5].map((star) => (
+  const renderStars = () =>
+    [1, 2, 3, 4, 5].map((star) => (
       <span
         key={star}
         onClick={() => setRating(star)}
@@ -120,27 +111,14 @@ const WriteReviewDialog = ({ productId, userId }) => {
         ★
       </span>
     ));
-  };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button
-          variant="outline"
-          className="mt-4 border-gray-500 text-gray-600"
-          onClick={handleTriggerClick}
-        >
-          Write a Review
-        </Button>
-      </DialogTrigger>
-
-      <DialogContent className="border-gray-300">
-        <DialogHeader>
-          <DialogTitle>Write a Review</DialogTitle>
-          <DialogDescription>
-            Share your experience with this product.
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <div className="border border-gray-300 rounded-lg p-6 mt-6 bg-white dark:bg-gray-800 shadow-sm">
+        <h2 className="text-xl font-semibold mb-2">Write a Review</h2>
+        <p className="text-sm text-gray-500 mb-4">
+          Share your experience with this product.
+        </p>
 
         <div className="space-y-4">
           {/* Title Input */}
@@ -148,7 +126,6 @@ const WriteReviewDialog = ({ productId, userId }) => {
             placeholder="Review title (e.g. 'Amazing product!')"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full border border-gray-300 rounded-md p-2"
           />
 
           {/* Star Rating */}
@@ -163,8 +140,8 @@ const WriteReviewDialog = ({ productId, userId }) => {
             placeholder="Your honest thoughts help others..."
             value={review}
             onChange={(e) => setReview(e.target.value)}
-            className="w-full border border-gray-300 rounded-md p-2"
           />
+
           {/* Photo Upload */}
           <div>
             <label className="font-medium">Upload Photos:</label>
@@ -181,20 +158,45 @@ const WriteReviewDialog = ({ productId, userId }) => {
                hover:file:bg-green-100"
             />
           </div>
-          
-          
 
           {/* Submit Button */}
           <Button
             onClick={handleSubmit}
+            disabled={isSubmitting}
             className="bg-green-600 text-white hover:bg-green-700"
           >
-            Submit Review
+            {isSubmitting ? "Submitting..." : "Submit Review"}
           </Button>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+
+      {/*  Login Popup */}
+      <Dialog open={showLoginPopup} onOpenChange={setShowLoginPopup}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Login Required</DialogTitle>
+            <DialogDescription>
+              You need to log in before submitting a review.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowLoginPopup(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="bg-green-600 text-white hover:bg-green-700"
+              onClick={() => (window.location.href = "/login")} // redirect to login page
+            >
+              Go to Login
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 
-export default WriteReviewDialog;
+export default WriteReviewForm;

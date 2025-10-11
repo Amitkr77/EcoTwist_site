@@ -1,15 +1,6 @@
+// middleware.ts
 import { NextResponse } from "next/server";
-// import jwt from "jsonwebtoken";
-import { jwtVerify } from "jose"; // replaced this with jsonwebtoken.verify because not working on edge runtime
-
-// function verifyToken(token, secret) {
-//   try {
-//     return jwt.verify(token, secret);
-//   } catch (err) {
-//     console.log("token verification failed", err);
-//     return null;
-//   }
-// }
+import { jwtVerify } from "jose";
 
 async function verifyToken(token, secret) {
   try {
@@ -22,7 +13,7 @@ async function verifyToken(token, secret) {
 }
 
 export async function middleware(req) {
-  const { pathname } = req.nextUrl;
+  const { pathname, search } = req.nextUrl;
 
   // Admin token
   const adminToken = req.cookies.get("token")?.value;
@@ -31,7 +22,6 @@ export async function middleware(req) {
   const salesToken = req.cookies.get("manager:sales-token")?.value;
   const financeToken = req.cookies.get("manager:finance-token")?.value;
   const marketingToken = req.cookies.get("manager:marketing-token")?.value;
-
 
   // User token
   const userToken = req.cookies.get("user-token")?.value;
@@ -100,13 +90,28 @@ export async function middleware(req) {
     }
     return NextResponse.next();
   }
+
+  // Protect orders route
+  if (pathname.startsWith("/orders")) {
+    const decoded = await verifyToken(userToken, process.env.JWT_SECRET);
+    if (!decoded || decoded.role !== "user") {
+      const loginUrl = new URL("/login", req.url);
+      // Preserve the full URL (pathname + query params)
+      loginUrl.searchParams.set("returnUrl", encodeURIComponent(pathname + search));
+      loginUrl.searchParams.set("error", "login-first");
+      return NextResponse.redirect(loginUrl);
+    }
+    return NextResponse.next();
+  }
+
+  return NextResponse.next();
 }
 
 export const config = {
   matcher: [
     "/admin/:path((?!auth|register).*)",
-    "/manager/:path((?!login).*)",    
-    // "/manager/(sales|finance|marketing)",
+    "/manager/:path((?!login).*)",
     "/profile/:path*",
-  ],  
+    "/orders/:path*",
+  ],
 };

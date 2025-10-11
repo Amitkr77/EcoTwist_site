@@ -4,11 +4,12 @@ import React, { useEffect, useState, useMemo } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useRouter } from "next/navigation";
 import { fetchUserProfile, removeFromWishlist } from "@/store/slices/userSlice";
-import { addToCart } from "@/store/slices/cartSlice"; // Assumed cartSlice
-import { FunnelIcon, Heart, Trash2, ShoppingCart } from "lucide-react";
+import { addToCart, fetchCart } from "@/store/slices/cartSlice";
+import { FunnelIcon, Heart, Trash2, ShoppingCart, Eye } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import debounce from "lodash/debounce";
+import Link from "next/link";
 
 export default function WishlistPage() {
   const dispatch = useDispatch();
@@ -23,15 +24,16 @@ export default function WishlistPage() {
   } = useSelector((state) => state.products || {});
   const [sortOption, setSortOption] = useState("added");
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [viewMode, setViewMode] = useState("grid");
   const [showFilters, setShowFilters] = useState(false);
-  console.log(wishlist);
+  const [viewMode, setViewMode] = useState("grid");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [actionLoading, setActionLoading] = useState({});
+  const itemsPerPage = 12;
 
   // Fetch user profile and wishlist
   useEffect(() => {
-    const userId = localStorage.getItem("user-id");
-    if (userId && status === "idle") {
-      dispatch(fetchUserProfile(userId));
+    if (status === "idle") {
+      dispatch(fetchUserProfile());
     }
   }, [dispatch, status]);
 
@@ -43,54 +45,40 @@ export default function WishlistPage() {
     }
   }, [status, error]);
 
-  // Extract categories from products
-  const categories = useMemo(() => {
-    if (productStatus !== "succeeded" || !allIds) return [];
-    const cats = new Set();
-    allIds.forEach((id) => {
-      const prod = byId[id];
-      if (prod?.categories) prod.categories.forEach((cat) => cats.add(cat));
-    });
-    return Array.from(cats).sort();
-  }, [productStatus, allIds, byId]);
-
-  // Validate selectedCategory
-  useEffect(() => {
-    if (selectedCategory !== "all" && !categories.includes(selectedCategory)) {
-      setSelectedCategory("all");
-      toast.warning("Invalid category selected. Reset to All.");
-    }
-  }, [selectedCategory, categories]);
-
-  // Normalize product data from wishlist or products store
+  // Normalize product data
   const normalizedWishlist = useMemo(() => {
     if (!wishlist) return [];
     return wishlist.map((item) => {
-      const id = typeof item.productId === "string" ? item.productId : item.productId?._id;
+      const id =
+        typeof item.productId === "string"
+          ? item.productId
+          : item.productId?._id;
       const storedProduct = id ? byId[id] : null;
-      return storedProduct || (typeof item.productId === "object" ? { ...item, ...item.productId } : item);
+      return (
+        storedProduct ||
+        (typeof item.productId === "object"
+          ? { ...item, ...item.productId }
+          : item)
+      );
     });
   }, [wishlist, byId]);
 
   // Filter and sort wishlist items
   const filteredWishlist = useMemo(() => {
     if (productStatus !== "succeeded" && !normalizedWishlist.length) return [];
-
     return normalizedWishlist
       .filter((product) => {
         if (!product) return false;
-        const matchesCategory =
+        return (
           selectedCategory === "all" ||
-          product.categories?.includes(selectedCategory);
-        return matchesCategory;
+          product.categories?.includes(selectedCategory)
+        );
       })
       .sort((a, b) => {
-        const aPrice = a.price || Math.min(
-          ...(a.variants?.map((v) => v.price || 0) || [0])
-        );
-        const bPrice = b.price || Math.min(
-          ...(b.variants?.map((v) => v.price || 0) || [0])
-        );
+        const aPrice =
+          a.price || Math.min(...(a.variants?.map((v) => v.price || 0) || [0]));
+        const bPrice =
+          b.price || Math.min(...(b.variants?.map((v) => v.price || 0) || [0]));
         switch (sortOption) {
           case "price-low-high":
             return aPrice - bPrice;
@@ -102,14 +90,12 @@ export default function WishlistPage() {
             return (b.ratingAverage || 0) - (a.ratingAverage || 0);
           case "added":
           default:
-            return 0; // Maintain original order
+            return 0;
         }
       });
   }, [normalizedWishlist, selectedCategory, sortOption, productStatus]);
 
   // Pagination
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 12;
   const totalPages = Math.ceil(filteredWishlist.length / itemsPerPage);
   const paginatedWishlist = filteredWishlist.slice(
     (currentPage - 1) * itemsPerPage,
@@ -125,32 +111,84 @@ export default function WishlistPage() {
   };
 
   const getProductId = (product) => {
-    return product._id || (product.productId?._id) || product.productId || product.id;
+    return (
+      product._id || product.productId?._id || product.productId || product.id
+    );
   };
 
-  const handleRemoveFromWishlist = (product) => {
-    const userId = localStorage.getItem("user-id");
+  const handleRemoveFromWishlist = async (product) => {
     const productId = getProductId(product);
-    if (userId && productId) {
-      dispatch(removeFromWishlist({ userId, productId }))
-        .unwrap()
-        .then(() => toast.success("Removed from wishlist"))
-        .catch((err) => toast.error(err || "Failed to remove from wishlist"));
+    if (productId) {
+      setActionLoading((prev) => ({ ...prev, [productId]: true }));
+      try {
+        await dispatch(removeFromWishlist(productId)).unwrap();
+        toast.success("Removed from wishlist");
+      } catch (err) {
+        toast.error(err || "Failed to remove from wishlist");
+        console.error("Failed to remove from wishlist:", err);
+      } finally {
+        setActionLoading((prev) => ({ ...prev, [productId]: false }));
+      }
     }
   };
 
-  const handleAddToCart = (product) => {
-    const userId = localStorage.getItem("user-id");
+  const handleAddToCart = async (product) => {
     const productId = getProductId(product);
-    if (userId && productId) {
-      dispatch(addToCart({ userId, productId, quantity: 1 }))
-        .unwrap()
-        .then(() => toast.success("Added to cart"))
-        .catch((err) => toast.error(err || "Failed to add to cart"));
+    const variantSku = product.variants?.[0]?.sku || "";
+
+    if (!productId) {
+      console.error("Invalid product ID:", { product });
+      toast.error("Unable to add to cart: Invalid product ID");
+      return;
+    }
+
+    if (!variantSku) {
+      console.error("No valid variant found for product:", {
+        productId,
+        variants: product.variants,
+      });
+      toast.error("Unable to add to cart: No valid variant available");
+      return;
+    }
+
+    // Verify product exists in store
+    const storedProduct = byId[productId];
+    if (!storedProduct) {
+      console.error("Product not found in store:", { productId });
+      toast.error("Unable to add to cart: Product not found");
+      return;
+    }
+
+    // Verify variant exists
+    const variant = storedProduct.variants?.find((v) => v.sku === variantSku);
+    if (!variant) {
+      console.error("Variant not found in store:", { productId, variantSku });
+      toast.error("Unable to add to cart: Variant not found");
+      return;
+    }
+
+    setActionLoading((prev) => ({ ...prev, [productId]: true }));
+    try {
+      await dispatch(
+        addToCart({
+          productId,
+          variantSku,
+          quantity: 1,
+        })
+      ).unwrap();
+      await dispatch(fetchCart()).unwrap();
+      toast.success("Added to cart");
+    } catch (error) {
+      console.error("Failed to add item to cart:", error);
+      toast.error(
+        error.payload?.message || error.message || "Failed to add item to cart"
+      );
+    } finally {
+      setActionLoading((prev) => ({ ...prev, [productId]: false }));
     }
   };
 
-  // Debounced URL update for filters
+  // Debounced URL update
   const updateURL = useMemo(
     () =>
       debounce(() => {
@@ -159,7 +197,7 @@ export default function WishlistPage() {
         if (sortOption !== "added") query.set("sort", sortOption);
         router.push(`/wishlist?${query.toString()}`, { scroll: false });
       }, 300),
-    [selectedCategory, sortOption, router]
+    [selectedCategory, sortOption]
   );
 
   useEffect(() => {
@@ -167,7 +205,7 @@ export default function WishlistPage() {
     return () => updateURL.cancel();
   }, [selectedCategory, sortOption, updateURL]);
 
-  if (status === "loading") {
+  if (status === "loading" && !wishlist.length) {
     return (
       <main className="pt-20 pb-16 min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
         <motion.div
@@ -195,9 +233,7 @@ export default function WishlistPage() {
             {error || "Unknown error"}
           </p>
           <button
-            onClick={() =>
-              dispatch(fetchUserProfile(localStorage.getItem("user-id")))
-            }
+            onClick={() => dispatch(fetchUserProfile())}
             className="bg-red-600 dark:bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-700 dark:hover:bg-red-600 transition-colors"
             aria-label="Retry loading wishlist"
           >
@@ -238,83 +274,12 @@ export default function WishlistPage() {
             Continue Shopping
           </button>
         </div>
-        <motion.div
-          className="absolute top-20 left-10 w-20 h-20 bg-white/10 rounded-full"
-          animate={{ y: [0, -20, 0], rotate: 360 }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.div
-          className="absolute bottom-20 right-10 w-32 h-32 bg-white/5 rounded-full"
-          animate={{ y: [0, 20, 0], rotate: -360 }}
-          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-        />
       </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Desktop Layout */}
         <div className="hidden lg:block">
           <div className="flex gap-8">
-            {/* Sidebar Filters */}
-            <aside className="w-80 pr-8 sticky top-24 self-start">
-              <motion.div
-                initial={{ x: -20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-6 shadow-lg border border-gray-200/50 dark:border-gray-700/50"
-              >
-                <h3 className="text-xl font-semibold mb-6 text-gray-800 dark:text-gray-100">
-                  Refine Your Wishlist
-                </h3>
-                <div className="mb-6">
-                  <h4 className="font-medium mb-3 text-gray-700 dark:text-gray-300">
-                    Categories
-                  </h4>
-                  <ul className="space-y-2">
-                    {["all", ...categories].map((cat) => (
-                      <li key={cat}>
-                        <button
-                          onClick={() => setSelectedCategory(cat)}
-                          className={`w-full text-left py-2 px-3 rounded-lg transition-colors ${
-                            selectedCategory === cat
-                              ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300 font-medium"
-                              : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                          }`}
-                          aria-label={`Filter by ${
-                            cat === "all" ? "All Categories" : cat
-                          }`}
-                        >
-                          {cat === "all" ? "All Categories" : cat}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setViewMode("grid")}
-                    className={`flex-1 py-2 px-4 rounded-lg transition-colors ${
-                      viewMode === "grid"
-                        ? "bg-green-600 text-white dark:bg-green-500"
-                        : "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
-                    }`}
-                    aria-label="Switch to grid view"
-                  >
-                    Grid
-                  </button>
-                  <button
-                    onClick={() => setViewMode("list")}
-                    className={`flex-1 py-2 px-4 rounded-lg transition-colors ${
-                      viewMode === "list"
-                        ? "bg-green-600 text-white dark:bg-green-500"
-                        : "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
-                    }`}
-                    aria-label="Switch to list view"
-                  >
-                    List
-                  </button>
-                </div>
-              </motion.div>
-            </aside>
-
             {/* Main Content */}
             <div className="flex-1">
               <div className="flex justify-between items-center mb-8">
@@ -372,51 +337,51 @@ export default function WishlistPage() {
                             viewMode === "list" ? "flex gap-4 p-4" : "p-4"
                           }`}
                         >
-                          {viewMode === "grid" ? (
-                            <>
-                              <img
-                                src={product.imageUrl || (product.images?.[0]?.url)}
-                                alt={product.name}
-                                className="w-full h-48 object-cover rounded-md mb-2"
-                              />
-                              <h3 className="font-semibold text-gray-800 dark:text-gray-100">
-                                {product.name}
-                              </h3>
-                              <p className="text-green-600 dark:text-green-400">
-                                ₹{product.price || (product.variants?.[0]?.price) || "N/A"}
-                              </p>
-                            </>
-                          ) : (
-                            <>
-                              <div className="flex-shrink-0">
-                                <img
-                                  src={product.imageUrl || (product.images?.[0]?.url)}
-                                  alt={product.name}
-                                  className="w-32 h-32 object-cover rounded-md"
-                                />
-                              </div>
-                              <div className="flex-grow">
-                                <h3 className="font-semibold text-gray-800 dark:text-gray-100">
-                                  {product.name}
-                                </h3>
-                                <p className="text-green-600 dark:text-green-400">
-                                  ₹{product.price || (product.variants?.[0]?.price) || "N/A"}
-                                </p>
-                              </div>
-                            </>
-                          )}
+                          <Link
+                            href={`/product-info/${
+                              product.slug
+                            }--${getProductId(product)}`}
+                            className="block"
+                          >
+                            <img
+                              src={
+                                product.imageUrl ||
+                                product.images?.[0]?.url ||
+                                "/placeholder.jpg"
+                              }
+                              alt={product.name || "Product image"}
+                              className="w-full h-48 object-cover rounded-md mb-2"
+                            />
+                            <h3 className="font-semibold text-gray-800 dark:text-gray-100">
+                              {product.name || "Unnamed Product"}
+                            </h3>
+                            <p className="text-green-600 dark:text-green-400">
+                              ₹
+                              {product.price ||
+                                product.variants?.[0]?.price ||
+                                "N/A"}
+                            </p>
+                          </Link>
                           <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                             <button
                               onClick={() => handleAddToCart(product)}
-                              className="p-2 bg-green-600 dark:bg-green-500 text-white rounded-full hover:bg-green-700 dark:hover:bg-green-600"
-                              aria-label="Add to cart"
+                              disabled={
+                                actionLoading[getProductId(product)] ||
+                                status === "loading"
+                              }
+                              className="p-2 bg-green-600 dark:bg-green-500 text-white rounded-full hover:bg-green-700 dark:hover:bg-green-600 disabled:opacity-50"
+                              aria-label={`Add ${product.name} to cart`}
                             >
                               <ShoppingCart className="h-4 w-4" />
                             </button>
                             <button
                               onClick={() => handleRemoveFromWishlist(product)}
-                              className="p-2 bg-red-600 dark:bg-red-500 text-white rounded-full hover:bg-red-700 dark:hover:bg-red-600"
-                              aria-label="Remove from wishlist"
+                              disabled={
+                                actionLoading[getProductId(product)] ||
+                                status === "loading"
+                              }
+                              className="p-2 bg-red-600 dark:bg-red-500 text-white rounded-full hover:bg-red-700 dark:hover:bg-red-600 disabled:opacity-50"
+                              aria-label={`Remove ${product.name} from wishlist`}
                             >
                               <Trash2 className="h-4 w-4" />
                             </button>
@@ -530,29 +495,48 @@ export default function WishlistPage() {
                 transition={{ delay: index * 0.05 }}
                 className="group relative overflow-hidden rounded-xl shadow-md bg-white dark:bg-gray-800 transition-all duration-300 p-4"
               >
-                <img
-                  src={product.imageUrl || (product.images?.[0]?.url)}
-                  alt={product.name}
-                  className="w-full h-48 object-cover rounded-md mb-2"
-                />
-                <h3 className="font-semibold text-gray-800 dark:text-gray-100">
-                  {product.name}
-                </h3>
-                <p className="text-green-600 dark:text-green-400">
-                  ₹{product.price || (product.variants?.[0]?.price) || "N/A"}
-                </p>
+                <Link
+                  href={`/product-info/${product.slug}--${getProductId(
+                    product
+                  )}`}
+                  className="block"
+                >
+                  <img
+                    src={
+                      product.imageUrl ||
+                      product.images?.[0]?.url ||
+                      "/placeholder.jpg"
+                    }
+                    alt={product.name || "Product image"}
+                    className="w-full h-48 object-cover rounded-md mb-2"
+                  />
+                  <h3 className="font-semibold text-gray-800 dark:text-gray-100">
+                    {product.name || "Unnamed Product"}
+                  </h3>
+                  <p className="text-green-600 dark:text-green-400">
+                    ₹{product.price || product.variants?.[0]?.price || "N/A"}
+                  </p>
+                </Link>
                 <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button
                     onClick={() => handleAddToCart(product)}
-                    className="p-2 bg-green-600 dark:bg-green-500 text-white rounded-full hover:bg-green-700 dark:hover:bg-green-600"
-                    aria-label="Add to cart"
+                    disabled={
+                      actionLoading[getProductId(product)] ||
+                      status === "loading"
+                    }
+                    className="p-2 bg-green-600 dark:bg-green-500 text-white rounded-full hover:bg-green-700 dark:hover:bg-green-600 disabled:opacity-50"
+                    aria-label={`Add ${product.name} to cart`}
                   >
                     <ShoppingCart className="h-4 w-4" />
                   </button>
                   <button
                     onClick={() => handleRemoveFromWishlist(product)}
-                    className="p-2 bg-red-600 dark:bg-red-500 text-white rounded-full hover:bg-red-700 dark:hover:bg-red-600"
-                    aria-label="Remove from wishlist"
+                    disabled={
+                      actionLoading[getProductId(product)] ||
+                      status === "loading"
+                    }
+                    className="p-2 bg-red-600 dark:bg-red-500 text-white rounded-full hover:bg-red-700 dark:hover:bg-red-600 disabled:opacity-50"
+                    aria-label={`Remove ${product.name} from wishlist`}
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
@@ -653,12 +637,47 @@ export default function WishlistPage() {
                       ))}
                     </div>
                   </div>
+                  <div>
+                    <h4 className="font-medium mb-3 text-gray-700 dark:text-gray-300">
+                      View Mode
+                    </h4>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => {
+                          setViewMode("grid");
+                          setShowFilters(false);
+                        }}
+                        className={`flex-1 py-2 px-4 rounded-lg transition-colors ${
+                          viewMode === "grid"
+                            ? "bg-green-600 text-white dark:bg-green-500"
+                            : "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
+                        }`}
+                        aria-label="Switch to grid view"
+                      >
+                        Grid
+                      </button>
+                      <button
+                        onClick={() => {
+                          setViewMode("list");
+                          setShowFilters(false);
+                        }}
+                        className={`flex-1 py-2 px-4 rounded-lg transition-colors ${
+                          viewMode === "list"
+                            ? "bg-green-600 text-white dark:bg-green-500"
+                            : "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
+                        }`}
+                        aria-label="Switch to list view"
+                      >
+                        List
+                      </button>
+                    </div>
+                  </div>
                 </div>
-
                 <button
                   onClick={() => {
                     setSelectedCategory("all");
                     setSortOption("added");
+                    setViewMode("grid");
                     setShowFilters(false);
                   }}
                   className="w-full bg-green-600 dark:bg-green-500 text-white py-3 rounded-lg hover:bg-green-700 dark:hover:bg-green-600"
@@ -677,26 +696,6 @@ export default function WishlistPage() {
           )}
         </AnimatePresence>
       </div>
-
-      {/* Footer Section */}
-      <section className="bg-gradient-to-r from-green-800 to-emerald-900 dark:from-green-900 dark:to-emerald-950 text-white py-16 mt-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold mb-6">
-            Your Eco-Friendly Wishlist
-          </h2>
-          <p className="text-lg mb-8 max-w-2xl mx-auto leading-relaxed">
-            Save your favorite sustainable products and make a difference with
-            every purchase.
-          </p>
-          <button
-            onClick={() => router.push("/products")}
-            className="bg-white/20 backdrop-blur-sm px-6 py-3 rounded-lg border border-white/30 hover:bg-white/30 text-white transition-all"
-            aria-label="Shop more products"
-          >
-            Explore More Products
-          </button>
-        </div>
-      </section>
     </main>
   );
 }

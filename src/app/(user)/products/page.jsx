@@ -1,18 +1,11 @@
 "use client";
 
-import React, {
-  useEffect,
-  useState,
-  useMemo,
-  useCallback,
-  useRef,
-} from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useRouter, useSearchParams } from "next/navigation";
 import ProductCard from "@/components/ProductCard";
 import { fetchProducts } from "@/store/slices/productSlices";
 import { FiDollarSign, FiStar, FiClock, FiGift } from "react-icons/fi";
-
 import {
   FunnelIcon,
   Search,
@@ -22,8 +15,8 @@ import {
   Star,
   Clock,
   Zap,
+  IndianRupee,
 } from "lucide-react";
-
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import debounce from "lodash/debounce";
@@ -58,14 +51,6 @@ export default function ProductsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [isFiltering, setIsFiltering] = useState(false);
   const [filterProgress, setFilterProgress] = useState(0);
-  const [recentlyViewed, setRecentlyViewed] = useState([]);
-  const [comparedProducts, setComparedProducts] = useState([]);
-  const [showCompare, setShowCompare] = useState(false);
-  const [activeFilterTab, setActiveFilterTab] = useState("category");
-  const [translateX, setTranslateX] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
-
-  const observerRef = useRef(null);
 
   // Active filters for chips
   const activeFilters = useMemo(
@@ -80,7 +65,7 @@ export default function ProductsPage() {
         ? [{ id: "tag", label: "Tag", value: selectedTag }]
         : []),
       ...(sortOption !== "relevance"
-        ? [{ id: "sort", label: "Sort", value: sortOption.replace("-", " ") }]
+        ? [{ id: "sort", label: "Sort", value: sortOption }.replace("-", " ")]
         : []),
       ...(priceRange.min > 0 || priceRange.max < 1000
         ? [
@@ -147,11 +132,9 @@ export default function ProductsPage() {
     const newMaxPrice = parseInt(params.get("maxPrice") || "1000") || 1000;
     const newPage = parseInt(params.get("page") || "1") || 1;
 
-    // Use functional updates to avoid loops
     setSearchTerm((prev) => {
       if (prev !== newSearch) {
         setCurrentPage(1);
-        setHasMore(true);
       }
       return prev !== newSearch ? newSearch : prev;
     });
@@ -159,7 +142,6 @@ export default function ProductsPage() {
     setSelectedCategory((prev) => {
       if (prev !== newCategory) {
         setCurrentPage(1);
-        setHasMore(true);
       }
       return prev !== newCategory ? newCategory : prev;
     });
@@ -167,7 +149,6 @@ export default function ProductsPage() {
     setSelectedTag((prev) => {
       if (prev !== newTag) {
         setCurrentPage(1);
-        setHasMore(true);
       }
       return prev !== newTag ? newTag : prev;
     });
@@ -175,7 +156,6 @@ export default function ProductsPage() {
     setSortOption((prev) => {
       if (prev !== newSort) {
         setCurrentPage(1);
-        setHasMore(true);
       }
       return prev !== newSort ? newSort : prev;
     });
@@ -183,7 +163,6 @@ export default function ProductsPage() {
     setPriceRange((prev) => {
       if (prev.min !== newMinPrice || prev.max !== newMaxPrice) {
         setCurrentPage(1);
-        setHasMore(true);
       }
       return prev.min !== newMinPrice || prev.max !== newMaxPrice
         ? { min: newMinPrice, max: newMaxPrice }
@@ -206,7 +185,6 @@ export default function ProductsPage() {
       const savedViewed = localStorage.getItem("recentlyViewed");
       if (savedViewed) {
         const parsed = JSON.parse(savedViewed);
-        setRecentlyViewed(Array.isArray(parsed) ? parsed : []);
       }
     } catch (error) {
       console.error("Error loading recentlyViewed:", error);
@@ -254,7 +232,6 @@ export default function ProductsPage() {
     (value) => {
       setSearchTerm(value);
       setCurrentPage(1);
-      setHasMore(true);
       if (updateURL) {
         updateURL({
           search: value,
@@ -274,7 +251,6 @@ export default function ProductsPage() {
     (category) => {
       setSelectedCategory(category);
       setCurrentPage(1);
-      setHasMore(true);
       if (updateURL) {
         updateURL({
           search: searchTerm,
@@ -294,7 +270,6 @@ export default function ProductsPage() {
     (tag) => {
       setSelectedTag(tag);
       setCurrentPage(1);
-      setHasMore(true);
       if (updateURL) {
         updateURL({
           search: searchTerm,
@@ -314,7 +289,6 @@ export default function ProductsPage() {
     (sort) => {
       setSortOption(sort);
       setCurrentPage(1);
-      setHasMore(true);
       if (updateURL) {
         updateURL({
           search: searchTerm,
@@ -338,7 +312,6 @@ export default function ProductsPage() {
       };
       setPriceRange(validRange);
       setCurrentPage(1);
-      setHasMore(true);
       if (updateURL) {
         updateURL({
           search: searchTerm,
@@ -353,78 +326,6 @@ export default function ProductsPage() {
     },
     [searchTerm, selectedCategory, selectedTag, sortOption, updateURL]
   );
-
-  // Load more for infinite scroll
-  const loadMore = useCallback(() => {
-    if (isFiltering || !hasMore) return;
-    setCurrentPage((prev) => {
-      const newPage = prev + 1;
-      if (updateURL) {
-        updateURL({
-          search: searchTerm,
-          category: selectedCategory,
-          tag: selectedTag,
-          sort: sortOption,
-          minPrice: priceRange.min,
-          maxPrice: priceRange.max,
-          page: newPage,
-        });
-      }
-      return newPage;
-    });
-  }, [
-    isFiltering,
-    hasMore,
-    searchTerm,
-    selectedCategory,
-    selectedTag,
-    sortOption,
-    priceRange,
-    updateURL,
-  ]);
-
-  // Intersection Observer
-  useEffect(() => {
-    if (!observerRef.current) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasMore && !isFiltering) {
-          loadMore();
-        }
-      },
-      { threshold: 1.0 }
-    );
-
-    observer.observe(observerRef.current);
-    return () => observer.disconnect();
-  }, [loadMore, hasMore, isFiltering]);
-
-  // Recently viewed
-  const addToRecentlyViewed = useCallback((product) => {
-    setRecentlyViewed((prev) => {
-      const updated = [
-        product,
-        ...prev.filter((p) => p._id !== product._id),
-      ].slice(0, 4);
-      localStorage.setItem("recentlyViewed", JSON.stringify(updated));
-      return updated;
-    });
-  }, []);
-
-  // Comparison
-  const toggleCompare = useCallback((productId) => {
-    setComparedProducts((prev) => {
-      let newCompared;
-      if (prev.includes(productId)) {
-        newCompared = prev.filter((id) => id !== productId);
-      } else {
-        newCompared = [...prev, productId].slice(0, 4);
-      }
-      setShowCompare(newCompared.length > 1);
-      return newCompared;
-    });
-  }, []);
 
   // Remove filter chip
   const removeFilter = useCallback(
@@ -486,7 +387,6 @@ export default function ProductsPage() {
 
       if (needsUpdate) {
         setCurrentPage(1);
-        setHasMore(true);
       }
     },
     [
@@ -500,27 +400,6 @@ export default function ProductsPage() {
       handleSortChange,
     ]
   );
-
-  // Voice search
-  const startVoiceSearch = useCallback(() => {
-    if (!("webkitSpeechRecognition" in window)) {
-      toast.error("Voice search not supported in this browser");
-      return;
-    }
-    try {
-      const recognition = new (window.SpeechRecognition ||
-        window.webkitSpeechRecognition)();
-      recognition.lang = "en-US";
-      recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        handleSearchChange(transcript);
-      };
-      recognition.onerror = () => toast.error("Voice search failed");
-      recognition.start();
-    } catch (error) {
-      toast.error("Voice search initialization failed");
-    }
-  }, [handleSearchChange]);
 
   // Categories and tags with counts
   const categories = useMemo(() => {
@@ -555,7 +434,7 @@ export default function ProductsPage() {
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [status, allIds, byId]);
 
-  // Filtered products (moved here to ensure it's always calculated)
+  // Filtered products
   const filteredProducts = useMemo(() => {
     if (status !== "succeeded" || !allIds?.length) return [];
 
@@ -627,14 +506,6 @@ export default function ProductsPage() {
     [categories, filteredProducts.length]
   );
 
-  const getTagCount = useCallback(
-    (tag) => {
-      if (tag === "all") return filteredProducts.length;
-      return tags.find((t) => t.name === tag)?.count || 0;
-    },
-    [tags, filteredProducts.length]
-  );
-
   // Validate filters
   useEffect(() => {
     if (
@@ -657,17 +528,13 @@ export default function ProductsPage() {
     handleTagChange,
   ]);
 
-  // Paginated products for infinite scroll
+  // Paginated products
   const itemsPerPage = 12;
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
   const displayedProducts = filteredProducts.slice(
-    0,
+    (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
-
-  useEffect(() => {
-    setHasMore(currentPage < totalPages);
-  }, [currentPage, totalPages]);
 
   // Recommendations
   const recommendations = useMemo(() => {
@@ -709,12 +576,16 @@ export default function ProductsPage() {
 
   // Presets
   const presets = [
-    { label: "Budget Friendly", icon: <FiDollarSign />, filters: { maxPrice: 500 } },
+    {
+      label: "Budget Friendly",
+      icon: <IndianRupee />,
+      filters: { maxPrice: 500 },
+    },
     { label: "Best Sellers", icon: <FiStar />, filters: { sort: "rating" } },
-    { label: "New Arrivals", icon: <FiClock/>, filters: { sort: "newest" } },
+    { label: "New Arrivals", icon: <FiClock />, filters: { sort: "newest" } },
     {
       label: "Eco Gifts",
-      icon: <FiGift/>,
+      icon: <FiGift />,
       filters: { category: "gifts", tags: ["eco-friendly"] },
     },
   ];
@@ -727,7 +598,6 @@ export default function ProductsPage() {
     setSortOption("relevance");
     setPriceRange({ min: 0, max: 1000 });
     setCurrentPage(1);
-    setHasMore(true);
     if (updateURL) {
       updateURL({
         search: "",
@@ -748,7 +618,7 @@ export default function ProductsPage() {
     }
   }, [status, error]);
 
-  // EARLY RETURNS - All hooks are now declared above
+  // EARLY RETURNS
   if (status === "loading") {
     return (
       <main className="pt-20 pb-16 min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
@@ -787,7 +657,7 @@ export default function ProductsPage() {
     );
   }
 
-  // MAIN RENDER - All hooks are safely above early returns
+  // MAIN RENDER
   return (
     <main className="pt-16 bg-gradient-to-br from-green-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900 min-h-screen">
       {/* Hero Section */}
@@ -822,14 +692,7 @@ export default function ProductsPage() {
                 className="w-full pl-12 pr-12 py-3 rounded-lg bg-white/20 backdrop-blur-sm border border-white/30 focus:outline-none focus:ring-2 focus:ring-white/50 text-white placeholder-gray-300"
                 aria-label="Search products"
               />
-              <button
-                onClick={startVoiceSearch}
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-300 hover:text-white p-1"
-                aria-label="Voice search"
-                title="Voice search"
-              >
-                <Mic className="h-4 w-4" />
-              </button>
+
               {searchTerm && (
                 <button
                   onClick={() => handleSearchChange("")}
@@ -985,71 +848,25 @@ export default function ProductsPage() {
                 </section>
 
                 {/* Categories */}
+
                 <section>
                   <h4 className="font-medium mb-3 text-gray-700 dark:text-gray-300">
                     Categories ({getCategoryCount(selectedCategory)})
                   </h4>
-                  <div className="space-y-2 max-h-48 overflow-y-auto overflow-x-hidden">
+                  <select
+                    value={selectedCategory}
+                    onChange={(e) => handleCategoryChange(e.target.value)}
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 text-sm"
+                    aria-label="Select category"
+                  >
                     {["all", ...categories.map((c) => c.name)].map((cat) => (
-                      <motion.button
-                        key={cat}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        whileHover={{ x: 2 }}
-                        onClick={() => handleCategoryChange(cat)}
-                        className={`w-full text-left py-3 px-3 rounded-lg transition-all duration-200 flex justify-between items-center group ${
-                          selectedCategory === cat
-                            ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300 font-medium shadow-md"
-                            : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-800"
-                        }`}
-                      >
-                        <span className="truncate">
-                          {cat === "all" ? "All Categories" : cat}
-                        </span>
-                        <span className="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full text-gray-500 dark:text-gray-400">
-                          {getCategoryCount(cat)}
-                        </span>
-                      </motion.button>
+                      <option key={cat} value={cat}>
+                        {cat === "all" ? "All Categories" : cat} (
+                        {getCategoryCount(cat)})
+                      </option>
                     ))}
-                  </div>
+                  </select>
                 </section>
-
-                {/* Tags */}
-                {/* <section>
-                  <h4 className="font-medium mb-3 text-gray-700 dark:text-gray-300">
-                    Tags ({getTagCount(selectedTag)})
-                  </h4>
-                  <div className="flex flex-wrap gap-2">
-                    {["all", ...tags.slice(0, 8).map((t) => t.name)].map(
-                      (tag) => (
-                        <motion.button
-                          key={tag}
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          whileHover={{ scale: 1.05 }}
-                          onClick={() => handleTagChange(tag)}
-                          className={`px-3 py-2 rounded-full text-sm transition-all duration-200 relative ${
-                            selectedTag === tag
-                              ? "bg-green-200 text-green-800 dark:bg-green-700 dark:text-green-200 ring-2 ring-green-300"
-                              : "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
-                          }`}
-                        >
-                          <span className="truncate max-w-20">
-                            {tag === "all" ? "All Tags" : tag}
-                          </span>
-                          <span className="absolute -top-1 -right-1 bg-white dark:bg-gray-800 text-xs text-gray-500 dark:text-gray-400 rounded-full w-5 h-5 flex items-center justify-center">
-                            {getTagCount(tag)}
-                          </span>
-                        </motion.button>
-                      )
-                    )}
-                    {tags.length > 8 && (
-                      <button className="text-sm text-gray-500 dark:text-gray-400 underline hover:text-gray-700">
-                        +{tags.length - 8} More
-                      </button>
-                    )}
-                  </div>
-                </section> */}
 
                 {/* Price Range */}
                 <section>
@@ -1191,53 +1008,8 @@ export default function ProductsPage() {
                       <option value="newest">Newest</option>
                     </select>
                   </label>
-                  <motion.button
-                    onClick={() => setShowCompare(!showCompare)}
-                    whileHover={{ scale: 1.02 }}
-                    className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                    title="Compare products"
-                  >
-                    <Scale className="h-5 w-5 text-gray-600 dark:text-gray-300" />
-                    {comparedProducts.length > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                        {comparedProducts.length}
-                      </span>
-                    )}
-                  </motion.button>
                 </div>
               </div>
-
-              {/* Dynamic Banner */}
-              <AnimatePresence>
-                {dynamicBanner && (
-                  <motion.section
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    className="mb-8"
-                  >
-                    <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl p-6 flex items-center justify-between overflow-hidden">
-                      <div className="relative z-10">
-                        <h3 className="text-lg font-semibold mb-1">
-                          {dynamicBanner.title}
-                        </h3>
-                        <p className="text-green-100 text-sm">
-                          Limited time offer
-                        </p>
-                      </div>
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={dynamicBanner.onClick}
-                        className="bg-white text-green-600 px-6 py-2 rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200"
-                      >
-                        {dynamicBanner.cta}
-                      </motion.button>
-                      <div className="absolute inset-0 bg-gradient-to-l from-green-500/20 to-transparent"></div>
-                    </div>
-                  </motion.section>
-                )}
-              </AnimatePresence>
 
               {/* Products Grid */}
               <AnimatePresence mode="wait">
@@ -1267,48 +1039,84 @@ export default function ProductsPage() {
                           className={`group relative overflow-hidden rounded-xl shadow-md bg-white dark:bg-gray-800 transition-all duration-300 ${
                             viewMode === "list" ? "flex gap-4 p-4" : ""
                           }`}
-                          onClick={() => addToRecentlyViewed(product)}
                         >
-                          <ProductCard
-                            product={product}
-                            viewMode={viewMode}
-                            isCompared={comparedProducts.includes(product._id)}
-                            onCompareToggle={() => toggleCompare(product._id)}
-                          />
-                          <motion.button
-                            initial={{ opacity: 0, scale: 0 }}
-                            whileHover={{ opacity: 1, scale: 1 }}
-                            className="absolute top-3 left-3 p-2 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-full shadow-lg border border-gray-200 dark:border-gray-700 hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 z-10"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleCompare(product._id);
-                            }}
-                          >
-                            <Scale className="h-5 w-5 text-gray-600 dark:text-gray-300" />
-                          </motion.button>
-
+                          <ProductCard product={product} viewMode={viewMode} />
                         </motion.div>
                       ))}
                     </div>
 
-                    {/* Infinite scroll loader */}
-                    {hasMore && (
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="flex justify-center py-8"
+                    {/* Pagination Controls */}
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="flex justify-center items-center gap-4 mt-8"
+                    >
+                      <motion.button
+                        onClick={() => {
+                          if (currentPage > 1) {
+                            const newPage = currentPage - 1;
+                            setCurrentPage(newPage);
+                            updateURL({
+                              search: searchTerm,
+                              category: selectedCategory,
+                              tag: selectedTag,
+                              sort: sortOption,
+                              minPrice: priceRange.min,
+                              maxPrice: priceRange.max,
+                              page: newPage,
+                            });
+                          }
+                        }}
+                        disabled={currentPage === 1}
+                        whileHover={{ scale: currentPage === 1 ? 1 : 1.05 }}
+                        whileTap={{ scale: currentPage === 1 ? 1 : 0.95 }}
+                        className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                          currentPage === 1
+                            ? "bg-gray-200 text-gray-400 dark:bg-gray-700 dark:text-gray-500 cursor-not-allowed"
+                            : "bg-green-600 text-white hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
+                        }`}
+                        aria-label="Go to previous page"
                       >
-                        <div
-                          ref={observerRef}
-                          className="flex flex-col items-center"
-                        >
-                          <div className="animate-spin h-6 w-6 border-b-2 border-green-600 rounded-full mb-2"></div>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">
-                            Loading more products...
-                          </p>
-                        </div>
-                      </motion.div>
-                    )}
+                        Previous
+                      </motion.button>
+
+                      <span className="text-sm text-gray-600 dark:text-gray-300">
+                        Page {currentPage} of {totalPages}
+                      </span>
+
+                      <motion.button
+                        onClick={() => {
+                          if (currentPage < totalPages) {
+                            const newPage = currentPage + 1;
+                            setCurrentPage(newPage);
+                            updateURL({
+                              search: searchTerm,
+                              category: selectedCategory,
+                              tag: selectedTag,
+                              sort: sortOption,
+                              minPrice: priceRange.min,
+                              maxPrice: priceRange.max,
+                              page: newPage,
+                            });
+                          }
+                        }}
+                        disabled={currentPage >= totalPages}
+                        whileHover={{
+                          scale: currentPage >= totalPages ? 1 : 1.05,
+                        }}
+                        whileTap={{
+                          scale: currentPage >= totalPages ? 1 : 0.95,
+                        }}
+                        className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                          currentPage >= totalPages
+                            ? "bg-gray-200 text-gray-400 dark:bg-gray-700 dark:text-gray-500 cursor-not-allowed"
+                            : "bg-green-600 text-white hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
+                        }`}
+                        aria-label="Go to next page"
+                      >
+                        Next
+                      </motion.button>
+                    </motion.div>
                   </motion.section>
                 ) : (
                   <motion.section
@@ -1383,35 +1191,6 @@ export default function ProductsPage() {
                   </motion.section>
                 )}
               </AnimatePresence>
-
-              {/* Recently Viewed Section */}
-              <AnimatePresence>
-                {recentlyViewed.length > 0 && (
-                  <motion.section
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700"
-                  >
-                    <h3 className="text-lg font-medium mb-6 flex items-center gap-2 text-gray-800 dark:text-gray-100">
-                      <Clock className="h-4 w-4 text-gray-500" />
-                      Recently viewed
-                    </h3>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                      {recentlyViewed.map((product, idx) => (
-                        <motion.div
-                          key={product._id}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: idx * 0.05 }}
-                          whileHover={{ y: -2 }}
-                        >
-                          <ProductCard product={product} size="sm" />
-                        </motion.div>
-                      ))}
-                    </div>
-                  </motion.section>
-                )}
-              </AnimatePresence>
             </div>
           </div>
         </div>
@@ -1420,14 +1199,10 @@ export default function ProductsPage() {
         <div className="lg:hidden">
           {/* Mobile Header */}
           <div className="flex gap-2 items-center justify-between mb-6 p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 sm:hidden">
-            {/* Left: Product Count */}
             <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">
               Showing {displayedProducts.length} products
             </div>
-
-            {/* Right: Filter Tabs and Sort Controls */}
             <div className="flex items-center gap-2">
-              {/* Sort and Filter Controls */}
               <div className="flex items-center gap-4">
                 <select
                   value={sortOption}
@@ -1464,14 +1239,8 @@ export default function ProductsPage() {
                   transition={{ delay: index * 0.03, duration: 0.3 }}
                   whileHover={{ scale: 1.02 }}
                   className="group relative"
-                  onClick={() => addToRecentlyViewed(product)}
                 >
-                  <ProductCard
-                    product={product}
-                    viewMode="grid"
-                    isCompared={comparedProducts.includes(product._id)}
-                    onCompareToggle={() => toggleCompare(product._id)}
-                  />
+                  <ProductCard product={product} viewMode="grid" />
                 </motion.div>
               ))
             ) : (
@@ -1491,124 +1260,75 @@ export default function ProductsPage() {
             )}
           </div>
 
-          {/* Mobile infinite scroll loader */}
-          {hasMore && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="flex justify-center py-8"
-            >
-              <div ref={observerRef} className="flex flex-col items-center">
-                <div className="animate-spin h-5 w-5 border-b-2 border-green-600 rounded-full mb-2"></div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Loading more...
-                </p>
-              </div>
-            </motion.div>
-          )}
-
-          {/* Mobile Recently Viewed */}
-          <AnimatePresence>
-            {recentlyViewed.length > 0 && (
-              <motion.section
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700"
-              >
-                <h3 className="text-lg font-medium mb-4 flex items-center gap-2 text-gray-800 dark:text-gray-100">
-                  <Clock className="h-4 w-4 text-gray-500" />
-                  Recently viewed
-                </h3>
-                <div className="grid grid-cols-2 gap-3">
-                  {recentlyViewed.slice(0, 4).map((product, idx) => (
-                    <motion.div
-                      key={product._id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: idx * 0.05 }}
-                    >
-                      <ProductCard product={product} size="sm" />
-                    </motion.div>
-                  ))}
-                </div>
-              </motion.section>
-            )}
-          </AnimatePresence>
-        </div>
-
-        {/* Comparison Drawer */}
-        <AnimatePresence>
-          {showCompare && comparedProducts.length > 1 && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
+          {/* Mobile Pagination Controls */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex justify-center items-center gap-4 mt-8"
+          >
+            <motion.button
               onClick={() => {
-                setShowCompare(false);
-                setComparedProducts([]);
+                if (currentPage > 1) {
+                  const newPage = currentPage - 1;
+                  setCurrentPage(newPage);
+                  updateURL({
+                    search: searchTerm,
+                    category: selectedCategory,
+                    tag: selectedTag,
+                    sort: sortOption,
+                    minPrice: priceRange.min,
+                    maxPrice: priceRange.max,
+                    page: newPage,
+                  });
+                }
               }}
+              disabled={currentPage === 1}
+              whileHover={{ scale: currentPage === 1 ? 1 : 1.05 }}
+              whileTap={{ scale: currentPage === 1 ? 1 : 0.95 }}
+              className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                currentPage === 1
+                  ? "bg-gray-200 text-gray-400 dark:bg-gray-700 dark:text-gray-500 cursor-not-allowed"
+                  : "bg-green-600 text-white hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
+              }`}
+              aria-label="Go to previous page"
             >
-              <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.9, opacity: 0 }}
-                transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-6xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="flex justify-between items-center mb-6 sticky top-0 bg-white dark:bg-gray-800 z-10 pb-4 border-b border-gray-200 dark:border-gray-700">
-                  <h3 className="text-2xl font-semibold text-gray-800 dark:text-gray-100">
-                    Compare Products ({comparedProducts.length})
-                  </h3>
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => {
-                      setShowCompare(false);
-                      setComparedProducts([]);
-                    }}
-                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                  >
-                    <X className="h-6 w-6" />
-                  </motion.button>
-                </div>
+              Previous
+            </motion.button>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {comparedProducts.map((id) => {
-                    const product = byId[id];
-                    return product ? (
-                      <motion.div
-                        key={id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        whileHover={{ y: -2 }}
-                        className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-900/50"
-                      >
-                        <ProductCard
-                          product={product}
-                          viewMode="list"
-                          size="md"
-                        />
-                      </motion.div>
-                    ) : null;
-                  })}
-                </div>
+            <span className="text-sm text-gray-600 dark:text-gray-300">
+              Page {currentPage} of {totalPages}
+            </span>
 
-                {comparedProducts.length === 0 && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="text-center py-12 text-gray-500 dark:text-gray-400"
-                  >
-                    <Scale className="h-12 w-12 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
-                    <p>Select products to compare</p>
-                  </motion.div>
-                )}
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            <motion.button
+              onClick={() => {
+                if (currentPage < totalPages) {
+                  const newPage = currentPage + 1;
+                  setCurrentPage(newPage);
+                  updateURL({
+                    search: searchTerm,
+                    category: selectedCategory,
+                    tag: selectedTag,
+                    sort: sortOption,
+                    minPrice: priceRange.min,
+                    maxPrice: priceRange.max,
+                    page: newPage,
+                  });
+                }
+              }}
+              disabled={currentPage >= totalPages}
+              whileHover={{ scale: currentPage >= totalPages ? 1 : 1.05 }}
+              whileTap={{ scale: currentPage >= totalPages ? 1 : 0.95 }}
+              className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                currentPage >= totalPages
+                  ? "bg-gray-200 text-gray-400 dark:bg-gray-700 dark:text-gray-500 cursor-not-allowed"
+                  : "bg-green-600 text-white hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
+              }`}
+              aria-label="Go to next page"
+            >
+              Next
+            </motion.button>
+          </motion.div>
+        </div>
 
         {/* Mobile Filter Modal */}
         <AnimatePresence>
@@ -1695,76 +1415,28 @@ export default function ProductsPage() {
                     <h4 className="font-medium mb-2 text-gray-700 dark:text-gray-300">
                       Categories
                     </h4>
-                    <div className="space-y-1 max-h-40 overflow-y-auto">
+                    <select
+                      value={selectedCategory}
+                      onChange={(e) => handleCategoryChange(e.target.value)}
+                      className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-green-500"
+                      aria-label="Select category"
+                    >
                       {[
                         "all",
                         ...categories.slice(0, 6).map((c) => c.name),
-                      ].map((cat, idx) => (
-                        <motion.button
-                          key={cat}
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: idx * 0.02 }}
-                          onClick={() => handleCategoryChange(cat)}
-                          className={`block w-full text-left py-2 px-3 rounded-md text-sm transition-all duration-200 ${
-                            selectedCategory === cat
-                              ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300 font-medium"
-                              : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                          }`}
-                          aria-pressed={selectedCategory === cat}
-                        >
-                          <div className="flex justify-between items-center">
-                            <span>
-                              {cat === "all" ? "All Categories" : cat}
-                            </span>
-                            <span className="text-xs text-gray-400">
-                              {getCategoryCount(cat)}
-                            </span>
-                          </div>
-                        </motion.button>
+                      ].map((cat) => (
+                        <option key={cat} value={cat}>
+                          {cat === "all" ? "All Categories" : cat} (
+                          {getCategoryCount(cat)})
+                        </option>
                       ))}
-                      {categories.length > 6 && (
-                        <p className="text-xs text-gray-500 dark:text-gray-400 text-center py-2">
-                          +{categories.length - 6} more
-                        </p>
-                      )}
-                    </div>
+                    </select>
+                    {categories.length > 6 && (
+                      <p className="text-xs text-gray-500 dark:text-gray-400 text-center py-2">
+                        +{categories.length - 6} more
+                      </p>
+                    )}
                   </section>
-
-                  {/* Tags */}
-                  {/* <section>
-                    <h4 className="font-medium mb-2 text-gray-700 dark:text-gray-300">
-                      Tags
-                    </h4>
-                    <div className="flex flex-wrap gap-2">
-                      {["all", ...tags.slice(0, 6).map((t) => t.name)].map(
-                        (tag, idx) => (
-                          <motion.button
-                            key={tag}
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: idx * 0.02 }}
-                            onClick={() => handleTagChange(tag)}
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            className={`px-2 py-1 rounded-full text-xs transition-all duration-200 ${
-                              selectedTag === tag
-                                ? "bg-green-200 text-green-800 dark:bg-green-700 dark:text-green-200"
-                                : "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
-                            }`}
-                            aria-pressed={selectedTag === tag}
-                          >
-                            <span className="truncate max-w-20">
-                              {tag === "all" ? "All Tags" : tag}
-                            </span>
-                            <span className="ml-1 text-xs text-gray-400">
-                              ({getTagCount(tag)})
-                            </span>
-                          </motion.button>
-                        )
-                      )}
-                    </div>
-                  </section> */}
 
                   {/* Price Range */}
                   <section>
