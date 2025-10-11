@@ -12,10 +12,14 @@ const getAuthToken = () => {
 // Helper function to parse error response
 const parseErrorResponse = async (response) => {
   try {
-    const errorData = await response.json();
-    return errorData.message || `HTTP error ${response.status}`;
+    const contentType = response.headers.get("content-type");
+    if (contentType && contentType.includes("application/json")) {
+      const errorData = await response.json();
+      return errorData.message || `HTTP error ${response.status}`;
+    }
+    return `HTTP error ${response.status}: ${response.statusText}`;
   } catch {
-    return `HTTP error ${response.status}`;
+    return `HTTP error ${response.status}: Unable to parse error response`;
   }
 };
 
@@ -35,7 +39,7 @@ const generateInvoice = async (orderId, token) => {
     }
 
     const data = await res.json();
-    
+
     return data.data.invoiceId || null; // Assuming invoiceNumber is the invoiceId
   } catch (error) {
     console.error("Invoice generation failed:", error.message);
@@ -74,45 +78,7 @@ export const downloadInvoice = createAsyncThunk(
   }
 );
 
-// NEW: Auto-download latest invoice (no invoiceId needed - pulls from state)
-// export const downloadLatestInvoice = createAsyncThunk(
-//   'orders/downloadLatestInvoice',
-//   async (_, { getState, rejectWithValue }) => {
-//     const state = getState();
-//     const orders = state.orders.list; // Assuming your store has orders slice
-//     const latestOrder = orders[orders.length - 1];
-    
-//     if (!latestOrder || !latestOrder.invoiceId) {
-//       return rejectWithValue("No recent order with invoice found. Please place an order first.");
-//     }
 
-//     const invoiceId = latestOrder.invoiceId;
-//     const token = getAuthToken();
-//     if (!token) {
-//       return rejectWithValue("No authentication token found");
-//     }
-
-//     try {
-//       const res = await fetch(`/api/orders/invoice/pdf/${invoiceId}`, {
-//         method: "GET",
-//         headers: {
-//           "Authorization": `Bearer ${token}`,
-//         },
-//       });
-
-//       if (!res.ok) {
-//         throw new Error(await parseErrorResponse(res));
-//       }
-
-//       const blob = await res.blob();
-//       const url = window.URL.createObjectURL(blob);
-//       return { url, invoiceId }; // Return URL and ID for component use
-//     } catch (error) {
-//       console.error("Download latest invoice failed:", error.message);
-//       return rejectWithValue(error.message || "Failed to download invoice");
-//     }
-//   }
-// );
 
 export const downloadLatestInvoice = createAsyncThunk(
   'orders/downloadLatestInvoice',
@@ -120,7 +86,7 @@ export const downloadLatestInvoice = createAsyncThunk(
     const state = getState();
     const orders = state.orders.list; // Assuming your store has orders slice
     const latestOrder = orders[orders.length - 1];
-    
+
     if (!latestOrder || !latestOrder.invoiceId) {
       return rejectWithValue("No recent order with invoice found. Please place an order first.");
     }
@@ -131,15 +97,9 @@ export const downloadLatestInvoice = createAsyncThunk(
       return rejectWithValue("No authentication token found");
     }
 
-    // Key Change: Don't fetch the blob - just construct the direct API URL
-    // Browser will handle auth via cookies/same-origin, but if token is session-based, it works
-    // If backend requires explicit token in URL (unlikely), append ?token=${token} - but test!
     const apiUrl = `/api/orders/invoice/pdf/${invoiceId}`;
-    
-    // Optional: Verify the URL is accessible (head request) - but skip for simplicity/speed
-    // If you want to pre-check: fetch(apiUrl, { headers: { Authorization: `Bearer ${token}` }, method: 'HEAD' })
-    
-    return { url: apiUrl, invoiceId }; // Return the direct URL for window.open
+
+    return { url: apiUrl, invoiceId };
   }
 );
 
@@ -203,10 +163,10 @@ export const placeOrder = createAsyncThunk(
         }
 
         const data = await res.json();
-        
+
         const invoiceId = await generateInvoice(data.data._id, token);
         if (invoiceId) {
-          data.invoiceId = invoiceId; // Store invoiceId instead of invoiceUrl
+          data.invoiceId = invoiceId;
           // toast.success("Invoice generated successfully!");
         } else {
           // toast.warn("Invoice generation in progress, check back later.");
