@@ -5,17 +5,15 @@ import { useSelector, useDispatch } from "react-redux";
 import { useRouter, useSearchParams } from "next/navigation";
 import ProductCard from "@/components/ProductCard";
 import { fetchProducts } from "@/store/slices/productSlices";
-import { FiDollarSign, FiStar, FiClock, FiGift } from "react-icons/fi";
+import { FiStar, FiClock, FiGift } from "react-icons/fi";
 import {
   FunnelIcon,
   Search,
   X,
-  Mic,
-  Scale,
-  Star,
-  Clock,
   Zap,
   IndianRupee,
+  ChevronDownIcon,
+  ChevronUpIcon,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -51,6 +49,7 @@ export default function ProductsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [isFiltering, setIsFiltering] = useState(false);
   const [filterProgress, setFilterProgress] = useState(0);
+  const [isOpen, setIsOpen] = useState(false);
 
   // Active filters for chips
   const activeFilters = useMemo(
@@ -65,7 +64,13 @@ export default function ProductsPage() {
         ? [{ id: "tag", label: "Tag", value: selectedTag }]
         : []),
       ...(sortOption !== "relevance"
-        ? [{ id: "sort", label: "Sort", value: sortOption }.replace("-", " ")]
+        ? [
+            {
+              id: "sort",
+              label: "Sort",
+              value: sortOption.replace(/-/g, " "), // Apply replace to sortOption string
+            },
+          ]
         : []),
       ...(priceRange.min > 0 || priceRange.max < 1000
         ? [
@@ -536,15 +541,6 @@ export default function ProductsPage() {
     currentPage * itemsPerPage
   );
 
-  // Recommendations
-  const recommendations = useMemo(() => {
-    if (!selectedCategory || selectedCategory === "all") return [];
-    return filteredProducts
-      .filter((p) => p.categories?.includes(selectedCategory))
-      .sort((a, b) => (b.ratingAverage || 0) - (a.ratingAverage || 0))
-      .slice(0, 4);
-  }, [filteredProducts, selectedCategory]);
-
   // Filter suggestions
   const suggestions = useMemo(() => {
     if (!searchTerm) return [];
@@ -561,18 +557,6 @@ export default function ProductsPage() {
       },
     ].filter((s) => s.text.toLowerCase().includes(searchTerm.toLowerCase()));
   }, [searchTerm, handleCategoryChange, handlePriceChange]);
-
-  // Dynamic content blocks
-  const dynamicBanner = useMemo(() => {
-    if (filteredProducts.length > 10 && selectedCategory === "kitchen") {
-      return {
-        title: "Kitchen Sale: 20% Off Bamboo Products",
-        cta: "Shop Bamboo",
-        onClick: () => handleTagChange("bamboo"),
-      };
-    }
-    return null;
-  }, [filteredProducts.length, selectedCategory, handleTagChange]);
 
   // Presets
   const presets = [
@@ -657,61 +641,117 @@ export default function ProductsPage() {
     );
   }
 
+  const allCategories = ["all", ...categories.map((c) => c.name)];
+
   // MAIN RENDER
   return (
     <main className="pt-16 bg-gradient-to-br from-green-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900 min-h-screen">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-r from-green-600 to-emerald-700 dark:from-green-800 dark:to-emerald-900 text-white py-20">
+      <section className="relative  flex items-center justify-center overflow-hidden bg-gradient-to-br from-green-600 via-emerald-600 to-teal-700 dark:from-green-800 dark:via-emerald-800 dark:to-teal-900 text-white py-16">
+        {/* Subtle Eco Pattern Overlay */}
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%23ffffff%22%20fill-opacity%3D%220.05%22%3E%3Ccircle%20cx%3D%2230%22%20cy%3D%2230%22%20r%3D%222%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E')] opacity-20"></div>
+
+        {/* Dark Overlay for Depth */}
         <div className="absolute inset-0 bg-black/20"></div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+
+        {/* Enhanced Background Animations */}
+        <motion.div
+          className="absolute top-20 left-10 w-24 h-24 bg-white/15 rounded-full backdrop-blur-sm border border-white/20"
+          animate={{
+            y: [0, -30, 0],
+            rotate: [0, 180, 360],
+            scale: [1, 1.1, 1],
+          }}
+          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute bottom-20 right-20 w-36 h-36 bg-white/10 rounded-full backdrop-blur-sm border border-white/30"
+          animate={{
+            y: [0, 30, 0],
+            rotate: [0, -180, -360],
+            scale: [1, 0.9, 1],
+          }}
+          transition={{ duration: 16, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute top-1/2 left-8 w-16 h-16 bg-emerald-200/20 rounded-full backdrop-blur-sm"
+          animate={{ x: [-15, 15, -15], opacity: [0.5, 1, 0.5] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute bottom-1/4 right-12 w-20 h-20 bg-teal-100/15 rounded-full backdrop-blur-sm"
+          animate={{
+            x: [10, -10, 10],
+            y: [0, -15, 0],
+            opacity: [0.4, 0.8, 0.4],
+          }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+        />
+
+        {/* Main Content */}
+        <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 text-center max-w-5xl">
+          {/* Title */}
           <motion.h1
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.6 }}
-            className="text-5xl md:text-6xl font-bold mb-6"
+            transition={{ duration: 0.8 }}
+            className="font-heading text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black leading-tight mb-4 sm:mb-6 tracking-tight"
           >
-            Eco-Friendly Essentials
+            Eco-Friendly{" "}
+            <span className="bg-gradient-to-r from-white/90 to-emerald-100/90 bg-clip-text text-transparent px-2 sm:px-3 py-1 rounded-md shadow-lg">
+              Essentials
+            </span>
           </motion.h1>
+
+          {/* Subtitle */}
           <motion.p
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto"
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="text-base sm:text-lg md:text-xl lg:text-2xl max-w-3xl mx-auto mb-8 sm:mb-12 leading-relaxed text-white/95 font-light"
           >
             Discover sustainable products that blend innovation with the
             planet's well-being.
           </motion.p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center max-w-md mx-auto relative">
-            <div className="relative w-full">
-              <Search className="absolute left-10 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+
+          {/* Enhanced Search Container */}
+          <motion.div
+            initial={{ y: 20, opacity: 0, scale: 0.95 }}
+            animate={{ y: 0, opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="flex flex-col sm:flex-row gap-4 justify-center items-center max-w-2xl mx-auto relative"
+          >
+            <div className="relative w-full sm:w-96">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/60 z-10" />
               <input
                 type="text"
                 placeholder="Search for sustainable goodies..."
                 value={searchTerm}
                 onChange={(e) => handleSearchChange(e.target.value)}
-                className="w-full pl-12 pr-12 py-3 rounded-lg bg-white/20 backdrop-blur-sm border border-white/30 focus:outline-none focus:ring-2 focus:ring-white/50 text-white placeholder-gray-300"
+                className="w-full pl-12 pr-12 py-4 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 focus:outline-none focus:ring-2 focus:ring-white/40 text-white placeholder-white/70 font-medium text-sm sm:text-base transition-all duration-300 hover:border-white/30"
                 aria-label="Search products"
               />
-
               {searchTerm && (
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => handleSearchChange("")}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-300 hover:text-white"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition-colors duration-200"
                   aria-label="Clear search"
                 >
                   <X className="h-5 w-5" />
-                </button>
+                </motion.button>
               )}
             </div>
 
-            {/* Filter Suggestions */}
+            {/* Filter Suggestions Dropdown */}
             <AnimatePresence>
               {suggestions.length > 0 && (
                 <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="absolute top-full left-0 w-full bg-white/95 dark:bg-gray-800/95 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10 p-2 max-h-48 overflow-y-auto"
+                  initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                  className="absolute top-full left-0 w-full sm:w-80 bg-white/95 dark:bg-gray-800/95 backdrop-blur-md border border-gray-200/50 dark:border-gray-700/50 rounded-xl shadow-2xl z-20 p-1 max-h-64 overflow-y-auto mt-2"
                 >
                   {suggestions.map((suggestion, idx) => (
                     <motion.button
@@ -719,32 +759,29 @@ export default function ProductsPage() {
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: idx * 0.05 }}
+                      whileHover={{
+                        x: 4,
+                        backgroundColor: "rgba(34,197,94,0.1)",
+                      }}
                       onClick={(e) => {
                         e.stopPropagation();
                         suggestion.action();
                       }}
-                      className="w-full flex items-center gap-2 p-2 rounded text-left hover:bg-gray-100 dark:hover:bg-gray-700 text-sm"
+                      className="w-full flex items-center gap-3 p-3 rounded-lg text-left hover:bg-emerald-50/50 dark:hover:bg-emerald-900/20 text-sm font-medium transition-all duration-200"
                     >
-                      <span className="flex-shrink-0">{suggestion.icon}</span>
-                      <span className="truncate">{suggestion.text}</span>
+                      <span className="flex-shrink-0 text-emerald-600 dark:text-emerald-400">
+                        {suggestion.icon}
+                      </span>
+                      <span className="truncate text-gray-800 dark:text-gray-200">
+                        {suggestion.text}
+                      </span>
                     </motion.button>
                   ))}
                 </motion.div>
               )}
             </AnimatePresence>
-          </div>
+          </motion.div>
         </div>
-        {/* Background animations */}
-        <motion.div
-          className="absolute top-20 left-10 w-20 h-20 bg-white/10 rounded-full"
-          animate={{ y: [0, -20, 0], rotate: 360 }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.div
-          className="absolute bottom-20 right-10 w-32 h-32 bg-white/5 rounded-full"
-          animate={{ y: [0, 20, 0], rotate: -360 }}
-          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-        />
       </section>
 
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -849,23 +886,63 @@ export default function ProductsPage() {
 
                 {/* Categories */}
 
-                <section>
+                <section className="relative">
                   <h4 className="font-medium mb-3 text-gray-700 dark:text-gray-300">
-                    Categories ({getCategoryCount(selectedCategory)})
+                    Categories
                   </h4>
-                  <select
-                    value={selectedCategory}
-                    onChange={(e) => handleCategoryChange(e.target.value)}
-                    className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 text-sm"
+
+                  {/* Custom Dropdown Trigger */}
+                  <div
+                    className={`w-full border border-gray-300 dark:border-gray-600 rounded-md px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 text-sm cursor-pointer flex justify-between items-center transition-all duration-200 hover:shadow-md ${
+                      isOpen ? "rounded-b-none shadow-lg" : ""
+                    }`}
+                    onClick={() => setIsOpen(!isOpen)}
                     aria-label="Select category"
                   >
-                    {["all", ...categories.map((c) => c.name)].map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat === "all" ? "All Categories" : cat} (
-                        {getCategoryCount(cat)})
-                      </option>
-                    ))}
-                  </select>
+                    <span>
+                      {selectedCategory === "all"
+                        ? "All Categories"
+                        : selectedCategory}{" "}
+                    </span>
+                    {isOpen ? (
+                      <ChevronUpIcon className="h-4 w-4 text-gray-500" />
+                    ) : (
+                      <ChevronDownIcon className="h-4 w-4 text-gray-500" />
+                    )}
+                  </div>
+
+                  {/* Custom Dropdown Options */}
+                  {isOpen && (
+                    <ul className="absolute z-10 w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-b-md shadow-lg max-h-60 overflow-y-auto mt-0">
+                      {allCategories.map((cat) => (
+                        <li key={cat}>
+                          <button
+                            onClick={() => {
+                              handleCategoryChange(cat);
+                              setIsOpen(false);
+                            }}
+                            className={`w-full text-left px-4 py-3 text-sm text-gray-800 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-600 focus:outline-none focus:bg-gray-100 dark:focus:bg-gray-600 transition-colors duration-150 flex justify-between items-center ${
+                              selectedCategory === cat
+                                ? "bg-green-50 dark:bg-green-900/20 border-l-2 border-green-500"
+                                : ""
+                            }`}
+                          >
+                            <span>
+                              {cat === "all" ? "All Categories" : cat}
+                            </span>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+
+                  {/* Backdrop to close on outside click (optional enhancement) */}
+                  {isOpen && (
+                    <div
+                      className="fixed inset-0 z-0"
+                      onClick={() => setIsOpen(false)}
+                    />
+                  )}
                 </section>
 
                 {/* Price Range */}
@@ -1159,35 +1236,6 @@ export default function ProductsPage() {
                     >
                       Clear All Filters
                     </motion.button>
-                  </motion.section>
-                )}
-              </AnimatePresence>
-
-              {/* Recommendations Section */}
-              <AnimatePresence>
-                {recommendations.length > 0 && (
-                  <motion.section
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="mt-16 pt-8 border-t border-gray-200 dark:border-gray-700"
-                  >
-                    <h3 className="text-xl font-semibold mb-6 flex items-center gap-2 text-gray-800 dark:text-gray-100">
-                      <Star className="h-5 w-5 text-yellow-500 fill-current" />
-                      Based on your selection
-                    </h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                      {recommendations.map((product, idx) => (
-                        <motion.div
-                          key={product._id}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: idx * 0.05 }}
-                          whileHover={{ y: -4 }}
-                        >
-                          <ProductCard product={product} size="sm" />
-                        </motion.div>
-                      ))}
-                    </div>
                   </motion.section>
                 )}
               </AnimatePresence>

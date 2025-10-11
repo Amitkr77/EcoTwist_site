@@ -141,10 +141,9 @@ export default function Home() {
     // Helper function to check if the token is expired
     const isTokenExpired = (token) => {
       try {
-        console.log("Decoding token:", token);
-        const decodedToken = jwtDecode(token); // Decode the JWT token
-        const expiry = decodedToken.exp; // Get the expiry time from the token payload
-        const isExpired = Date.now() >= expiry * 1000; // Check if token is expired
+        const decodedToken = jwtDecode(token); 
+        const expiry = decodedToken.exp; 
+        const isExpired = Date.now() >= expiry * 1000; 
         return isExpired;
       } catch (e) {
         console.error("Error decoding token:", e);
