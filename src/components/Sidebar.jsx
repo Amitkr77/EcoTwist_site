@@ -26,6 +26,7 @@ export default function Sidebar() {
   const { status, allIds, byId } = useSelector((state) => state.products);
   const [searchQuery, setSearchQuery] = useState("");
   const [recentSearches, setRecentSearches] = useState([]);
+  const [isOpen, setIsOpen] = useState(false); // Add state to control Sheet open/close
 
   useEffect(() => {
     const storedSearches =
@@ -70,6 +71,7 @@ export default function Sidebar() {
     }).toString();
     router.push(`/products?${query}`);
     setSearchQuery("");
+    setIsOpen(false); // Close the Sheet after navigation
   };
 
   const clearRecentSearches = () => {
@@ -82,7 +84,7 @@ export default function Sidebar() {
   };
 
   return (
-    <Sheet>
+    <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger
         aria-label="Open search panel"
         className="p-2 rounded-md sm:flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
@@ -195,6 +197,7 @@ export default function Sidebar() {
                             selectedCategory === "All" ? "" : selectedCategory,
                         }).toString();
                         router.push(`/products?${query}`);
+                        setIsOpen(false); // Close the Sheet after clicking a recent search
                       }}
                       className="p-2 rounded-md cursor-pointer text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors text-sm"
                     >
