@@ -220,55 +220,152 @@ export default function ContactPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1 }}
-        className="relative py-32 px-6 text-center overflow-hidden bg-gradient-to-r from-green-600 to-emerald-700 dark:from-green-800 dark:to-emerald-900 text-white"
+        className="relative min-h-[70vh] flex items-center justify-center py-16 lg:py-32 px-6 overflow-hidden bg-gradient-to-br from-green-600 via-emerald-600 to-teal-700 dark:from-green-800 dark:via-emerald-800 dark:to-teal-900 text-white"
       >
-        {/* Background Overlay with animation */}
-        <div className="absolute inset-0 bg-black/30"></div>
+        {/* Subtle Eco Pattern Overlay */}
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%23ffffff%22%20fill-opacity%3D%220.05%22%3E%3Ccircle%20cx%3D%2230%22%20cy%3D%2230%22%20r%3D%222%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E')] opacity-20"></div>
+
+        {/* Dark Overlay for Depth */}
+        <div className="absolute inset-0 bg-black/25"></div>
+
+        {/* Enhanced Animated Elements */}
+        <motion.div
+          className="absolute top-20 left-10 w-24 h-24 bg-white/15 rounded-full backdrop-blur-sm border border-white/20"
+          animate={{
+            y: [0, -30, 0],
+            rotate: [0, 180, 360],
+            scale: [1, 1.05, 1],
+          }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute bottom-20 right-20 w-32 h-32 bg-white/20 rounded-full backdrop-blur-sm border border-white/30"
+          animate={{
+            y: [0, 30, 0],
+            rotate: [0, -180, -360],
+            scale: [1, 0.95, 1],
+          }}
+          transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute top-1/2 left-8 w-16 h-16 bg-emerald-200/25 rounded-full backdrop-blur-sm"
+          animate={{ x: [-15, 15, -15], opacity: [0.4, 1, 0.4] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute bottom-1/4 right-10 w-20 h-20 bg-teal-100/20 rounded-full backdrop-blur-sm"
+          animate={{
+            x: [10, -10, 10],
+            y: [0, -10, 0],
+            opacity: [0.6, 0.3, 0.6],
+          }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+        />
+
         {/* Main Content */}
-        <div className="text-center z-10 relative">
-          <motion.h1
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.2, duration: 0.6 }}
-            className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6"
-          >
-            Connect with Ecotwist
-          </motion.h1>
-          <motion.p
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.4, duration: 0.6 }}
-            className="text-lg md:text-xl text-white/80 max-w-2xl mx-auto mb-6"
-          >
-            Join us in creating a sustainable future. Reach out for inquiries,
-            partnerships, or eco-friendly inspiration.
-          </motion.p>
+        <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center text-center max-w-4xl">
           <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.6, duration: 0.6 }}
-            className="mt-6"
+            transition={{ delay: 0.2, duration: 0.8 }}
+            className="mb-6 sm:mb-8"
+          >
+            <h1 className="font-heading text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black leading-tight mb-4 sm:mb-6 tracking-tight">
+              Connect with{" "}
+              <span className="bg-gradient-to-r from-white/90 to-emerald-100/90 bg-clip-text text-transparent px-2 sm:px-3 py-1 rounded-md shadow-lg">
+                Ecotwist
+              </span>
+            </h1>
+            <p className="text-base sm:text-lg md:text-xl lg:text-2xl max-w-2xl mx-auto leading-relaxed text-white/95 font-light">
+              Join us in creating a sustainable future. Reach out for inquiries,
+              partnerships, or eco-friendly inspiration.
+            </p>
+          </motion.div>
+
+          {/* Enhanced CTA with Social Links */}
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.6, duration: 0.8 }}
+            className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-center justify-center mt-8"
           >
             <Button
               asChild
-              className="bg-green-600 hover:bg-green-700 text-white text-lg px-8 py-3 rounded-lg transition duration-300 ease-in-out transform hover:scale-105"
+              className="group relative inline-flex items-center px-8 py-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-white font-medium text-base sm:text-lg shadow-2xl hover:shadow-green-500/25 transition-all duration-300 hover:bg-white/20 hover:border-white/30 transform hover:scale-105 active:scale-95"
             >
-              <a href="#contact-form">Get in Touch</a>
+              <a href="#contact-form" className="relative z-10">
+                <span>Get in Touch</span>
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-emerald-400/20 to-teal-400/20 rounded-full -z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  animate={{ scale: [1, 1.05, 1] }}
+                  transition={{ duration: 0.5, repeat: Infinity }}
+                />
+                <svg
+                  className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform duration-300"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17 8l4 4m0 0l-4 4m4-4H3"
+                  />
+                </svg>
+              </a>
             </Button>
+
+            {/* Social Links */}
+            <div className="flex space-x-4">
+              <motion.a
+                href="#"
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                whileTap={{ scale: 0.95 }}
+                className="w-10 h-10 bg-white/15 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/25 transition-all duration-300"
+                aria-label="Twitter"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                </svg>
+              </motion.a>
+              <motion.a
+                href="#"
+                whileHover={{ scale: 1.1, rotate: -5 }}
+                whileTap={{ scale: 0.95 }}
+                className="w-10 h-10 bg-white/15 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/25 transition-all duration-300"
+                aria-label="LinkedIn"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                </svg>
+              </motion.a>
+              <motion.a
+                href="#"
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                whileTap={{ scale: 0.95 }}
+                className="w-10 h-10 bg-white/15 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/25 transition-all duration-300"
+                aria-label="Instagram"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 6.62 5.367 11.988 11.988 11.988s11.988-5.368 11.988-11.988C24.005 5.367 18.638 0 12.017 0zm0 18.958c-4.273 0-7.746-3.473-7.746-7.971s3.473-7.97 7.746-7.97 7.746 3.472 7.746 7.97-3.473 7.972-7.746 7.972zm0-13.925c-2.626 0-4.758 2.132-4.758 4.758s2.132 4.758 4.758 4.758 4.758-2.132 4.758-4.758-2.132-4.758-4.758-4.758zm9.588-2.203a1.29 1.29 1.29 0 1 1-1.29-1.29c0-.71.58-1.29 1.29-1.29s1.29.58 1.29 1.29c0 .71-.58 1.29-1.29 1.29z" />
+                </svg>
+              </motion.a>
+            </div>
           </motion.div>
         </div>
-
-        {/* Animated Circular Elements */}
-        <motion.div
-          className="absolute top-16 left-5 w-32 h-32 bg-white/20 rounded-full"
-          animate={{ y: [0, -20, 0], rotate: 360 }}
-          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.div
-          className="absolute bottom-16 right-5 w-48 h-48 bg-white/30 rounded-full"
-          animate={{ y: [0, 20, 0], rotate: -360 }}
-          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-        />
       </motion.section>
 
       {/* Main Content */}

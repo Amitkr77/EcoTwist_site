@@ -52,7 +52,7 @@ export default function CTA() {
             initial={{ scale: 0.9 }}
             whileInView={{ scale: 1 }}
             viewport={{ once: true }}
-            className="space-y-4"
+            className="space-y-4 flex flex-col items-center "
           >
             <h2 className="text-4xl lg:text-5xl font-bold mb-4">
               Join Our Eco-Community 🌱
@@ -65,7 +65,7 @@ export default function CTA() {
 
             <form
               onSubmit={handleNewsletterSubmit}
-              className="flex flex-col items-center sm:flex-row sm:items-stretch gap-4 mx-auto mt-6"
+              className="flex flex-col items-center  sm:flex-row sm:items-stretch gap-4 mx-auto mt-6"
             >
               <Input
                 type="email"
@@ -73,7 +73,8 @@ export default function CTA() {
                 value={newsletterEmail}
                 onChange={(e) => setNewsletterEmail(e.target.value)}
                 required
-                className="rounded-full border-green-300/50 text-green-900 focus:ring-green-400 bg-white/90 placeholder-green-300 w-64 sm:w-80 md:w-96"/>
+                className="rounded-full border-green-300/50 text-green-900 focus:ring-green-400 bg-white/90 placeholder-green-300 w-64 sm:w-80 md:w-96"
+              />
               <Button
                 type="submit"
                 className=" bg-white text-green-700 hover:bg-green-100 rounded-full px-6 py-3 font-semibold shadow-lg w-40 sm:w-auto"

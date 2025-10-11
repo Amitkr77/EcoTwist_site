@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import React from "react";
 import { Badge } from "@/components/ui/badge";
@@ -6,37 +6,113 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import Link from "next/link";
 import CountUp from "react-countup";
+import { motion } from "framer-motion";
 
 export default function Page() {
   return (
     <div className="min-h-screen bg-[#f5f5f5] text-slate-800 mt-16">
       {/* Hero Section */}
-      <div className="relative overflow-hidden">
-        {/* Background Image with Gradient Overlay */}
-        <div className="absolute inset-0">
-          <img
-            src="https://images.unsplash.com/photo-1569060368645-4ab30c8d8b0e?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-            alt="Eco-friendly creation from recycled materials"
-            className="w-full h-full object-cover object-center"
-            loading="lazy"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/70" />
-        </div>
+      <div className="relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-green-600 via-emerald-600 to-teal-700 dark:from-green-800 dark:via-emerald-800 dark:to-teal-900 text-white">
+        {/* Subtle Eco Pattern Overlay */}
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%23ffffff%22%20fill-opacity%3D%220.05%22%3E%3Ccircle%20cx%3D%2230%22%20cy%3D%2230%22%20r%3D%222%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E')] opacity-20"></div>
+
+        {/* Dark Overlay for Depth */}
+        <div className="absolute inset-0 bg-black/20"></div>
+
+        {/* Floating Eco Elements */}
+        <motion.div
+          className="absolute top-20 left-10 w-20 h-20 bg-white/10 rounded-full backdrop-blur-sm"
+          animate={{
+            y: [0, -30, 0],
+            rotate: [0, 180, 360],
+            scale: [1, 1.1, 1],
+          }}
+          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute bottom-20 right-20 w-16 h-16 bg-white/15 rounded-full backdrop-blur-sm border border-white/20"
+          animate={{
+            y: [0, 30, 0],
+            rotate: [0, -180, -360],
+            scale: [1, 0.9, 1],
+          }}
+          transition={{ duration: 16, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute top-1/2 left-5 w-12 h-12 bg-emerald-200/20 rounded-full backdrop-blur-sm"
+          animate={{ x: [-10, 10, -10], opacity: [0.5, 1, 0.5] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+        />
 
         {/* Foreground Content */}
-        <div className="relative z-10 container mx-auto px-4 sm:px-6 md:px-12 py-24 flex flex-col justify-center items-center text-center text-white">
-          <Badge className="bg-green-800/45 text-white mb-8 shadow-lg text-sm uppercase tracking-wider px-4 py-2">
-            Our Story
-          </Badge>
-          <h1 className="font-heading text-3xl sm:text-4xl md:text-6xl font-extrabold leading-tight mb-6">
+        <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 py-10  flex flex-col justify-center items-center text-center text-white max-w-4xl">
+          {/* Animated Badge */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            <Badge className="bg-white/10 backdrop-blur-sm border-white/20 text-white  shadow-xl text-xs sm:text-sm uppercase tracking-widest px-4 py-2.5 font-medium">
+              Our Story
+            </Badge>
+          </motion.div>
+
+          {/* Hero Title with Gradient Text */}
+          <motion.h1
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 0.2 }}
+            className="font-heading text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black leading-tight mb-4 sm:mb-6 tracking-tight"
+          >
             Crafting a{" "}
-            <span className="text-green-800 bg-white/45 px-2">Sustainable Future</span>
-          </h1>
-          <p className="text-base sm:text-lg md:text-2xl max-w-2xl mx-auto leading-relaxed text-white/90">
-            At <strong>Ecotwist Innovations</strong>, we transform waste into
-            beautiful, meaningful creations — designed with purpose, driven by
-            sustainability.
-          </p>
+            <span className="bg-gradient-to-r from-white/90 to-emerald-100/90 bg-clip-text text-transparent px-2 sm:px-3 py-1 rounded-md shadow-lg">
+              Sustainable Future
+            </span>
+          </motion.h1>
+
+          {/* Subtitle */}
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 0.4 }}
+            className="text-sm sm:text-base md:text-lg lg:text-xl max-w-2xl mx-auto leading-relaxed text-white/95 mb-4 font-light"
+          >
+            At{" "}
+            <strong className="font-semibold text-emerald-100">
+              Ecotwist Innovations
+            </strong>
+            , we transform waste into beautiful, meaningful creations — designed
+            with purpose, driven by sustainability.
+          </motion.p>
+
+          {/* CTA Button */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 0.6 }}
+          >
+            <button className="group relative inline-flex items-center px-8 py-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-white font-medium text-sm sm:text-base shadow-2xl hover:shadow-green-500/25 transition-all duration-300 hover:bg-white/20 hover:border-white/30 transform hover:scale-105 active:scale-95">
+              <span className="relative z-10">Discover Our Journey</span>
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-emerald-400/20 to-teal-400/20 rounded-full -z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                animate={{ scale: [1, 1.05, 1] }}
+                transition={{ duration: 0.5, repeat: Infinity }}
+              />
+              <svg
+                className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform duration-300"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17 8l4 4m0 0l-4 4m4-4H3"
+                />
+              </svg>
+            </button>
+          </motion.div>
         </div>
       </div>
 
@@ -78,8 +154,6 @@ export default function Page() {
         </div>
       </section>
 
-  
-
       {/* Philosophy Section */}
       <section className="py-20 bg-[#f0f9f4]">
         <div className="container mx-auto px-4 sm:px-6 md:px-12">
@@ -115,8 +189,12 @@ export default function Page() {
                 className="bg-white p-10 rounded-xl shadow-md hover:shadow-lg transition duration-300 text-center"
               >
                 <div className="text-3xl md:text-4xl mb-4">{item.icon}</div>
-                <h3 className="font-semibold text-lg sm:text-xl mb-3">{item.title}</h3>
-                <p className="text-slate-600 leading-relaxed text-base sm:text-lg">{item.text}</p>
+                <h3 className="font-semibold text-lg sm:text-xl mb-3">
+                  {item.title}
+                </h3>
+                <p className="text-slate-600 leading-relaxed text-base sm:text-lg">
+                  {item.text}
+                </p>
               </div>
             ))}
           </div>
@@ -145,8 +223,12 @@ export default function Page() {
                 Waste, Reimagined
               </h3>
               <p className="text-gray-600 text-base sm:text-lg leading-relaxed">
-                Over <strong><CountUp end={12000} duration={5} separator="," /> kg</strong> of waste diverted from
-                landfills, transformed into functional design with purpose.
+                Over{" "}
+                <strong>
+                  <CountUp end={12000} duration={5} separator="," /> kg
+                </strong>{" "}
+                of waste diverted from landfills, transformed into functional
+                design with purpose.
               </p>
             </div>
           </div>
@@ -159,8 +241,13 @@ export default function Page() {
                 Communities Empowered
               </h3>
               <p className="text-gray-600 text-base sm:text-lg leading-relaxed">
-                Supporting over <strong><CountUp end={100} duration={2} separator="," /> artisan families</strong> with
-                dignified, consistent livelihoods rooted in craft and culture.
+                Supporting over{" "}
+                <strong>
+                  <CountUp end={100} duration={2} separator="," /> artisan
+                  families
+                </strong>{" "}
+                with dignified, consistent livelihoods rooted in craft and
+                culture.
               </p>
             </div>
           </div>
@@ -173,8 +260,11 @@ export default function Page() {
                 Packaging That Leaves No Trace
               </h3>
               <p className="text-gray-600 text-base sm:text-lg leading-relaxed">
-                Shipped in <strong><CountUp end={100} duration={2} separator="," />% plastic-free</strong> and biodegradable
-                packaging — clean design, clean conscience.
+                Shipped in{" "}
+                <strong>
+                  <CountUp end={100} duration={2} separator="," />% plastic-free
+                </strong>{" "}
+                and biodegradable packaging — clean design, clean conscience.
               </p>
             </div>
           </div>

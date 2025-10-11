@@ -6,7 +6,7 @@ async function verifyToken(token, secret) {
   try {
     const secretKey = new TextEncoder().encode(secret);
     const { payload } = await jwtVerify(token, secretKey);
-    return payload; // contains id, role, etc.
+    return payload; 
   } catch (err) {
     return null;
   }
@@ -104,6 +104,19 @@ export async function middleware(req) {
     return NextResponse.next();
   }
 
+   // Protect orders route
+  if (pathname.startsWith("/checkout")) {
+    const decoded = await verifyToken(userToken, process.env.JWT_SECRET);
+    if (!decoded || decoded.role !== "user") {
+      const loginUrl = new URL("/login", req.url);
+      // Preserve the full URL (pathname + query params)
+      loginUrl.searchParams.set("returnUrl", encodeURIComponent(pathname + search));
+      loginUrl.searchParams.set("error", "login-first");
+      return NextResponse.redirect(loginUrl);
+    }
+    return NextResponse.next();
+  }
+
   return NextResponse.next();
 }
 
@@ -113,5 +126,6 @@ export const config = {
     "/manager/:path((?!login).*)",
     "/profile/:path*",
     "/orders/:path*",
+    "/checkout/:path*",
   ],
 };
