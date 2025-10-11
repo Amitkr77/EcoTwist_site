@@ -27,6 +27,8 @@ const ReviewsTabContent = ({ productId, productName, userId }) => {
     fetchReviews();
   }, [productId]);
 
+  console.log("review ka maal", reviews);
+
   const calculateStats = () => {
     const total = reviews.length;
     if (total === 0) return { avg: 0, breakdown: {} };

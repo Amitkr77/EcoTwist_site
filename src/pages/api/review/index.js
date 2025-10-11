@@ -8,7 +8,7 @@ export default async function handler(req, res) {
 
     if (req.method === "POST") {
         try {
-            const { product, user, rating, title, body, status } = req.body;
+            const { product, user, rating, title, body, photos, status } = req.body;
 
             const data = {
                 product,
@@ -16,7 +16,9 @@ export default async function handler(req, res) {
                 rating,
                 title,
                 body,
+                photos,
                 status,
+                
             };
 
             // Only set moderatedAt if review is published
@@ -25,6 +27,7 @@ export default async function handler(req, res) {
             }
 
             const review = await Review.create(data);
+            console.log("backend review ka maal", review);
 
             // ✅ Recalculate product ratings
             await Product.recalculateRatings(review.product);
