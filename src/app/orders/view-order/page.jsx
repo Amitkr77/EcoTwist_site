@@ -14,7 +14,8 @@ import {
   DownloadIcon,
   ArrowLeft,
   ShoppingCart,
-  Store,
+  Home,
+  ChevronRight,
   Mail,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -107,7 +108,9 @@ function ViewOrder() {
       <div className="min-h-screen bg-gradient-to-br from-teal-50 to-gray-100 flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-6 text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-teal-600 mx-auto mb-4"></div>
-          <p className="text-lg font-semibold text-gray-800">Loading order details...</p>
+          <p className="text-lg font-semibold text-gray-800">
+            Loading order details...
+          </p>
         </div>
       </div>
     );
@@ -119,12 +122,14 @@ function ViewOrder() {
       <div className="min-h-screen bg-gradient-to-br from-teal-50 to-gray-100 flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-6 text-center">
           <BadgeAlert className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Order Not Found</h2>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">
+            Order Not Found
+          </h2>
           <p className="text-base text-gray-600 mb-6">
             {error || "No order found. Please check your order ID."}
           </p>
           <Link
-            href="/orders"
+            href="/proflie"
             className="inline-flex items-center gap-2 bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-300 transition-all text-base font-medium"
             aria-label="Return to orders"
           >
@@ -146,11 +151,14 @@ function ViewOrder() {
   const orderTimeline = [
     {
       step: "Order Placed",
-      date: new Date(order.createdAt || Date.now()).toLocaleDateString("en-IN", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      }),
+      date: new Date(order.createdAt || Date.now()).toLocaleDateString(
+        "en-IN",
+        {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        }
+      ),
       icon: CheckCircleIcon,
       color: "text-green-500",
     },
@@ -178,21 +186,120 @@ function ViewOrder() {
   const currentStepIndex = orderTimeline.findIndex(
     (step) => step.step.toLowerCase() === order.status?.toLowerCase()
   );
+  
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 to-gray-100">
+    <div className="min-h-screen bg-gradient-to-br from-green-600 via-emerald-600 to-teal-700 dark:from-green-800 dark:via-emerald-800 dark:to-teal-900 relative text-white ">
+      <div className="absolute inset-0 bg-gradient-to-br from-green-900/20 via-emerald-900/20 to-teal-900/20 z-[-1]"></div>
+      <motion.div
+        className="absolute top-20 left-10 w-24 h-24 bg-white/15 rounded-full backdrop-blur-sm border border-white/20"
+        animate={{
+          y: [0, -30, 0],
+          rotate: [0, 180, 360],
+          scale: [1, 1.05, 1],
+        }}
+        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <motion.div
+        className="absolute bottom-20 right-20 w-32 h-32 bg-white/20 rounded-full backdrop-blur-sm border border-white/30"
+        animate={{
+          y: [0, 30, 0],
+          rotate: [0, -180, -360],
+          scale: [1, 0.95, 1],
+        }}
+        transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <motion.div
+        className="absolute top-1/2 left-8 w-16 h-16 bg-emerald-200/25 rounded-full backdrop-blur-sm"
+        animate={{ x: [-15, 15, -15], opacity: [0.4, 1, 0.4] }}
+        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <motion.div
+        className="absolute bottom-1/4 right-10 w-20 h-20 bg-teal-100/20 rounded-full backdrop-blur-sm"
+        animate={{
+          x: [10, -10, 10],
+          y: [0, -10, 0],
+          opacity: [0.6, 0.3, 0.6],
+        }}
+        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+      />
       <div className="container mx-auto px-4 py-4 max-w-7xl">
-        <motion.div
+        {/* <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           className="mb-6"
         >
-          <h1 className="text-3xl font-bold text-gray-900">Order Details</h1>
-          <p className="text-base text-gray-600 mt-2">
+          <h1 className="text-3xl font-bold text-white">Order Details</h1>
+          <p className="text-base text-white mt-2">
             Order ID: {order.orderId || "N/A"}
           </p>
-        </motion.div>
+        </motion.div> */}
+        <div className=" ">
+          <div className=" flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            {/* Breadcrumb */}
+            <nav
+              aria-label="Breadcrumb"
+              className="flex items-center text-sm md:text-base"
+            >
+              <ol className="flex items-center space-x-2">
+                <li>
+                  <Link
+                    href="/"
+                    className="flex items-center text-white transition-colors duration-200"
+                  >
+                    <Home className="w-5 h-5 mr-1" aria-hidden="true" />
+                    <span className="hidden sm:inline">Home</span>
+                    <span className="sr-only">Go to homepage</span>
+                  </Link>
+                </li>
+                <li>
+                  <ChevronRight
+                    className="w-4 h-4 text-white"
+                    aria-hidden="true"
+                  />
+                </li>
+                <li>
+                  <Link
+                    href="/Profile"
+                    className="text-white transition-colors duration-200"
+                  >
+                    Proflie
+                  </Link>
+                </li>
+                <li>
+                  <ChevronRight
+                    className="w-4 h-4 text-white"
+                    aria-hidden="true"
+                  />
+                </li>
+                <li>
+                  <span
+                    className="text-green-600 dark:text-green-400 font-medium"
+                    aria-current="page"
+                  >
+                    Checkout
+                  </span>
+                </li>
+              </ol>
+            </nav>
+
+            {/* Heading */}
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="mb-6"
+            >
+              <h1 className="text-3xl font-bold text-white text-right">
+                Order Details
+              </h1>
+              <p className="text-base text-white mt-2">
+                Order ID: {order.orderId || "N/A"}
+              </p>
+            </motion.div>
+          </div>
+        </div>
 
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Sidebar */}
@@ -205,7 +312,9 @@ function ViewOrder() {
             <div className="text-center mb-6">
               <CheckCircleIcon
                 className={`w-16 h-16 ${
-                  order.status === "Delivered" ? "text-green-500" : "text-teal-500"
+                  order.status === "Delivered"
+                    ? "text-green-500"
+                    : "text-teal-500"
                 } mx-auto mb-4`}
               />
               <h2 className="text-2xl font-semibold text-gray-800">
@@ -213,11 +322,14 @@ function ViewOrder() {
               </h2>
               <p className="text-sm text-gray-600 mt-2">
                 Placed on{" "}
-                {new Date(order.createdAt || Date.now()).toLocaleDateString("en-IN", {
-                  day: "2-digit",
-                  month: "long",
-                  year: "numeric",
-                })}
+                {new Date(order.createdAt || Date.now()).toLocaleDateString(
+                  "en-IN",
+                  {
+                    day: "2-digit",
+                    month: "long",
+                    year: "numeric",
+                  }
+                )}
               </p>
             </div>
             <div className="space-y-4">
@@ -228,7 +340,8 @@ function ViewOrder() {
                 </h3>
                 <div className="text-sm text-gray-700 space-y-2">
                   <p>
-                    <strong className="font-medium">Order ID:</strong> {order.orderId || "N/A"}
+                    <strong className="font-medium">Order ID:</strong>{" "}
+                    {order.orderId || "N/A"}
                   </p>
                   <p>
                     <strong className="font-medium">Subtotal:</strong>{" "}
@@ -236,17 +349,22 @@ function ViewOrder() {
                   </p>
                   <p>
                     <strong className="font-medium">Shipping:</strong>{" "}
-                    {order.shippingCost ? formatCurrency(order.shippingCost) : "Free"}
+                    {order.shippingCost
+                      ? formatCurrency(order.shippingCost)
+                      : "Free"}
                   </p>
                   <p>
-                    <strong className="font-medium">Total:</strong> {formatCurrency(total)}
+                    <strong className="font-medium">Total:</strong>{" "}
+                    {formatCurrency(total)}
                   </p>
                   <p>
                     <strong className="font-medium">Payment:</strong>{" "}
-                    {order.paymentMethod === "cod" ? "Cash on Delivery" : "Online Payment"}
+                    {order.paymentMethod === "cod"
+                      ? "Cash on Delivery"
+                      : "Online Payment"}
                   </p>
                   <p>
-                    <strong className="font-medium">Status:</strong>{" "}
+                    <strong className="font-medium">Order Status:</strong>{" "}
                     <span
                       className={`capitalize ${
                         order.status === "Pending"
@@ -262,7 +380,10 @@ function ViewOrder() {
                 </div>
               </div>
               <motion.button
-                whileHover={{ scale: 1.05, boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)" }}
+                whileHover={{
+                  scale: 1.05,
+                  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
+                }}
                 whileTap={{ scale: 0.95 }}
                 transition={{ type: "spring", stiffness: 300 }}
                 onClick={handleOpenInvoice}
@@ -313,7 +434,10 @@ function ViewOrder() {
               )}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-gray-50 rounded-xl p-4 shadow-sm mt-4">
                 <motion.div
-                  whileHover={{ scale: 1.05, boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)" }}
+                  whileHover={{
+                    scale: 1.05,
+                    boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
+                  }}
                   whileTap={{ scale: 0.95 }}
                   transition={{ type: "spring", stiffness: 300 }}
                 >
@@ -327,7 +451,10 @@ function ViewOrder() {
                   </Link>
                 </motion.div>
                 <motion.div
-                  whileHover={{ scale: 1.05, boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)" }}
+                  whileHover={{
+                    scale: 1.05,
+                    boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
+                  }}
                   whileTap={{ scale: 0.95 }}
                   transition={{ type: "spring", stiffness: 300 }}
                 >
@@ -354,7 +481,9 @@ function ViewOrder() {
             >
               <span>Order Details</span>
               <svg
-                className={`w-5 h-5 transition-transform ${isDetailsOpen ? "rotate-180" : ""}`}
+                className={`w-5 h-5 transition-transform ${
+                  isDetailsOpen ? "rotate-180" : ""
+                }`}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -394,14 +523,16 @@ function ViewOrder() {
                           >
                             {item.imageUrl ? (
                               <img
-                                src={item.imageUrl}
+                                src={item.image}
                                 alt={item.name || `Product ${item.productId}`}
                                 className="w-16 h-16 object-cover rounded-lg flex-shrink-0"
                                 loading="lazy"
                               />
                             ) : (
                               <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
-                                <span className="text-gray-500 text-sm">No Image</span>
+                                <span className="text-gray-500 text-sm">
+                                  No Image
+                                </span>
                               </div>
                             )}
                             <div className="flex-1">
@@ -409,11 +540,14 @@ function ViewOrder() {
                                 {item.name || `Product ${item.productId}`}
                               </span>
                               <span className="text-sm text-gray-500">
-                                Qty: {item.quantity} @ {formatCurrency(item.price || 0)} each
+                                Qty: {item.quantity} @{" "}
+                                {formatCurrency(item.price || 0)} each
                               </span>
                             </div>
                             <span className="text-base font-medium text-gray-800 flex-shrink-0">
-                              {formatCurrency((item.price || 0) * item.quantity)}
+                              {formatCurrency(
+                                (item.price || 0) * item.quantity
+                              )}
                             </span>
                           </motion.div>
                         ))
@@ -434,17 +568,22 @@ function ViewOrder() {
                     <div className="bg-gray-50 rounded-lg p-4 text-sm text-gray-700">
                       {order.deliveryAddress ? (
                         <div className="space-y-1">
-                          <p className="font-medium">{order.deliveryAddress.fullName}</p>
+                          <p className="font-medium">
+                            {order.deliveryAddress.fullName}
+                          </p>
                           <p>{order.deliveryAddress.street}</p>
                           <p>
-                            {order.deliveryAddress.city}, {order.deliveryAddress.state}{" "}
+                            {order.deliveryAddress.city},{" "}
+                            {order.deliveryAddress.state}{" "}
                             {order.deliveryAddress.postalCode}
                           </p>
                           <p>{order.deliveryAddress.country}</p>
                           <p>Phone: {order.deliveryAddress.phone}</p>
                         </div>
                       ) : (
-                        <p className="text-center">No delivery address provided.</p>
+                        <p className="text-center">
+                          No delivery address provided.
+                        </p>
                       )}
                     </div>
                   </section>
@@ -468,13 +607,21 @@ function ViewOrder() {
                           >
                             <div
                               className={`absolute top-4 w-4 h-4 rounded-full ${
-                                index <= currentStepIndex ? "bg-green-500" : "bg-gray-300"
+                                index <= currentStepIndex
+                                  ? "bg-green-500"
+                                  : "bg-gray-300"
                               } z-10`}
                             ></div>
-                            <item.icon className={`w-5 h-5 ${item.color} mb-2 mt-8 flex-shrink-0`} />
+                            <item.icon
+                              className={`w-5 h-5 ${item.color} mb-1 mt-10 flex-shrink-0`}
+                            />
                             <div className="text-center">
-                              <p className="text-sm font-medium text-gray-800">{item.step}</p>
-                              <p className="text-xs text-gray-500">{item.date}</p>
+                              <p className="text-sm font-medium text-gray-800">
+                                {item.step}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                {item.date}
+                              </p>
                             </div>
                           </motion.div>
                         ))}
