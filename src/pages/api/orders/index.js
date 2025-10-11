@@ -81,6 +81,7 @@ export default async function handler(req, res) {
                     slug: product.slug,
                     price: variant.price,
                     quantity: cartItem.quantity,
+                    image: product.images[0],
                     hsnCode: cartItem.hsnCode || product.hsnCode || 'N/A'
                 });
             }
