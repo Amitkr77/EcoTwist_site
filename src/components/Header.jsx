@@ -33,6 +33,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-hot-toast";
 import { AnimatePresence, motion } from "framer-motion";
 import { Separator } from "./ui/separator";
+import { fetchUserProfile } from "@/store/slices/userSlice";
 
 // Throttle helper
 function throttle(func, limit) {
@@ -66,7 +67,7 @@ export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
   const lastScrollY = useRef(0);
-
+  const { profile, status, error } = useSelector((state) => state.user);
   const cartStatus = useSelector((state) => state.cart.status);
   const cartError = useSelector((state) => state.cart.error);
   const totalCartItems = useSelector((state) => state.cart?.items?.length || 0);
@@ -76,6 +77,11 @@ export default function Header() {
     const token = localStorage.getItem("user-token");
     setIsAuthenticated(!!token);
   }, []);
+
+  // 1. Fetch profile on mount
+  useEffect(() => {
+    dispatch(fetchUserProfile());
+  }, [dispatch]);
 
   // Fetch cart
   useEffect(() => {
@@ -191,9 +197,13 @@ export default function Header() {
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
-                    className="p-2 rounded-md hover:bg-gray-100 hidden sm:block"
+                    className="flex items-center p-2 space-x-2 focus:outline-none"
+                    aria-label={`User menu for ${profile.firstName}`}
                   >
-                    <User className="h-5 w-5 text-gray-600" />
+                    <User className="h-5 w-5 text-gray-600 transition-colors duration-200 hover:text-gray-800" />
+                    <span className="text-sm font-medium text-gray-700 truncate max-w-[120px] sm:max-w-[150px]">
+                      Hi, {profile.firstName}
+                    </span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-44">

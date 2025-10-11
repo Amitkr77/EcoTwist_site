@@ -141,9 +141,9 @@ export default function Home() {
     // Helper function to check if the token is expired
     const isTokenExpired = (token) => {
       try {
-        const decodedToken = jwtDecode(token); 
-        const expiry = decodedToken.exp; 
-        const isExpired = Date.now() >= expiry * 1000; 
+        const decodedToken = jwtDecode(token);
+        const expiry = decodedToken.exp;
+        const isExpired = Date.now() >= expiry * 1000;
         return isExpired;
       } catch (e) {
         console.error("Error decoding token:", e);
@@ -232,6 +232,40 @@ export default function Home() {
 
       {/* Hero Section */}
       <section className="relative z-10 text-gray-800 py-12 md:py-16 lg:py-20 overflow-hidden flex flex-col lg:flex-row items-center bg-gradient-to-br from-white via-teal-50 to-white">
+        {/* Enhanced Animated Elements */}
+        <motion.div
+          className="absolute top-40 left-10 w-24 h-24 bg-emerald-400/15 rounded-full backdrop-blur-sm border border-white/20"
+          animate={{
+            y: [0, -30, 0],
+            rotate: [0, 180, 360],
+            scale: [1, 1.05, 1],
+          }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute bottom-20 right-20 w-32 h-32 bg-emerald-300/25 rounded-full backdrop-blur-sm border border-white/30"
+          animate={{
+            y: [0, 30, 0],
+            rotate: [0, -180, -360],
+            scale: [1, 0.95, 1],
+          }}
+          transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute top-1/2 left-8 w-16 h-16 bg-emerald-200 rounded-full backdrop-blur-sm"
+          animate={{ x: [-15, 15, -15], opacity: [0.4, 1, 0.4] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute bottom-1/4 right-10 w-20 h-20 bg-teal-100 rounded-full backdrop-blur-sm"
+          animate={{
+            x: [10, -10, 10],
+            y: [0, -10, 0],
+            opacity: [0.6, 0.3, 0.6],
+          }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+        />
+
         <div className="absolute inset-0 opacity-5 pointer-events-none">
           <svg
             className="w-full h-full"
