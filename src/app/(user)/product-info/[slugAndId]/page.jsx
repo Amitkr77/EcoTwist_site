@@ -317,7 +317,7 @@ export default function ProductPage() {
     .split("\n")
     .filter((line) => line.trim() !== "");
 
-  if (productStatus === "loading" || userStatus === "loading") {
+  if (productStatus === "loading" || userStatus === "loading" || !product) {
     return (
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-28 min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900">
         <div className="p-10 space-y-6">
@@ -336,7 +336,7 @@ export default function ProductPage() {
     );
   }
 
-  if (productStatus === "failed" || !product) {
+  if (productStatus === "failed") {
     return (
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-28 min-h-screen bg-gradient-to-br from-red-50 to-pink-100 dark:from-red-900 dark:to-pink-900">
         <div className="text-center p-8">
