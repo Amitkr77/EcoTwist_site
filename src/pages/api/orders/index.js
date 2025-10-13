@@ -88,12 +88,13 @@ export default async function handler(req, res) {
 
             const orderId = await generateOrderId();
             const newOrder = new Order({
-                orderId,
-                userId: user.userId,
-                items: orderItems,
-                totalAmount,
-                deliveryAddress,
-                paymentMethod,
+              orderId,
+              userId: user.userId,
+              items: orderItems,
+              totalAmount,
+              deliveryAddress,
+              paymentMethod,
+              status: "confirmed",
             });
 
             await newOrder.save();

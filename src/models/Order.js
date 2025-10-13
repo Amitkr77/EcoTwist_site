@@ -95,7 +95,7 @@ const OrderSchema = new Schema(
         values: ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'],
         message: '{VALUE} is not a valid status',
       },
-      default: 'pending',
+      default: 'confirmed',
     },
     orderDate: {
       type: Date,

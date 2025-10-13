@@ -134,6 +134,7 @@ export const placeOrder = createAsyncThunk(
       shippingCost: deliveryDetails.shippingCost,
       discountApplied: deliveryDetails.discountApplied,
       totalAmount: deliveryDetails.totalAmount,
+      status: "confirmed",
     };
 
     const token = getAuthToken();
