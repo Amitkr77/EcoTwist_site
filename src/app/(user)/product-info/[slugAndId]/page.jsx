@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useRouter, useParams } from "next/navigation";
 import Image from "next/image";
@@ -53,7 +53,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import ReviewsTabContent from "@/components/ReviewsTabContent";
 import Head from "next/head";
-import { addToCart, updateCart } from "@/store/slices/cartSlice";
+import { addToCart } from "@/store/slices/cartSlice";
 import {
   addToWishlist,
   removeFromWishlist,
@@ -63,6 +63,7 @@ import Link from "next/link";
 import { fetchProducts } from "@/store/slices/productSlices";
 import toast from "react-hot-toast";
 import { jwtDecode } from "jwt-decode";
+import debounce from "lodash/debounce";
 
 export default function ProductPage() {
   const dispatch = useDispatch();
@@ -87,6 +88,7 @@ export default function ProductPage() {
   const [selectedImage, setSelectedImage] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const [wishlistLoading, setWishlistLoading] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [showAllFeatures, setShowAllFeatures] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -150,7 +152,11 @@ export default function ProductPage() {
   // Check wishlist status
   useEffect(() => {
     if (productId && wishlist) {
-      setIsWishlisted(wishlist.some((item) => item.productId === productId));
+      setIsWishlisted(
+        wishlist.some(
+          (item) => (item.productId?._id || item.productId) === productId
+        )
+      );
     }
   }, [productId, wishlist]);
 
@@ -216,6 +222,7 @@ export default function ProductPage() {
       return null;
     }
   }
+
   const handleAddToCart = async () => {
     if (!isAvailable) return;
     setLoading(true);
@@ -236,36 +243,45 @@ export default function ProductPage() {
     }
   };
 
-  const handleWishlistToggle = () => {
-    const userId = localStorage.getItem("user-id");
-    if (!userId) {
-      if (
-        window.confirm(
-          "You need to be logged in to manage your wishlist. Do you want to login now?"
-        )
-      ) {
-        router.push("/login");
+  const handleWishlistToggle = useCallback(
+    debounce(async () => {
+      const userId = localStorage.getItem("user-id");
+      if (!userId) {
+        if (
+          window.confirm(
+            "You need to be logged in to manage your wishlist. Do you want to login now?"
+          )
+        ) {
+          router.push("/login");
+        }
+        return;
       }
-      return;
-    }
-    if (isWishlisted) {
-      dispatch(removeFromWishlist({ userId, productId }))
-        .unwrap()
-        .then(() => {
-          setIsWishlisted(false);
+      setWishlistLoading(true);
+      try {
+        if (isWishlisted) {
+          await dispatch(removeFromWishlist(productId)).unwrap();
           toast.success(`${product.name} removed from wishlist`);
-        })
-        .catch((err) => toast.error(err || "Failed to remove from wishlist"));
-    } else {
-      dispatch(addToWishlist({ userId, productId }))
-        .unwrap()
-        .then(() => {
-          setIsWishlisted(true);
+        } else {
+          await dispatch(addToWishlist(productId)).unwrap();
           toast.success(`${product.name} added to wishlist`);
-        })
-        .catch((err) => toast.error(err || "Failed to add to wishlist"));
-    }
-  };
+        }
+      } catch (error) {
+        console.error("Failed to toggle wishlist:", {
+          message: error.message,
+          payload: error.payload,
+        });
+        toast.error(
+          error.payload ||
+            (isWishlisted
+              ? "Failed to remove from wishlist"
+              : "Failed to add to wishlist")
+        );
+      } finally {
+        setWishlistLoading(false);
+      }
+    }, 300),
+    [dispatch, isWishlisted, productId, router]
+  );
 
   const handleQuantityChange = (value) => {
     const parsedValue = parseInt(value);
@@ -856,22 +872,31 @@ export default function ProductPage() {
                         variant="outline"
                         size="icon"
                         onClick={handleWishlistToggle}
+                        disabled={wishlistLoading}
                         className={`w-14 h-14 rounded-xl border-2 transition-all duration-300 ${
-                          isWishlisted
+                          wishlistLoading
+                            ? "border-gray-300 dark:border-gray-500 bg-gray-50/50 dark:bg-gray-900/20 text-gray-500 shadow-sm"
+                            : isWishlisted
                             ? "border-red-300 dark:border-red-500 bg-red-50/50 dark:bg-red-900/20 text-red-500 shadow-lg shadow-red-200/30 hover:shadow-red-300/50"
                             : "border-gray-200 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-600 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100"
                         }`}
                         aria-label={
-                          isWishlisted
+                          wishlistLoading
+                            ? "Toggling wishlist"
+                            : isWishlisted
                             ? "Remove from wishlist"
                             : "Add to wishlist"
                         }
                       >
-                        <Heart
-                          className={`h-5 w-5 transition-all duration-300 ${
-                            isWishlisted ? "fill-red-500" : ""
-                          }`}
-                        />
+                        {wishlistLoading ? (
+                          <LoaderCircle className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Heart
+                            className={`h-5 w-5 transition-all duration-300 ${
+                              isWishlisted ? "fill-red-500" : ""
+                            }`}
+                          />
+                        )}
                       </Button>
                     </motion.div>
                   </div>
@@ -1146,10 +1171,7 @@ export default function ProductPage() {
 
                   {/* Call to Action */}
                   {isExpanded && (
-                    <motion.div
-                     
-                      className="pt-6 border-t border-gray-100/50 dark:border-gray-700/50 mt-8"
-                    >
+                    <motion.div className="pt-6 border-t border-gray-100/50 dark:border-gray-700/50 mt-8">
                       <div className="text-center">
                         <p className="text-gray-600 dark:text-gray-400 text-sm lg:text-base mb-4 italic">
                           "Quality craftsmanship that stands the test of time."

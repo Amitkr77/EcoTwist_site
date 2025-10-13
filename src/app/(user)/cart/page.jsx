@@ -40,7 +40,7 @@ import {
   ShoppingCart,
 } from "lucide-react";
 import Image from "next/image";
-import { toast, ToastContainer } from "sonner";
+import { toast } from "sonner";
 import debounce from "lodash/debounce";
 
 export default function CartPage() {
