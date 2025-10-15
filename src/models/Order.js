@@ -50,7 +50,7 @@ const OrderSchema = new Schema(
     orderId: {
       type: String,
       required: true,
-      unique: true,
+      unique: true, 
       default: () => {
         const prefix = 'ORD';
         const timestamp = Date.now();
@@ -62,7 +62,7 @@ const OrderSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: 'User',
       required: true,
-      index: true, // Add index for faster queries
+      index: true,
     },
     items: {
       type: [CartItemSchema],
@@ -100,7 +100,6 @@ const OrderSchema = new Schema(
     orderDate: {
       type: Date,
       default: Date.now,
-      index: true, // Add index for sorting
     },
     estimatedDelivery: {
       type: Date,
@@ -114,7 +113,7 @@ const OrderSchema = new Schema(
   }
 );
 
-// Indexes
+// Compound index for userId and orderDate
 OrderSchema.index({ userId: 1, orderDate: -1 });
 
 // Virtual for invoice
@@ -140,11 +139,11 @@ OrderSchema.virtual('formattedDate').get(function () {
   }
 });
 
-// Pre-save middleware to validate totalAmount
+// Pre-save middleware to validate totalAmount with rounding
 OrderSchema.pre('save', function (next) {
   if (this.items && this.items.length > 0) {
     const calculatedTotal = this.items.reduce(
-      (sum, item) => sum + item.price * item.quantity,
+      (sum, item) => sum + Math.round(item.price * item.quantity * 100) / 100,
       0
     );
     if (Math.abs(this.totalAmount - calculatedTotal) > 0.01) {

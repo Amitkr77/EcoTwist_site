@@ -53,6 +53,7 @@ import {
   FaYoutube,
 } from "react-icons/fa";
 import dynamic from "next/dynamic";
+import ChatBot from "@/components/ChatBot";
 
 const Map = dynamic(() => import("@/components/Map"), {
   ssr: false,
@@ -653,54 +654,7 @@ export default function ContactPage() {
           </CardContent>
         </Card>
 
-        {/* Live Chat Dialog */}
-        <Dialog open={isChatOpen} onOpenChange={setIsChatOpen}>
-          {/* Floating WhatsApp Button */}
-          <DialogTrigger asChild>
-            <Button
-              className="fixed bottom-6 right-6 bg-green-600 hover:bg-green-700 text-white rounded-full p-4 shadow-2xl z-50"
-              aria-label="Open WhatsApp Support"
-            >
-              <MessageCircle className="h-6 w-6" />
-            </Button>
-          </DialogTrigger>
-
-          {/* Dialog Content */}
-          <DialogContent className="bg-white dark:bg-gray-800 border-none shadow-2xl rounded-2xl">
-            <DialogHeader>
-              <DialogTitle className="text-gray-900 dark:text-white">
-                WhatsApp Support
-              </DialogTitle>
-            </DialogHeader>
-            <div className="p-6 text-center">
-              <Headphones className="h-12 w-12 text-green-600 dark:text-green-400 mx-auto mb-4" />
-              <p className="text-gray-600 dark:text-gray-300 mb-6">
-                Connect with us instantly on WhatsApp for chat or call support.
-              </p>
-
-              {/* Chat on WhatsApp */}
-              <a href={whatsappLink} target="_blank" rel="noopener noreferrer">
-                <Button className="bg-green-600 hover:bg-green-700 text-white w-full mb-3">
-                  Chat on WhatsApp
-                </Button>
-              </a>
-
-              {/* Call on WhatsApp (or normal phone call) */}
-              <a href={whatsappCall}>
-                <Button className="bg-green-500 hover:bg-green-600 text-white w-full">
-                  Call Us on WhatsApp
-                </Button>
-              </a>
-
-              <Button
-                onClick={() => setIsChatOpen(false)}
-                className="mt-4 bg-gray-300 hover:bg-gray-400 text-gray-800 w-full"
-              >
-                Close
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <ChatBot/>
       </div>
 
       {/* Testimonials Carousel */}
